@@ -6,6 +6,7 @@ type DemoTimerProps = {
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
+  onDemoComplete: () => void;
 };
 
 const formatSeconds = (seconds: number) => {
@@ -14,7 +15,7 @@ const formatSeconds = (seconds: number) => {
   return `${minutes}:${remainder}`;
 };
 
-export function DemoTimer({ timer, onPause, onResume, onStop }: DemoTimerProps) {
+export function DemoTimer({ timer, onPause, onResume, onStop, onDemoComplete }: DemoTimerProps) {
   const active = timer.status !== "idle";
 
   return (
@@ -30,20 +31,25 @@ export function DemoTimer({ timer, onPause, onResume, onStop }: DemoTimerProps) 
         {active ? formatSeconds(timer.remainingSeconds) : "25:00"}
       </div>
       {active ? (
-        <div className="timer-actions">
-          {timer.status === "running" ? (
-            <button className="button button-quiet" onClick={onPause} type="button">
-              <UiIcon name="pause" size={15} /> 一時停止
+        <>
+          <div className="timer-actions">
+            {timer.status === "running" ? (
+              <button className="button button-quiet" onClick={onPause} type="button">
+                <UiIcon name="pause" size={15} /> 一時停止
+              </button>
+            ) : (
+              <button className="button button-good" onClick={onResume} type="button">
+                <UiIcon name="play" size={15} /> 再開
+              </button>
+            )}
+            <button className="button button-danger" onClick={onStop} type="button">
+              <UiIcon name="stop" size={15} /> 終了
             </button>
-          ) : (
-            <button className="button button-good" onClick={onResume} type="button">
-              <UiIcon name="play" size={15} /> 再開
-            </button>
-          )}
-          <button className="button button-danger" onClick={onStop} type="button">
-            <UiIcon name="stop" size={15} /> 終了
+          </div>
+          <button className="demo-complete-button" onClick={onDemoComplete} type="button">
+            満了まで進める <span>DEMO</span>
           </button>
-        </div>
+        </>
       ) : (
         <p className="timer-hint">次の一手から5分または25分を選べます。</p>
       )}
