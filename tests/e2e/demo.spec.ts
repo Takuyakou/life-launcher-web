@@ -20,8 +20,15 @@ test("victory edit is plain text and the checkbox works", async ({ page }) => {
   await expect(page.getByText(payload, { exact: true })).toHaveClass(/is-complete/);
 });
 
+test("unchanged victory edit closes on Enter and restores its edit button", async ({ page }) => {
+  await page.getByRole("button", { name: "勝利条件を編集" }).click();
+  await page.getByRole("textbox", { name: "勝利条件" }).press("Enter");
+  await expect(page.getByRole("button", { name: "勝利条件を編集" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "勝利条件を編集" })).toBeFocused();
+});
+
 test("Do Now rotates text, project and fixed reason together", async ({ page }) => {
-  await expect(page.getByRole("heading", { name: "本を10分だけ読む" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "数分だけ読む" })).toBeVisible();
   await expect(page.getByText("今日まだ実行していないため")).toBeVisible();
   await page.getByRole("button", { name: "別の候補" }).click();
   await expect(page.getByRole("heading", { name: "ストレッチを5分する" })).toBeVisible();
@@ -57,12 +64,12 @@ test("timer start shows launch simulation and stop appends Today Activity once",
 });
 
 test("demo completion can update the project next step", async ({ page }) => {
-  await page.getByRole("button", { name: "本を10分だけ読むを5分で開始" }).click();
+  await page.getByRole("button", { name: "数分だけ読むを5分で開始" }).click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
   const dialog = page.getByRole("dialog", { name: "おつかれさまでした" });
   await expect(dialog).toBeVisible();
   const input = dialog.getByRole("textbox", { name: "次の一手" });
-  await expect(input).toHaveValue("本を10分だけ読む");
+  await expect(input).toHaveValue("数分だけ読む");
   await input.fill("本を20分読む");
   await dialog.getByRole("button", { name: "保存" }).click();
   await expect(page.getByText("次の一手を更新しました")).toBeVisible();
@@ -71,11 +78,11 @@ test("demo completion can update the project next step", async ({ page }) => {
 });
 
 test("demo completion can be skipped without updating the project", async ({ page }) => {
-  await page.getByRole("button", { name: "本を10分だけ読むを5分で開始" }).click();
+  await page.getByRole("button", { name: "数分だけ読むを5分で開始" }).click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
   await page.getByRole("button", { name: "今は変更しない" }).click();
   await expect(page.getByRole("dialog", { name: "おつかれさまでした" })).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "本を10分だけ読む" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "数分だけ読む" })).toBeVisible();
 });
 
 test("sections open and reset restores every v2 seed field", async ({ page }) => {
@@ -85,10 +92,12 @@ test("sections open and reset restores every v2 seed field", async ({ page }) =>
   await page.getByRole("button", { name: "勝利条件を編集" }).click();
   await page.getByRole("textbox", { name: "勝利条件" }).fill("変更した条件");
   await page.getByRole("button", { name: "保存", exact: true }).click();
-  await page.getByRole("button", { name: /リセット/ }).click();
+  const resetButton = page.getByRole("button", { name: "リセット", exact: true });
+  await resetButton.click();
   await expect(page.getByRole("dialog", { name: "Web Demoをリセットしますか？" })).toBeVisible();
   await page.getByRole("button", { name: "リセットする" }).click();
   await expect(page.getByText("後回しにしていたことを1つ終わらせる")).toBeVisible();
   await expect(page.getByText("2/3", { exact: true })).toBeVisible();
-  await expect(page.locator("#demo")).toBeFocused();
+  await expect(resetButton).toBeFocused();
+  await expect(page.locator("#demo")).not.toBeFocused();
 });

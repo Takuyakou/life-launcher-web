@@ -35,6 +35,7 @@ export function DemoFrame({
 }: DemoFrameProps) {
   const [editingVictory, setEditingVictory] = useState(false);
   const [victoryDraft, setVictoryDraft] = useState(state.victory.text);
+  const victoryEditButtonRef = useRef<HTMLButtonElement>(null);
   const victoryInputRef = useRef<HTMLInputElement>(null);
   const doNowCandidate = DO_NOW_CANDIDATES[state.doNowIndex];
   const doNowProject = state.projects.find((project) => project.id === doNowCandidate.projectId);
@@ -47,11 +48,16 @@ export function DemoFrame({
 
   useEffect(() => setVictoryDraft(state.victory.text), [state.victory.text]);
 
+  const finishVictoryEdit = () => {
+    setEditingVictory(false);
+    window.requestAnimationFrame(() => victoryEditButtonRef.current?.focus());
+  };
+
   const saveVictory = () => {
     const trimmed = victoryDraft.trim();
-    if (trimmed) dispatch({ type: "UPDATE_VICTORY", text: trimmed });
+    if (trimmed && trimmed !== state.victory.text) dispatch({ type: "UPDATE_VICTORY", text: trimmed });
     else setVictoryDraft(state.victory.text);
-    setEditingVictory(false);
+    finishVictoryEdit();
   };
 
   const projectFor = (projectId: string) => state.projects.find((project) => project.id === projectId);
@@ -134,7 +140,11 @@ export function DemoFrame({
                     aria-label="勝利条件"
                     maxLength={120}
                     onChange={(event) => setVictoryDraft(event.target.value)}
-                    onKeyDown={(event) => event.key === "Escape" && setEditingVictory(false)}
+                    onKeyDown={(event) => {
+                      if (event.key !== "Escape") return;
+                      setVictoryDraft(state.victory.text);
+                      finishVictoryEdit();
+                    }}
                     ref={victoryInputRef}
                     value={victoryDraft}
                   />
@@ -147,6 +157,7 @@ export function DemoFrame({
                     aria-label="勝利条件を編集"
                     className="icon-button"
                     onClick={() => setEditingVictory(true)}
+                    ref={victoryEditButtonRef}
                     type="button"
                   >
                     <UiIcon name="edit" size={15} />
@@ -171,6 +182,7 @@ export function DemoFrame({
             <div className="start-actions">
               <button
                 className="button button-good"
+                data-demo-do-now-short
                 onClick={() => onStartTimer(doNowText, doNowCandidate.projectId, doNowProject?.name ?? "今やる一手", 5 * 60)}
                 type="button"
               >

@@ -108,11 +108,17 @@ function App() {
     setResetOpen(false);
     setCompletion(null);
     setToast({ id: Date.now(), message: "Web Demoを初期状態に戻しました", tone: "success" });
-    window.requestAnimationFrame(() => demoRef.current?.focus());
   };
 
   const focusDemo = () => {
     window.requestAnimationFrame(() => demoRef.current?.focus());
+  };
+
+  const focusDoNowShortStart = () => {
+    demoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.requestAnimationFrame(() => {
+      demoRef.current?.querySelector<HTMLButtonElement>("[data-demo-do-now-short]")?.focus();
+    });
   };
 
   return (
@@ -166,9 +172,17 @@ function App() {
             <div><span>02</span><strong>選ぶ</strong><small>今やる一手を小さく</small></div>
             <div><span>03</span><strong>始める</strong><small>必要なものを開いて5分から</small></div>
             <div className="hero-mini-preview" aria-label="Life Launcher画面のプレビュー">
-              <div><span>今日の勝利条件</span><strong>本を10分読む</strong></div>
-              <div><span>今やる一手</span><strong>本を10分だけ読む</strong></div>
-              <span className="hero-preview-action"><UiIcon name="play" size={13} /> 5分で開始</span>
+              <div className="hero-mini-victory">
+                <span>今日の勝利条件</span>
+                <strong>後回しを1つ終わらせる</strong>
+              </div>
+              <div className="hero-mini-step">
+                <span className="hero-mini-project">Project: 読書</span>
+                <strong>本を数分だけ読む</strong>
+              </div>
+              <button className="button button-good hero-preview-action" onClick={focusDoNowShortStart} type="button">
+                <UiIcon name="play" size={13} /> 5分で始める
+              </button>
             </div>
           </div>
         </section>
@@ -247,7 +261,7 @@ function App() {
         <section className="tech-section">
           <p className="eyebrow">TECH STACK</p>
           <div><span>React</span><span>TypeScript</span><span>Vite</span><span>Rust</span><span>Tauri 2</span></div>
-          <p>Web Demoは静的SPAです。製品版はWindows向けTauriデスクトップアプリです。</p>
+          <p>Web Demoは静的SPAです。リリース版はWindows向けTauriデスクトップアプリです。</p>
         </section>
 
         <section className="final-cta">

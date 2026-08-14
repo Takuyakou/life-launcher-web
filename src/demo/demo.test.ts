@@ -39,7 +39,7 @@ describe("demo reducer", () => {
     }
     expect(state.doNowIndex).toBe(0);
     expect(DO_NOW_CANDIDATES[state.doNowIndex]).toMatchObject({
-      text: "本を10分だけ読む",
+      text: "数分だけ読む",
       reason: "今日まだ実行していないため",
     });
   });

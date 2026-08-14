@@ -40,6 +40,10 @@
     margin-top: 10px;
   }
 
+  .hero-preview-action {
+    min-width: 112px;
+  }
+
   .hero {
     gap: 20px;
     padding-bottom: 32px;

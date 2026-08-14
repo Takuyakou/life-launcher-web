@@ -1,7 +1,7 @@
 import type { DemoCandidate, DemoState, DemoTimerState, DemoTodayItem, DictionaryTile } from "./types";
 
 export const DO_NOW_CANDIDATES: DemoCandidate[] = [
-  { projectId: "reading", text: "本を10分だけ読む", reason: "今日まだ実行していないため" },
+  { projectId: "reading", text: "数分だけ読む", reason: "今日まだ実行していないため" },
   { projectId: "exercise", text: "ストレッチを5分する", reason: "今週の重点にある次の一手" },
   { projectId: "tidy", text: "机の上だけ片付ける", reason: "最後の実行から時間が空いているため" },
 ];
@@ -54,10 +54,10 @@ export function createDemoSeed(now: Date): DemoState {
       { id: "today-reading", label: "本を10分読む", projectId: "reading", completed: false },
     ],
     projects: [
-      { id: "reading", name: "読書", color: "amber", nextStep: "本を10分だけ読む" },
+      { id: "reading", name: "読書", color: "amber", nextStep: "数分だけ読む" },
       { id: "exercise", name: "運動", color: "green", nextStep: "ストレッチを5分する" },
       { id: "tidy", name: "片付け", color: "blue", nextStep: "机の上だけ片付ける" },
-      { id: "study", name: "学習", color: "violet", nextStep: "気になっていたことを15分調べる" },
+      { id: "study", name: "学習", color: "violet", nextStep: "気になっていたことを調べる" },
     ],
     wishlist: [
       { id: "wish-book", label: "気になっていた本を読む" },
