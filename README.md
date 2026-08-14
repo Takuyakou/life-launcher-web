@@ -1,46 +1,56 @@
 # Life Launcher Web Demo
 
-[Life Launcher](https://github.com/Takuyakou/life-launcher)の価値と主要な操作フローを、
-ブラウザで短時間に試せるインタラクティブデモです。
+「何をしよう？」を「今これをやる」に変える、Life LauncherのインタラクティブWeb Demoです。
+
+**[Live Demoをブラウザで試す](https://life-launcher-web.takuyakou.workers.dev)**
+
+[Windows版 v1.0.0](https://github.com/Takuyakou/life-launcher/releases/tag/v1.0.0) ・ [Life Launcher本体](https://github.com/Takuyakou/life-launcher)
+
+<img src="docs/screenshots/web-demo.png" alt="Life Launcher Web DemoのLanding HeroとミニUI" width="960">
 
 ## What
 
-「何をしよう？」を「今これをやる」に変える流れを、synthetic dataだけで体験できます。
+Life Launcherの中心的な流れを、ブラウザ上のサンプルデータで体験できます。
 
-- 今日の勝利条件を編集・完了する
-- 固定サンプルから「今やる一手」を切り替える
-- 今日の3件をチェックする
-- 5分または25分のデモタイマーを開始・一時停止・再開・終了する
-- 終了した内容を「今日の実行」で確認する
-- 辞書を検索し、Windows固有機能の案内を確認する
-- デモ全体を初期状態へリセットする
+- 「今日の勝利条件」の編集・完了と、「今やる一手」の切り替え
+- 推薦理由の確認と、最大3件に絞る「今日の3件」
+- 短時間 / 通常タイマーの開始・一時停止・再開・終了
+- Demo用の満了フロー、次の一手の更新、「今日の実行」への記録
+- 辞書の検索とデモ状態のリセット
+- Windows版で「開始すると環境が揃う」流れのDemo演出
 
-## Product
+Web Demoでは、Windows版のアプリ・ファイル・URL起動を実際には行わず、開始時の流れを演出として確認できます。
 
-Windows製品版:
+## Windows Product
 
-- [GitHub Repository](https://github.com/Takuyakou/life-launcher)
-- [Life Launcher v1.0.0](https://github.com/Takuyakou/life-launcher/releases/tag/v1.0.0)
+Web DemoはLife Launcherの中心体験を紹介するショーケースです。
+
+実際のWindows版では、アプリ・ファイル・フォルダ・URLの起動、手順書ビューア、ネイティブウィンドウなどを利用できます。
+
+- [Life Launcher](https://github.com/Takuyakou/life-launcher)
+- [Download v1.0.0](https://github.com/Takuyakou/life-launcher/releases/tag/v1.0.0)
 
 ## Limitations
 
 Web DemoはWindows製品版の完全移植ではありません。
 
-- データはすべて汎用的なsynthetic dataです
-- Rustの推薦ロジックは再実装していません
-- アプリ・ファイル・URLの起動はWindows版のみです
+- データは汎用的なsynthetic dataです
+- Rustの推薦ロジックは再実装せず、説明可能な固定サンプルを使用します
+- アプリ・ファイル・URLの起動はDemo演出のみです
 - D&D、手順書、バックアップ、設定、記録の完全機能は含みません
-- visitorが変更したデモ状態はbrowserのlocalStorageだけに保存します
-- 入力内容をserverへ送信しません
+- visitorが変更したDemo stateはブラウザのlocalStorageに保存します
+- 入力内容をアプリ側サーバーへ送信しません
 
 ## Development
+
+React 18 / TypeScript / Viteで構築しています。
 
 ```powershell
 npm.cmd ci
 npm.cmd run dev
 ```
 
-検証:
+Validation:
 
 ```powershell
 npm.cmd run public:check
@@ -51,22 +61,18 @@ npm.cmd run test:e2e
 npm.cmd run test:visual
 ```
 
-OG画像の再生成時はdev serverを起動してから実行します。
-
-```powershell
-npm.cmd run screenshot:og
-```
+OG画像を再生成する場合は、dev serverを起動してから`npm.cmd run screenshot:og`を実行します。
 
 ## Deployment
 
-Cloudflare Pagesでの静的配信を想定しています。
+Production: [life-launcher-web.takuyakou.workers.dev](https://life-launcher-web.takuyakou.workers.dev)
 
-```text
-Build command: npm run build
-Build output: dist
-```
+Cloudflare Workers + Static Assetsで配信しています。GitHubの`main`更新をCloudflareがbuild / deployします。
 
-Pages Functions、backend、database、authentication、analytics、secretは使用しません。
+- Build command: `npm run build`
+- Build output: `dist`
+
+backend、database、authentication、analytics、secretは使用しません。
 
 ## Usage
 
