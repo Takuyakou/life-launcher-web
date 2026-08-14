@@ -1,4 +1,4 @@
-import { createIdleTimer } from "./seed";
+import { createIdleTimer, DO_NOW_CANDIDATES } from "./seed";
 import type { DemoAction, DemoSession, DemoState } from "./types";
 
 export function demoReducer(state: DemoState, action: DemoAction): DemoState {
@@ -8,12 +8,22 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
     case "TOGGLE_VICTORY":
       return { ...state, victory: { ...state.victory, completed: !state.victory.completed } };
     case "ROTATE_DO_NOW":
-      return { ...state, doNowIndex: (state.doNowIndex + 1) % 3 };
+      return { ...state, doNowIndex: (state.doNowIndex + 1) % DO_NOW_CANDIDATES.length };
+    case "ADD_TODAY_ITEM":
+      if (state.todayItems.length >= 3 || state.todayItems.some((item) => item.id === action.item.id)) return state;
+      return { ...state, todayItems: [...state.todayItems, { ...action.item }] };
     case "TOGGLE_TODAY_ITEM":
       return {
         ...state,
         todayItems: state.todayItems.map((item) =>
           item.id === action.id ? { ...item, completed: !item.completed } : item,
+        ),
+      };
+    case "UPDATE_PROJECT_NEXT_STEP":
+      return {
+        ...state,
+        projects: state.projects.map((project) =>
+          project.id === action.projectId ? { ...project, nextStep: action.nextStep } : project,
         ),
       };
     case "START_TIMER":

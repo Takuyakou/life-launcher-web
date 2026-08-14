@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { createDemoSeed } from "./seed";
-import { clearDemoState, loadDemoState, saveDemoState, STORAGE_KEY, type StorageLike } from "./storage";
+import {
+  clearDemoState,
+  LEGACY_STORAGE_KEY,
+  loadDemoState,
+  saveDemoState,
+  STORAGE_KEY,
+  type StorageLike,
+} from "./storage";
 
 const fixedNow = new Date("2026-08-14T09:00:00.000Z");
 
@@ -12,7 +19,7 @@ class MemoryStorage implements StorageLike {
 }
 
 describe("demo storage", () => {
-  it("round-trips a valid state and resets an active timer", () => {
+  it("round-trips a valid v2 state and resets an active timer", () => {
     const storage = new MemoryStorage();
     const seed = createDemoSeed(fixedNow);
     const running = {
@@ -30,10 +37,10 @@ describe("demo storage", () => {
     expect(loadDemoState(storage, fallback)).toBe(fallback);
   });
 
-  it("falls back for a wrong schema version", () => {
+  it("safely ignores the incompatible v1 schema", () => {
     const storage = new MemoryStorage();
     const fallback = createDemoSeed(fixedNow);
-    storage.values.set(STORAGE_KEY, JSON.stringify({ ...fallback, schemaVersion: 2 }));
+    storage.values.set(STORAGE_KEY, JSON.stringify({ ...fallback, schemaVersion: 1 }));
     expect(loadDemoState(storage, fallback)).toBe(fallback);
   });
 
@@ -49,10 +56,12 @@ describe("demo storage", () => {
     expect(clearDemoState(broken)).toBe(false);
   });
 
-  it("clears the namespaced key", () => {
+  it("clears both current and legacy namespaced keys", () => {
     const storage = new MemoryStorage();
     storage.values.set(STORAGE_KEY, "value");
+    storage.values.set(LEGACY_STORAGE_KEY, "legacy");
     expect(clearDemoState(storage)).toBe(true);
     expect(storage.getItem(STORAGE_KEY)).toBeNull();
+    expect(storage.getItem(LEGACY_STORAGE_KEY)).toBeNull();
   });
 });

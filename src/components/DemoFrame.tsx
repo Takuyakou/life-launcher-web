@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { DO_NOW_CANDIDATES } from "../demo/seed";
-import type { DemoAction, DemoState } from "../demo/types";
+import { DO_NOW_CANDIDATES, launchActionsForProject, TODAY_CANDIDATES } from "../demo/seed";
+import type { DemoAction, DemoState, DemoTodayItem } from "../demo/types";
 import { DemoTimer } from "./DemoTimer";
 import { UiIcon } from "./UiIcon";
 
@@ -14,6 +14,8 @@ type DemoFrameProps = {
   onPauseTimer: () => void;
   onResumeTimer: () => void;
   onStopTimer: () => void;
+  onDemoComplete: () => void;
+  onAddTodayCandidate: (item: DemoTodayItem) => void;
 };
 
 const projectColorClass = (color: string) => `project-${color}`;
@@ -28,10 +30,17 @@ export function DemoFrame({
   onPauseTimer,
   onResumeTimer,
   onStopTimer,
+  onDemoComplete,
+  onAddTodayCandidate,
 }: DemoFrameProps) {
   const [editingVictory, setEditingVictory] = useState(false);
   const [victoryDraft, setVictoryDraft] = useState(state.victory.text);
+  const victoryEditButtonRef = useRef<HTMLButtonElement>(null);
   const victoryInputRef = useRef<HTMLInputElement>(null);
+  const doNowCandidate = DO_NOW_CANDIDATES[state.doNowIndex];
+  const doNowProject = state.projects.find((project) => project.id === doNowCandidate.projectId);
+  const doNowText = doNowProject?.nextStep ?? doNowCandidate.text;
+  const launchActions = state.timer.status === "idle" ? [] : launchActionsForProject(state.timer.projectId);
 
   useEffect(() => {
     if (editingVictory) victoryInputRef.current?.focus();
@@ -39,11 +48,16 @@ export function DemoFrame({
 
   useEffect(() => setVictoryDraft(state.victory.text), [state.victory.text]);
 
+  const finishVictoryEdit = () => {
+    setEditingVictory(false);
+    window.requestAnimationFrame(() => victoryEditButtonRef.current?.focus());
+  };
+
   const saveVictory = () => {
     const trimmed = victoryDraft.trim();
-    if (trimmed) dispatch({ type: "UPDATE_VICTORY", text: trimmed });
+    if (trimmed && trimmed !== state.victory.text) dispatch({ type: "UPDATE_VICTORY", text: trimmed });
     else setVictoryDraft(state.victory.text);
-    setEditingVictory(false);
+    finishVictoryEdit();
   };
 
   const projectFor = (projectId: string) => state.projects.find((project) => project.id === projectId);
@@ -84,7 +98,13 @@ export function DemoFrame({
               </button>
             ))}
           </div>
-          <DemoTimer timer={state.timer} onPause={onPauseTimer} onResume={onResumeTimer} onStop={onStopTimer} />
+          <DemoTimer
+            onDemoComplete={onDemoComplete}
+            onPause={onPauseTimer}
+            onResume={onResumeTimer}
+            onStop={onStopTimer}
+            timer={state.timer}
+          />
         </aside>
 
         <main className="demo-main">
@@ -120,7 +140,11 @@ export function DemoFrame({
                     aria-label="勝利条件"
                     maxLength={120}
                     onChange={(event) => setVictoryDraft(event.target.value)}
-                    onKeyDown={(event) => event.key === "Escape" && setEditingVictory(false)}
+                    onKeyDown={(event) => {
+                      if (event.key !== "Escape") return;
+                      setVictoryDraft(state.victory.text);
+                      finishVictoryEdit();
+                    }}
                     ref={victoryInputRef}
                     value={victoryDraft}
                   />
@@ -133,6 +157,7 @@ export function DemoFrame({
                     aria-label="勝利条件を編集"
                     className="icon-button"
                     onClick={() => setEditingVictory(true)}
+                    ref={victoryEditButtonRef}
                     type="button"
                   >
                     <UiIcon name="edit" size={15} />
@@ -144,9 +169,12 @@ export function DemoFrame({
 
           <section className="do-now-card" aria-labelledby="do-now-heading">
             <div className="do-now-copy">
-              <div className="project-label project-green"><span />今やる一手</div>
-              <h2 id="do-now-heading">{DO_NOW_CANDIDATES[state.doNowIndex]}</h2>
-              <p>迷ったら、いちばん小さく始められる一手から。</p>
+              <div className={`project-label ${doNowProject ? projectColorClass(doNowProject.color) : "project-green"}`}>
+                <span />今やる一手{doNowProject ? ` · ${doNowProject.name}` : ""}
+              </div>
+              <h2 id="do-now-heading">{doNowText}</h2>
+              <p className="do-now-reason">{doNowCandidate.reason}</p>
+              <p className="demo-rule-note">Web Demoでは固定のサンプル理由を使用</p>
               <button className="text-button" onClick={() => dispatch({ type: "ROTATE_DO_NOW" })} type="button">
                 <UiIcon name="rotate" size={15} /> 別の候補
               </button>
@@ -154,20 +182,38 @@ export function DemoFrame({
             <div className="start-actions">
               <button
                 className="button button-good"
-                onClick={() => onStartTimer(DO_NOW_CANDIDATES[state.doNowIndex], "demo", "今やる一手", 5 * 60)}
+                data-demo-do-now-short
+                onClick={() => onStartTimer(doNowText, doNowCandidate.projectId, doNowProject?.name ?? "今やる一手", 5 * 60)}
                 type="button"
               >
                 <UiIcon name="play" size={14} /> 5分で始める
               </button>
               <button
                 className="button button-normal"
-                onClick={() => onStartTimer(DO_NOW_CANDIDATES[state.doNowIndex], "demo", "今やる一手", 25 * 60)}
+                onClick={() => onStartTimer(doNowText, doNowCandidate.projectId, doNowProject?.name ?? "今やる一手", 25 * 60)}
                 type="button"
               >
                 <UiIcon name="play" size={14} /> 通常25分
               </button>
             </div>
           </section>
+
+          {launchActions.length > 0 ? (
+            <section aria-live="polite" className="launch-simulation">
+              <div>
+                <strong>環境を準備</strong>
+                <span>Web Demo上の演出</span>
+              </div>
+              <ul>
+                {launchActions.map((action, index) => (
+                  <li key={action} style={{ animationDelay: `${index * 180}ms` }}>
+                    <UiIcon name="check" size={14} /> {action}
+                  </li>
+                ))}
+              </ul>
+              <p>Windows版では登録したアプリ・ファイル・URLを実際に開きます。</p>
+            </section>
+          ) : null}
 
           <section className="demo-section compact-section">
             <button
@@ -179,11 +225,11 @@ export function DemoFrame({
               <span className="chevron" aria-hidden="true">›</span>
               <strong>今日を組み立てる</strong>
               <small>候補から今日の行動を選ぶ</small>
-              <span className="section-count">3</span>
+              <span className="section-count">{state.todayItems.length}</span>
             </button>
             {state.sections.todayBuilder ? (
               <div className="builder-preview">
-                <p>Web Demoでは構成のプレビューのみ表示しています。</p>
+                <p>今日やる候補を3件までに絞ります。</p>
                 {state.todayItems.map((item) => <span key={item.id}>{item.label}</span>)}
               </div>
             ) : null}
@@ -193,9 +239,9 @@ export function DemoFrame({
             <div className="section-heading-row">
               <div>
                 <h2 id="today-three-heading">今日の3件</h2>
-                <p>今日やることを3つだけに絞る</p>
+                <p>やることを増やさず、今日やる3件だけに絞る</p>
               </div>
-              <span>{state.todayItems.filter((item) => item.completed).length}/3</span>
+              <span>{state.todayItems.length}/3</span>
             </div>
             <div className="today-list">
               {state.todayItems.map((item) => {
@@ -227,6 +273,23 @@ export function DemoFrame({
                       ><UiIcon name="play" size={14} /><span>25分</span></button>
                     </div>
                   </div>
+                );
+              })}
+            </div>
+            <div className="today-candidates" aria-label="今日の3件へ追加する候補">
+              <span>候補から追加</span>
+              {TODAY_CANDIDATES.map((candidate) => {
+                const added = state.todayItems.some((item) => item.id === candidate.id);
+                return (
+                  <button
+                    aria-label={`${candidate.label}を今日の3件に追加`}
+                    disabled={added}
+                    key={candidate.id}
+                    onClick={() => onAddTodayCandidate(candidate)}
+                    type="button"
+                  >
+                    {added ? "追加済み" : "+"} {candidate.label}
+                  </button>
                 );
               })}
             </div>

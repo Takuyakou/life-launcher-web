@@ -25,3 +25,9 @@ test("browser demo CTA scrolls and focuses the demo", async ({ page }) => {
   await expect(page.locator("#demo")).toBeFocused();
   await expect(page.getByText("WEB DEMO", { exact: true }).first()).toBeVisible();
 });
+
+test("Hero mini start moves to and focuses the matching short timer action", async ({ page }) => {
+  await page.locator(".hero-mini-preview .hero-preview-action").click();
+  await expect(page.locator("[data-demo-do-now-short]")).toBeFocused();
+  await expect(page.locator("#demo")).toBeInViewport();
+});

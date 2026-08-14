@@ -14,7 +14,7 @@ test("interactive demo performs no fetch, XHR, WebSocket, or external request", 
   await page.getByRole("button", { name: /辞書を開く/ }).click();
   await page.getByRole("searchbox", { name: "辞書を検索" }).fill("読書");
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "本を10分読むを5分で開始" }).click();
+  await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
   await page.getByRole("button", { name: /終了/ }).click();
 
   expect(runtimeRequests).toEqual([]);

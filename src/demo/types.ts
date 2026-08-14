@@ -12,6 +12,12 @@ export type DemoTodayItem = {
   completed: boolean;
 };
 
+export type DemoCandidate = {
+  projectId: string;
+  text: string;
+  reason: string;
+};
+
 export type DemoProject = {
   id: string;
   name: string;
@@ -50,7 +56,7 @@ export type DemoSectionState = {
 };
 
 export type DemoState = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   victory: DemoVictory;
   doNowIndex: number;
   todayItems: DemoTodayItem[];
@@ -65,7 +71,9 @@ export type DemoAction =
   | { type: "UPDATE_VICTORY"; text: string }
   | { type: "TOGGLE_VICTORY" }
   | { type: "ROTATE_DO_NOW" }
+  | { type: "ADD_TODAY_ITEM"; item: DemoTodayItem }
   | { type: "TOGGLE_TODAY_ITEM"; id: string }
+  | { type: "UPDATE_PROJECT_NEXT_STEP"; projectId: string; nextStep: string }
   | {
       type: "START_TIMER";
       label: string;
