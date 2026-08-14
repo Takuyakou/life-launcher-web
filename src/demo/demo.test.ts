@@ -20,7 +20,7 @@ describe("synthetic demo seed", () => {
     const first = createDemoSeed(fixedNow);
     const second = createDemoSeed(fixedNow);
     first.todayItems[0].label = "changed";
-    expect(second.todayItems[0].label).toBe("ストレッチを5分する");
+    expect(second.todayItems[0].label).toBe("ストレッチをする");
   });
 });
 
@@ -66,9 +66,9 @@ describe("demo reducer", () => {
     const next = demoReducer(state, {
       type: "UPDATE_PROJECT_NEXT_STEP",
       projectId: "reading",
-      nextStep: "本を20分読む",
+      nextStep: "次の章を読む",
     });
-    expect(next.projects.find((project) => project.id === "reading")?.nextStep).toBe("本を20分読む");
+    expect(next.projects.find((project) => project.id === "reading")?.nextStep).toBe("次の章を読む");
     expect(next.projects.find((project) => project.id === "exercise")).toEqual(
       state.projects.find((project) => project.id === "exercise"),
     );

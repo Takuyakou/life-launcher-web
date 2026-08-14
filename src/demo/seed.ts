@@ -2,12 +2,12 @@ import type { DemoCandidate, DemoState, DemoTimerState, DemoTodayItem, Dictionar
 
 export const DO_NOW_CANDIDATES: DemoCandidate[] = [
   { projectId: "reading", text: "数分だけ読む", reason: "今日まだ実行していないため" },
-  { projectId: "exercise", text: "ストレッチを5分する", reason: "今週の重点にある次の一手" },
+  { projectId: "exercise", text: "ストレッチをする", reason: "今週の重点にある次の一手" },
   { projectId: "tidy", text: "机の上だけ片付ける", reason: "最後の実行から時間が空いているため" },
 ];
 
 export const TODAY_CANDIDATES: DemoTodayItem[] = [
-  { id: "today-tidy", label: "机の上を5分片付ける", projectId: "tidy", completed: false },
+  { id: "today-tidy", label: "机の上を片付ける", projectId: "tidy", completed: false },
   { id: "today-walk", label: "少し散歩する", projectId: "exercise", completed: false },
 ];
 
@@ -50,12 +50,12 @@ export function createDemoSeed(now: Date): DemoState {
     },
     doNowIndex: 0,
     todayItems: [
-      { id: "today-stretch", label: "ストレッチを5分する", projectId: "exercise", completed: true },
-      { id: "today-reading", label: "本を10分読む", projectId: "reading", completed: false },
+      { id: "today-stretch", label: "ストレッチをする", projectId: "exercise", completed: true },
+      { id: "today-reading", label: "本を読む", projectId: "reading", completed: false },
     ],
     projects: [
       { id: "reading", name: "読書", color: "amber", nextStep: "数分だけ読む" },
-      { id: "exercise", name: "運動", color: "green", nextStep: "ストレッチを5分する" },
+      { id: "exercise", name: "運動", color: "green", nextStep: "ストレッチをする" },
       { id: "tidy", name: "片付け", color: "blue", nextStep: "机の上だけ片付ける" },
       { id: "study", name: "学習", color: "violet", nextStep: "気になっていたことを調べる" },
     ],
@@ -69,7 +69,7 @@ export function createDemoSeed(now: Date): DemoState {
         id: "session-initial",
         projectId: "exercise",
         projectName: "運動",
-        label: "ストレッチを5分する",
+        label: "ストレッチをする",
         minutes: 5,
         endedAt: initialEndedAt,
       },

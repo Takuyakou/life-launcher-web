@@ -31,22 +31,22 @@ test("Do Now rotates text, project and fixed reason together", async ({ page }) 
   await expect(page.getByRole("heading", { name: "数分だけ読む" })).toBeVisible();
   await expect(page.getByText("今日まだ実行していないため")).toBeVisible();
   await page.getByRole("button", { name: "別の候補" }).click();
-  await expect(page.getByRole("heading", { name: "ストレッチを5分する" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ストレッチをする" })).toBeVisible();
   await expect(page.getByText("今週の重点にある次の一手")).toBeVisible();
 });
 
 test("Today 3 accepts the third candidate and explains rejection of a fourth", async ({ page }) => {
   await expect(page.getByText("2/3", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "机の上を5分片付けるを今日の3件に追加" }).click();
+  await page.getByRole("button", { name: "机の上を片付けるを今日の3件に追加" }).click();
   await expect(page.getByText("3/3", { exact: true })).toBeVisible();
-  await expect(page.getByText("机の上を5分片付ける", { exact: true })).toBeVisible();
+  await expect(page.getByText("机の上を片付ける", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "少し散歩するを今日の3件に追加" }).click();
   await expect(page.getByText("今日の3件は3件までです。今日やることだけに絞ります。")).toBeVisible();
   await expect(page.locator(".today-list").getByText("少し散歩する", { exact: true })).toHaveCount(0);
 });
 
 test("timer start shows launch simulation and stop appends Today Activity once", async ({ page }) => {
-  await page.getByRole("button", { name: "本を10分読むを5分で開始" }).click();
+  await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
   await expect(page.getByText("実行中", { exact: true })).toBeVisible();
   await expect(page.getByText("環境を準備", { exact: true })).toBeVisible();
   await expect(page.getByText("読書メモを開く", { exact: true })).toBeVisible();
@@ -58,8 +58,8 @@ test("timer start shows launch simulation and stop appends Today Activity once",
   await page.waitForTimeout(1100);
   await page.getByRole("button", { name: /終了/ }).click();
   await expect(page.getByText("今日の実行にサンプル記録を追加しました")).toBeVisible();
-  const activity = page.getByRole("list").filter({ hasText: "本を10分読む" });
-  await expect(activity.getByText("本を10分読む", { exact: true })).toHaveCount(1);
+  const activity = page.getByRole("list").filter({ hasText: "本を読む" });
+  await expect(activity.getByText("本を読む", { exact: true })).toHaveCount(1);
   await expect(page.getByText("環境を準備", { exact: true })).toHaveCount(0);
 });
 
@@ -70,11 +70,11 @@ test("demo completion can update the project next step", async ({ page }) => {
   await expect(dialog).toBeVisible();
   const input = dialog.getByRole("textbox", { name: "次の一手" });
   await expect(input).toHaveValue("数分だけ読む");
-  await input.fill("本を20分読む");
+  await input.fill("次の章を読む");
   await dialog.getByRole("button", { name: "保存" }).click();
   await expect(page.getByText("次の一手を更新しました")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "本を20分読む" })).toBeVisible();
-  await expect(page.getByText("本を20分読む", { exact: true })).toHaveCount(2);
+  await expect(page.getByRole("heading", { name: "次の章を読む" })).toBeVisible();
+  await expect(page.getByText("次の章を読む", { exact: true })).toHaveCount(2);
 });
 
 test("demo completion can be skipped without updating the project", async ({ page }) => {
@@ -88,7 +88,7 @@ test("demo completion can be skipped without updating the project", async ({ pag
 test("sections open and reset restores every v2 seed field", async ({ page }) => {
   await page.getByRole("button", { name: /やりたいこと/ }).click();
   await expect(page.getByText("気になっていた本を読む")).toBeVisible();
-  await page.getByRole("button", { name: "机の上を5分片付けるを今日の3件に追加" }).click();
+  await page.getByRole("button", { name: "机の上を片付けるを今日の3件に追加" }).click();
   await page.getByRole("button", { name: "勝利条件を編集" }).click();
   await page.getByRole("textbox", { name: "勝利条件" }).fill("変更した条件");
   await page.getByRole("button", { name: "保存", exact: true }).click();
