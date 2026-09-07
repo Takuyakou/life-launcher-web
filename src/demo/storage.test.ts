@@ -13,21 +13,56 @@ const fixedNow = new Date("2026-08-14T09:00:00.000Z");
 
 class MemoryStorage implements StorageLike {
   values = new Map<string, string>();
-  getItem(key: string) { return this.values.get(key) ?? null; }
-  setItem(key: string, value: string) { this.values.set(key, value); }
-  removeItem(key: string) { this.values.delete(key); }
+  getItem(key: string) {
+    return this.values.get(key) ?? null;
+  }
+  setItem(key: string, value: string) {
+    this.values.set(key, value);
+  }
+  removeItem(key: string) {
+    this.values.delete(key);
+  }
 }
 
 describe("demo storage", () => {
-  it("round-trips a valid v2 state and resets an active timer", () => {
+  it("round-trips a valid v2 state, exclusions, and resets an active timer", () => {
     const storage = new MemoryStorage();
     const seed = createDemoSeed(fixedNow);
     const running = {
       ...seed,
-      timer: { ...seed.timer, status: "running" as const, label: "test", remainingSeconds: 10 },
+      candidateExcludedSourceIds: ["wishlist:wish-book"],
+      timer: {
+        ...seed.timer,
+        status: "running" as const,
+        label: "test",
+        remainingSeconds: 10,
+      },
     };
     expect(saveDemoState(storage, running)).toBe(true);
-    expect(loadDemoState(storage, seed)).toMatchObject({ victory: seed.victory, timer: { status: "idle" } });
+    expect(loadDemoState(storage, seed)).toMatchObject({
+      candidateExcludedSourceIds: ["wishlist:wish-book"],
+      timer: { status: "idle" },
+    });
+  });
+
+  it("loads older v2 data by deriving source IDs and an empty exclusion list", () => {
+    const storage = new MemoryStorage();
+    const fallback = createDemoSeed(fixedNow);
+    const older = structuredClone(fallback) as Record<string, unknown>;
+    delete older.candidateExcludedSourceIds;
+    older.todayItems = fallback.todayItems.map((item) => ({
+      id: item.id,
+      label: item.label,
+      projectId: item.projectId,
+      completed: item.completed,
+    }));
+    storage.values.set(STORAGE_KEY, JSON.stringify(older));
+    const loaded = loadDemoState(storage, fallback);
+    expect(loaded.candidateExcludedSourceIds).toEqual([]);
+    expect(loaded.todayItems.map((item) => item.sourceId)).toEqual([
+      "project:exercise",
+      "project:reading",
+    ]);
   });
 
   it("falls back for malformed JSON", () => {
@@ -40,16 +75,25 @@ describe("demo storage", () => {
   it("safely ignores the incompatible v1 schema", () => {
     const storage = new MemoryStorage();
     const fallback = createDemoSeed(fixedNow);
-    storage.values.set(STORAGE_KEY, JSON.stringify({ ...fallback, schemaVersion: 1 }));
+    storage.values.set(
+      STORAGE_KEY,
+      JSON.stringify({ ...fallback, schemaVersion: 1 }),
+    );
     expect(loadDemoState(storage, fallback)).toBe(fallback);
   });
 
   it("falls back when storage access throws", () => {
     const fallback = createDemoSeed(fixedNow);
     const broken: StorageLike = {
-      getItem: () => { throw new Error("blocked"); },
-      setItem: () => { throw new Error("blocked"); },
-      removeItem: () => { throw new Error("blocked"); },
+      getItem: () => {
+        throw new Error("blocked");
+      },
+      setItem: () => {
+        throw new Error("blocked");
+      },
+      removeItem: () => {
+        throw new Error("blocked");
+      },
     };
     expect(loadDemoState(broken, fallback)).toBe(fallback);
     expect(saveDemoState(broken, fallback)).toBe(false);

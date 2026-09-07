@@ -6,8 +6,11 @@ import {
   DICTIONARY_TILES,
   DO_NOW_CANDIDATES,
   launchActionsForProject,
-  TODAY_CANDIDATES,
 } from "./seed";
+import {
+  createTodayBuilderCandidates,
+  todayItemFromCandidate,
+} from "./todayBuilder";
 
 const fixedNow = new Date("2026-08-14T09:00:00.000Z");
 
@@ -21,6 +24,35 @@ describe("synthetic demo seed", () => {
     const second = createDemoSeed(fixedNow);
     first.todayItems[0].label = "changed";
     expect(second.todayItems[0].label).toBe("ストレッチをする");
+  });
+});
+
+describe("Today Builder", () => {
+  it("derives stable candidates from NextStep and Wishlist sources", () => {
+    const candidates = createTodayBuilderCandidates(createDemoSeed(fixedNow));
+    expect(candidates).toHaveLength(7);
+    expect(candidates[0]).toMatchObject({
+      sourceId: "project:reading",
+      sourceType: "nextStep",
+      label: "数分だけ読む",
+    });
+    expect(candidates[4]).toMatchObject({
+      sourceId: "wishlist:wish-book",
+      sourceType: "wishlist",
+    });
+  });
+
+  it("keeps duplicate Wishlist text distinct by source ID", () => {
+    const state = createDemoSeed(fixedNow);
+    state.wishlist = [
+      { id: "wish-a", label: "同じ文面" },
+      { id: "wish-b", label: "同じ文面" },
+    ];
+    expect(
+      createTodayBuilderCandidates(state)
+        .filter((item) => item.label === "同じ文面")
+        .map((item) => item.sourceId),
+    ).toEqual(["wishlist:wish-a", "wishlist:wish-b"]);
   });
 });
 
@@ -44,19 +76,57 @@ describe("demo reducer", () => {
     });
   });
 
-  it("adds only one third Today item and rejects duplicates or a fourth", () => {
+  it("adopts only one third Builder candidate and rejects duplicate or fourth sources", () => {
     let state = createDemoSeed(fixedNow);
-    state = demoReducer(state, { type: "ADD_TODAY_ITEM", item: TODAY_CANDIDATES[0] });
+    const [reading, , tidy, study] = createTodayBuilderCandidates(state);
+    state = demoReducer(state, {
+      type: "ADD_TODAY_ITEM",
+      item: todayItemFromCandidate(tidy),
+    });
     expect(state.todayItems).toHaveLength(3);
-    state = demoReducer(state, { type: "ADD_TODAY_ITEM", item: TODAY_CANDIDATES[0] });
-    state = demoReducer(state, { type: "ADD_TODAY_ITEM", item: TODAY_CANDIDATES[1] });
+    state = demoReducer(state, {
+      type: "ADD_TODAY_ITEM",
+      item: todayItemFromCandidate(tidy),
+    });
+    state = demoReducer(state, {
+      type: "ADD_TODAY_ITEM",
+      item: todayItemFromCandidate(study),
+    });
+    state = demoReducer(state, {
+      type: "ADD_TODAY_ITEM",
+      item: todayItemFromCandidate(reading),
+    });
     expect(state.todayItems).toHaveLength(3);
-    expect(state.todayItems.some((item) => item.id === "today-walk")).toBe(false);
+    expect(
+      state.todayItems.some((item) => item.sourceId === "project:study"),
+    ).toBe(false);
+  });
+
+  it("excludes a candidate and its Today snapshot while preserving its source", () => {
+    const state = createDemoSeed(fixedNow);
+    const next = demoReducer(state, {
+      type: "EXCLUDE_TODAY_CANDIDATE",
+      sourceId: "project:exercise",
+    });
+    expect(
+      next.todayItems.some((item) => item.sourceId === "project:exercise"),
+    ).toBe(false);
+    expect(
+      next.projects.find((project) => project.id === "exercise")?.nextStep,
+    ).toBe("ストレッチをする");
+    expect(
+      createTodayBuilderCandidates(next).some(
+        (item) => item.sourceId === "project:exercise",
+      ),
+    ).toBe(false);
   });
 
   it("toggles one Today 3 item", () => {
     const state = createDemoSeed(fixedNow);
-    const next = demoReducer(state, { type: "TOGGLE_TODAY_ITEM", id: "today-reading" });
+    const next = demoReducer(state, {
+      type: "TOGGLE_TODAY_ITEM",
+      id: "today-reading",
+    });
     expect(next.todayItems[1].completed).toBe(true);
     expect(next.todayItems[0]).toEqual(state.todayItems[0]);
   });
@@ -68,7 +138,9 @@ describe("demo reducer", () => {
       projectId: "reading",
       nextStep: "次の章を読む",
     });
-    expect(next.projects.find((project) => project.id === "reading")?.nextStep).toBe("次の章を読む");
+    expect(
+      next.projects.find((project) => project.id === "reading")?.nextStep,
+    ).toBe("次の章を読む");
     expect(next.projects.find((project) => project.id === "exercise")).toEqual(
       state.projects.find((project) => project.id === "exercise"),
     );
@@ -110,15 +182,22 @@ describe("demo reducer", () => {
   });
 
   it("resets all added state to a newly supplied seed", () => {
-    let changed = demoReducer(createDemoSeed(fixedNow), { type: "TOGGLE_VICTORY" });
-    changed = demoReducer(changed, { type: "ADD_TODAY_ITEM", item: TODAY_CANDIDATES[0] });
+    let changed = demoReducer(createDemoSeed(fixedNow), {
+      type: "TOGGLE_VICTORY",
+    });
+    changed = demoReducer(changed, {
+      type: "EXCLUDE_TODAY_CANDIDATE",
+      sourceId: "project:exercise",
+    });
     changed = demoReducer(changed, {
       type: "UPDATE_PROJECT_NEXT_STEP",
       projectId: "reading",
       nextStep: "変更した一手",
     });
     const fresh = createDemoSeed(new Date("2026-08-15T09:00:00.000Z"));
-    expect(demoReducer(changed, { type: "RESET_DEMO", state: fresh })).toEqual(fresh);
+    expect(demoReducer(changed, { type: "RESET_DEMO", state: fresh })).toEqual(
+      fresh,
+    );
   });
 });
 
@@ -129,19 +208,32 @@ describe("launch simulation", () => {
       "参考ページを開く",
       "タイマーを開始",
     ]);
-    expect(new Set(launchActionsForProject("reading")).size).toBe(launchActionsForProject("reading").length);
-    expect(launchActionsForProject("unknown")).toEqual(["登録した項目を準備", "タイマーを開始"]);
+    expect(new Set(launchActionsForProject("reading")).size).toBe(
+      launchActionsForProject("reading").length,
+    );
+    expect(launchActionsForProject("unknown")).toEqual([
+      "登録した項目を準備",
+      "タイマーを開始",
+    ]);
   });
 });
 
 describe("dictionary search", () => {
   it("matches labels, categories, and aliases", () => {
-    expect(filterDictionary(DICTIONARY_TILES, "読書").map((tile) => tile.id)).toContain("reading-note");
-    expect(filterDictionary(DICTIONARY_TILES, "運動").map((tile) => tile.id)).toContain("stretch");
-    expect(filterDictionary(DICTIONARY_TILES, "調べる").map((tile) => tile.id)).toContain("study-note");
+    expect(
+      filterDictionary(DICTIONARY_TILES, "読書").map((tile) => tile.id),
+    ).toContain("reading-note");
+    expect(
+      filterDictionary(DICTIONARY_TILES, "運動").map((tile) => tile.id),
+    ).toContain("stretch");
+    expect(
+      filterDictionary(DICTIONARY_TILES, "調べる").map((tile) => tile.id),
+    ).toContain("study-note");
   });
 
   it("returns every tile for a blank query", () => {
-    expect(filterDictionary(DICTIONARY_TILES, "  ")).toHaveLength(DICTIONARY_TILES.length);
+    expect(filterDictionary(DICTIONARY_TILES, "  ")).toHaveLength(
+      DICTIONARY_TILES.length,
+    );
   });
 });
