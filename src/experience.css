@@ -237,38 +237,6 @@
   margin: 0;
 }
 
-.today-candidates {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding-top: 9px;
-}
-
-.today-candidates > span {
-  color: var(--muted);
-  font-size: 9px;
-  margin-right: 2px;
-}
-
-.today-candidates button {
-  background: transparent;
-  border: 1px dashed var(--line);
-  border-radius: 5px;
-  color: var(--muted-strong);
-  cursor: pointer;
-  font-size: 10px;
-  min-height: 30px;
-  padding: 0 9px;
-}
-
-.today-candidates button:hover:not(:disabled) {
-  background: var(--surface-strong);
-  border-color: var(--gold);
-  color: var(--text);
-}
-
-.today-candidates button:disabled,
 .button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
@@ -377,8 +345,14 @@ footer > div {
 }
 
 @keyframes launch-action-in {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 860px) {
@@ -444,15 +418,6 @@ footer > div {
   .launch-simulation ul {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .today-candidates {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .today-candidates button {
-    text-align: left;
   }
 
   .completion-dialog {

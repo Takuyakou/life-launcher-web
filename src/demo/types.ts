@@ -7,9 +7,17 @@ export type DemoVictory = {
 
 export type DemoTodayItem = {
   id: string;
+  sourceId: string;
   label: string;
-  projectId: string;
+  projectId?: string;
   completed: boolean;
+};
+
+export type DemoBuilderCandidate = {
+  sourceId: string;
+  sourceType: "nextStep" | "wishlist";
+  label: string;
+  projectId?: string;
 };
 
 export type DemoCandidate = {
@@ -60,6 +68,7 @@ export type DemoState = {
   victory: DemoVictory;
   doNowIndex: number;
   todayItems: DemoTodayItem[];
+  candidateExcludedSourceIds: string[];
   projects: DemoProject[];
   wishlist: DemoWishlistItem[];
   sessions: DemoSession[];
@@ -72,6 +81,7 @@ export type DemoAction =
   | { type: "TOGGLE_VICTORY" }
   | { type: "ROTATE_DO_NOW" }
   | { type: "ADD_TODAY_ITEM"; item: DemoTodayItem }
+  | { type: "EXCLUDE_TODAY_CANDIDATE"; sourceId: string }
   | { type: "TOGGLE_TODAY_ITEM"; id: string }
   | { type: "UPDATE_PROJECT_NEXT_STEP"; projectId: string; nextStep: string }
   | {

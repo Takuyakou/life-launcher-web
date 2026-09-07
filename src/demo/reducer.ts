@@ -6,24 +6,51 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
     case "UPDATE_VICTORY":
       return { ...state, victory: { ...state.victory, text: action.text } };
     case "TOGGLE_VICTORY":
-      return { ...state, victory: { ...state.victory, completed: !state.victory.completed } };
+      return {
+        ...state,
+        victory: { ...state.victory, completed: !state.victory.completed },
+      };
     case "ROTATE_DO_NOW":
-      return { ...state, doNowIndex: (state.doNowIndex + 1) % DO_NOW_CANDIDATES.length };
+      return {
+        ...state,
+        doNowIndex: (state.doNowIndex + 1) % DO_NOW_CANDIDATES.length,
+      };
     case "ADD_TODAY_ITEM":
-      if (state.todayItems.length >= 3 || state.todayItems.some((item) => item.id === action.item.id)) return state;
-      return { ...state, todayItems: [...state.todayItems, { ...action.item }] };
+      if (
+        state.todayItems.length >= 3 ||
+        state.todayItems.some((item) => item.sourceId === action.item.sourceId)
+      )
+        return state;
+      return {
+        ...state,
+        todayItems: [...state.todayItems, { ...action.item }],
+      };
+    case "EXCLUDE_TODAY_CANDIDATE":
+      return {
+        ...state,
+        todayItems: state.todayItems.filter(
+          (item) => item.sourceId !== action.sourceId,
+        ),
+        candidateExcludedSourceIds: Array.from(
+          new Set([...state.candidateExcludedSourceIds, action.sourceId]),
+        ),
+      };
     case "TOGGLE_TODAY_ITEM":
       return {
         ...state,
         todayItems: state.todayItems.map((item) =>
-          item.id === action.id ? { ...item, completed: !item.completed } : item,
+          item.id === action.id
+            ? { ...item, completed: !item.completed }
+            : item,
         ),
       };
     case "UPDATE_PROJECT_NEXT_STEP":
       return {
         ...state,
         projects: state.projects.map((project) =>
-          project.id === action.projectId ? { ...project, nextStep: action.nextStep } : project,
+          project.id === action.projectId
+            ? { ...project, nextStep: action.nextStep }
+            : project,
         ),
       };
     case "START_TIMER":
@@ -65,12 +92,19 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         minutes: Math.max(1, Math.ceil(state.timer.elapsedSeconds / 60)),
         endedAt: action.now.toISOString(),
       };
-      return { ...state, sessions: [...state.sessions, session], timer: createIdleTimer() };
+      return {
+        ...state,
+        sessions: [...state.sessions, session],
+        timer: createIdleTimer(),
+      };
     }
     case "TOGGLE_SECTION":
       return {
         ...state,
-        sections: { ...state.sections, [action.section]: !state.sections[action.section] },
+        sections: {
+          ...state.sections,
+          [action.section]: !state.sections[action.section],
+        },
       };
     case "RESET_DEMO":
       return action.state;
