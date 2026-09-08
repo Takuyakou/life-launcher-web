@@ -1,0 +1,52 @@
+Life Launcher Web Demo v1.1 Sync を開始してください。
+
+対象repository:
+  Takuyakou/life-launcher-web
+
+Production:
+  https://life-launcher-web.takuyakou.workers.dev
+
+参照するWindows本体:
+  Takuyakou/life-launcher
+
+このStart promptは最初に1回だけ使用します。Stageごとの長いpromptをユーザーへ要求しないでください。
+
+最初に読む:
+1. repository rootのAGENTS.md等
+2. README-FIRST.txt
+3. 00-WEB11-OVERVIEW.md
+4. WEB11-WORK-INSTRUCTIONS.md
+5. execution-state.json
+6. reference/phase6.1-final-report.md
+7. reference/2026-09-07-followup-report.md
+8. current life-launcher-web code / package.json / tests / README
+9. 可能ならWindows本体current main/current-specをread-only確認
+10. 現Stageの詳細文書
+
+重要:
+- Web DemoはWindows版の完全互換版ではない。
+- visual hierarchy / Today3 / Today Builder / selection flow / copyを優先。
+- Tauri/native/Explorer/multi-monitor等を無理に再現しない。
+- Rust recommendation logicを完全移植しない。
+- backend/auth/analytics/network callを追加しない。
+- Windows本体repoを書き換えない。
+
+初回に実行してよいのは:
+  WEB11-00 — Current Web Demo Audit & Gap Freeze
+のみ。
+
+詳細:
+  01-WEB11-00-current-gap-audit.md
+
+Stage完了時:
+1. 自動検証
+2. workreport
+3. execution-state更新
+4. PR作成
+5. git diff/status確認
+6. STOP
+
+次Stageへ自動で進まない。
+
+初回完了末尾:
+WEB11-00 COMPLETE — STOPPED FOR HUMAN REVIEW
