@@ -28,7 +28,7 @@
 | 設定 | 証拠と判定 |
 | --- | --- |
 | hosting | Workers URLで配信。READMEはWorkers + Static Assetsと説明 |
-| Git integration | **UNVERIFIED**。ユーザー申告は手動デプロイ。READMEの「main更新で自動build/deploy」は裏付け未取得 |
+| Git integration | **PARTIAL**。監査PR #5で`Workers Builds: life-launcher-web`が自動実行されFAILURE。GitHub連携checkの存在は確認。main自動本番deployの設定までは未確認。ユーザー申告は従来手動運用 |
 | production branch | **UNVERIFIED**。Git既定ブランチはmainだがCloudflare側の設定とは別 |
 | preview build | **UNVERIFIED**。dashboard確認なし |
 | build command | repoでは`npm run build`、成功。Cloudflare側の実設定は未確認 |
@@ -37,6 +37,8 @@
 | GitHub CI | [基準mainのCI成功](https://github.com/Takuyakou/life-launcher-web/actions/runs/34080029722) |
 
 Cloudflare設定を推測で変更しない。WEB11-04で管理画面または認可されたAPIから確認する。今回デプロイなし。
+
+PR作成後の追記: [PR #5](https://github.com/Takuyakou/life-launcher-web/pull/5)にCloudflare checkが付いた。check outputにはBuild IDとdashboardリンクのみで、失敗原因の説明/annotationはない。権限・課金・build設定のどれが原因かは断定できない。既存外部連携がpush/PRを受けて動いたもので、今回Cloudflare設定変更や手動deployは実行していない。公開成功の証拠にはせず、外部build失敗としてレビューに引き継ぐ。
 
 ## 画面と挙動の差分
 

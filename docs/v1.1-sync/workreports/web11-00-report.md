@@ -15,7 +15,7 @@
 
 公開中の主要JS/CSSは現在mainの再buildとSHA256一致。HTMLも改行等正規化後一致。UI差分は公開漏れではなくWebコード側に残る。
 Today3は縦row・手動checkbox完了で、timer完了連携とnext batchはない。Builderはsource-only/上限/ID判定済みだが、自然な7候補にpaginationなし。NextStepはcardでaccordionなし。
-Cloudflare Git integration/preview/production branchの管理設定は未確認。READMEの自動deploy断定とユーザー申告の手動運用は不一致として記録した。
+CloudflareはPR #5作成後にWorkers Builds checkが自動実行され、FAILUREを返した。GitHub連携checkの存在は確認できたが、preview/production branchやmain自動deployの管理設定と失敗原因は未確認。READMEの自動deploy断定とユーザー申告の手動運用は分けて記録した。
 
 ## 検証
 
@@ -31,6 +31,7 @@ Cloudflare Git integration/preview/production branchの管理設定は未確認�
 | 画像確認 | desktop Today3 / mobile Today3 / Dictionary / wide Heroを確認 |
 | git diff --check / git diff --cached --check | PASS |
 | main GitHub CI | 基準commitのrunはsuccess |
+| PR #5 Workers Builds | FAILURE。check outputに原因説明なし。設定変更/再deployなし |
 
 初回監査testはseed既存完了1件の見落としで失敗し、テスト前提を修正して再実行PASS。製品側の動作を変更して合格させていない。
 
@@ -42,4 +43,4 @@ UI本体、styles、seed、localStorage schema、dependencies、Windows repo、R
 
 この監査PRをレビューしてから承認/mergeを行う。WEB11-01はそれまで開始しない。
 Cloudflare設定の未確認は監査結果の制限として明示済みで、UI差分固定の完了を妨げないが、本番自動deployの根拠にはできない。04で実設定を確認する。
-PRの実URLと最終commitは作業完了メッセージを参照。mainへmergeせず停止する。
+[PR #5](https://github.com/Takuyakou/life-launcher-web/pull/5)、base main。最終commitとGitHub CIの最終状態は作業完了メッセージ参照。外部buildのFAILUREをPASSに読み替えない。mainへmergeせず停止する。

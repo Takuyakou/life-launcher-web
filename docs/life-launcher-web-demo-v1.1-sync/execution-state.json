@@ -12,6 +12,8 @@
       "completed_on": "2026-09-08",
       "baseline_commit": "e08d69a3975632611177a0166661116ed274b597",
       "branch": "docs/web11-00-gap-audit",
+      "pull_request": "https://github.com/Takuyakou/life-launcher-web/pull/5",
+      "external_build_status": "CLOUDFLARE_FAILURE_CAUSE_UNVERIFIED",
       "report": "docs/v1.1-sync/workreports/web11-00-report.md"
     },
     "WEB11-01": {
