@@ -1,5 +1,6 @@
 type IconName =
   | "activity"
+  | "back"
   | "book"
   | "browser"
   | "check"
@@ -20,6 +21,7 @@ type UiIconProps = {
 };
 
 const paths: Record<IconName, React.ReactNode> = {
+  back: <path d="m9 5-6 6 6 6M3 11h12a6 6 0 0 1 6 6v2" />,
   activity: <path d="M3 12h3l2-5 4 10 3-7 2 2h4" />,
   book: <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v17H6.5A2.5 2.5 0 0 0 4 22V5.5Zm16 0A2.5 2.5 0 0 0 17.5 3H13v17h4.5A2.5 2.5 0 0 1 20 22V5.5Z" />,
   browser: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M7 6.5h.01M10 6.5h.01" /></>,

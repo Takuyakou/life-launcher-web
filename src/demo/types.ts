@@ -85,6 +85,7 @@ export type DemoAction =
   | { type: "TOGGLE_VICTORY" }
   | { type: "ROTATE_DO_NOW" }
   | { type: "ADD_TODAY_ITEM"; item: DemoTodayItem }
+  | { type: "REMOVE_TODAY_ITEM"; id: string }
   | { type: "EXCLUDE_TODAY_CANDIDATE"; sourceId: string }
   | { type: "NEXT_TODAY_BATCH" }
   | { type: "OPEN_BUILDER" }

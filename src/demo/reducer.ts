@@ -25,6 +25,16 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         ...state,
         todayItems: [...state.todayItems, { ...action.item }],
       };
+    case "REMOVE_TODAY_ITEM":
+      if (
+        !state.todayItems.some((item) => item.id === action.id) ||
+        (state.timer.status !== "idle" && state.timer.todayItemId === action.id)
+      )
+        return state;
+      return {
+        ...state,
+        todayItems: state.todayItems.filter((item) => item.id !== action.id),
+      };
     case "EXCLUDE_TODAY_CANDIDATE":
       if (
         state.timer.status !== "idle" &&
