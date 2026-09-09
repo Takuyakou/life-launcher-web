@@ -7,6 +7,8 @@
   "current_stage": "WEB11-04",
   "execution_note": "User requested continuing all remaining implementation/QA. Consolidated task branch on audit PR; release/README order and production approval remain gated.",
   "implementation_branch": "feat/web11-remaining-sync",
+  "implementation_pull_request": "https://github.com/Takuyakou/life-launcher-web/pull/6",
+  "verified_preview": "https://ccdd143c-life-launcher-web.takuyakou.workers.dev",
   "stages": {
     "WEB11-00": {
       "status": "COMPLETE_AWAITING_HUMAN_REVIEW",
@@ -34,7 +36,7 @@
       "report": "docs/v1.1-sync/workreports/web11-03-report.md"
     },
     "WEB11-04": {
-      "status": "LOCAL_QA_DONE_AWAITING_PUBLICATION_APPROVAL",
+      "status": "LOCAL_AND_CLOUDFLARE_PREVIEW_QA_DONE_AWAITING_PUBLICATION_APPROVAL",
       "approved": false,
       "report": "docs/v1.1-sync/workreports/web11-04-report.md"
     }

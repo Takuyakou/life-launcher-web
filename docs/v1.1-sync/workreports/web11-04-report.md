@@ -1,6 +1,6 @@
 # WEB11-04 Final QA / Production Readiness
 
-2026-09-09。LOCAL QA完了。本番未反映。ユーザー指定の公開順序・本番承認を維持する。
+2026-09-09。LOCAL / Cloudflare preview QA完了。本番未反映。ユーザー指定の公開順序・本番承認を維持する。
 
 ## 実行結果
 
@@ -51,8 +51,15 @@ Landing、default、Today0/1/2/3、Builder両page、timer、満了dialog、全3�
 
 親PR #5はGitHub verify/Workers BuildsともSUCCESSを確認した。ユーザー提供ログから不足はassets/name/compatibility_dateと判明し、ユーザーが設定後の成功を報告。
 現在のbranch用upload commandは`npx wrangler versions upload --assets=./dist --name=life-launcher-web --compatibility-date=2026-09-07`。dateは更新日でなく互換基準。
-versions upload成功をmain本番切替成功と混同しない。mainの実deploy設定・branch preview URL・本番切替は未確認/未実施。
-認可されたpreview URLが得られた場合は`WEB11_BASE_URL`を指定してE2E/Visualを再実行できる。現在のローカルCSP試験はCloudflareでのheader適用の実測を代替しない。
+versions upload成功をmain本番切替成功と混同しない。mainの実deploy設定・本番切替は未確認/未実施。
+
+実装[PR #6](https://github.com/Takuyakou/life-launcher-web/pull/6)、実装commit `0f48189`についてGitHub CI / Workers Builds SUCCESS。
+Cloudflare発行の[固定version preview](https://ccdd143c-life-launcher-web.takuyakou.workers.dev)を追加検証した。
+
+- `WEB11_BASE_URL`に上記URL、`WEB11_PREVIEW=1`を指定: E2E 27 PASS / Visual 9 PASS。
+- HTTP 200、実配信CSP（connect-src noneを含む）、X-Content-Type-Options nosniff、Referrer-Policy no-referrerを確認。
+- 本番用URLは変更していない。previewでの成功を本番検証完了とは扱わない。
+- GitHub ActionsのNode20 action runtime非推奨warningあり。jobは成功。action major更新は別タスクとする。
 
 ## 残りのゲート
 
@@ -61,4 +68,4 @@ versions upload成功をmain本番切替成功と混同しない。mainの実dep
 3. 本番反映の明示承認後、監査PR→実装PRの順でmainへmerge。
 4. Cloudflare本番deploy成功、公開URLの新assets/headers/full flowを確認。
 
-Final: **BLOCKED (PUBLICATION GATE)**。UI実装とlocal QAは完了したが、`DEPLOYED AND VERIFIED`はまだ宣言しない。
+Final: **BLOCKED (PUBLICATION GATE)**。UI実装とlocal / preview QAは完了したが、本番の`DEPLOYED AND VERIFIED`はまだ宣言しない。
