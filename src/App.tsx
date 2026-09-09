@@ -36,12 +36,15 @@ function App() {
   const dispatch = useCallback((action: DemoAction): boolean => {
     const next = demoReducer(stateRef.current, action);
     if (next === stateRef.current) return false;
-    const volatile = [
-      "TICK_TIMER",
-      "FINISH_TIMER",
-      "PAUSE_TIMER",
-      "RESUME_TIMER",
-    ].includes(action.type);
+    const volatile =
+      [
+        "TICK_TIMER",
+        "FINISH_TIMER",
+        "PAUSE_TIMER",
+        "RESUME_TIMER",
+        "ADVANCE_TO_EARLY_THRESHOLD",
+      ].includes(action.type) ||
+      (action.type === "REQUEST_STOP_TIMER" && next.timer.status === "early");
     let saved = volatile;
     if (!volatile) {
       try {
@@ -123,7 +126,8 @@ function App() {
   };
 
   const stopTimer = () => {
-    if (!dispatch({ type: "STOP_TIMER", now: new Date() })) return;
+    if (!dispatch({ type: "REQUEST_STOP_TIMER", now: new Date() })) return;
+    if (stateRef.current.timer.status === "early") return;
     setToast({
       id: Date.now(),
       message: "今日の実行にサンプル記録を追加しました",
@@ -133,6 +137,18 @@ function App() {
 
   const completeTimerDemo = () => {
     dispatch({ type: "FINISH_TIMER" });
+  };
+
+  const confirmEarlyTimer = (complete: boolean) => {
+    if (!dispatch({ type: "CONFIRM_EARLY_TIMER", now: new Date(), complete }))
+      return;
+    setToast({
+      id: Date.now(),
+      message: complete
+        ? "今日の分は完了しました"
+        : "未完了のまま実行記録を残しました",
+      tone: "success",
+    });
   };
 
   const addTodayCandidate = (candidate: DemoBuilderCandidate) => {
@@ -216,6 +232,17 @@ function App() {
 
   return (
     <>
+      <ConfirmDialog
+        open={state.timer.status === "early"}
+        title="今日の分は完了にしますか？"
+        description="予定より早く終わった場合でも、短時間以上取り組んでいれば今日の完了を選べます。元の次の一手・やりたいことは残ります。"
+        confirmLabel="今日の分は完了"
+        cancelLabel="未完了のまま終了"
+        confirmTone="good"
+        closeOnBackdrop={false}
+        onConfirm={() => confirmEarlyTimer(true)}
+        onCancel={() => confirmEarlyTimer(false)}
+      />
       <a className="skip-link" href="#content">
         本文へ移動
       </a>

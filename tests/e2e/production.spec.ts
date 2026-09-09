@@ -64,6 +64,15 @@ test("production bundle works under shipped CSP without runtime network or conso
       .locator(".builder-row")
       .getByText("<svg onload=alert(1)>", { exact: true }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "本を読むを25分で開始" }).click();
+  await page.getByRole("button", { name: /短時間分まで進める/ }).click();
+  await page
+    .getByRole("complementary", { name: "デモタイマー" })
+    .getByRole("button", { name: "終了", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "未完了のまま終了", exact: true })
+    .click();
   await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
   await page.getByRole("button", { name: "終わる", exact: true }).click();

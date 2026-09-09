@@ -1,4 +1,9 @@
 import { createIdleTimer, DO_NOW_CANDIDATES } from "./seed";
+import {
+  earlyEligible,
+  earlyTarget,
+  earlyThresholdSeconds,
+} from "./earlyCompletion";
 import type { DemoAction, DemoSession, DemoState } from "./types";
 
 export function demoReducer(state: DemoState, action: DemoAction): DemoState {
@@ -93,6 +98,7 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         ),
       };
     case "START_TIMER": {
+      if (state.timer.status === "early") return state;
       if (
         !Number.isFinite(action.durationSeconds) ||
         action.durationSeconds < 60 ||
@@ -127,6 +133,44 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         },
       };
     }
+    case "ADVANCE_TO_EARLY_THRESHOLD": {
+      if (state.timer.status !== "running" && state.timer.status !== "paused")
+        return state;
+      const item = earlyTarget(state);
+      if (!item) return state;
+      const threshold = earlyThresholdSeconds(item.shortMinutes);
+      if (
+        threshold >= state.timer.durationSeconds ||
+        threshold <= state.timer.elapsedSeconds
+      )
+        return state;
+      return {
+        ...state,
+        timer: {
+          ...state.timer,
+          elapsedSeconds: threshold,
+          remainingSeconds: state.timer.durationSeconds - threshold,
+        },
+      };
+    }
+    case "REQUEST_STOP_TIMER": {
+      if (state.timer.status !== "running" && state.timer.status !== "paused")
+        return state;
+      const item = earlyEligible(state);
+      return item
+        ? {
+            ...state,
+            timer: { ...state.timer, status: "early", todayItemId: item.id },
+          }
+        : demoReducer(state, { type: "STOP_TIMER", now: action.now });
+    }
+    case "CONFIRM_EARLY_TIMER":
+      if (state.timer.status !== "early" || !earlyEligible(state)) return state;
+      return demoReducer(state, {
+        type: "STOP_TIMER",
+        now: action.now,
+        complete: action.complete,
+      });
     case "TICK_TIMER":
       if (state.timer.status !== "running") return state;
       return {
@@ -190,8 +234,10 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         todayItems: state.todayItems.map((item) =>
           item.id === state.timer.todayItemId &&
           action.complete &&
-          state.timer.status === "finished" &&
-          state.timer.elapsedSeconds >= state.timer.durationSeconds
+          ((state.timer.status === "finished" &&
+            state.timer.elapsedSeconds >= state.timer.durationSeconds) ||
+            (state.timer.status === "early" &&
+              earlyEligible(state)?.id === item.id))
             ? { ...item, completed: true }
             : item,
         ),

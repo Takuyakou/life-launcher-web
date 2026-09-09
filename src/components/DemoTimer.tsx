@@ -7,6 +7,8 @@ type DemoTimerProps = {
   onResume: () => void;
   onStop: () => void;
   onDemoComplete: () => void;
+  onDemoAdvance: () => void;
+  canAdvance: boolean;
 };
 
 const formatSeconds = (seconds: number) => {
@@ -23,6 +25,8 @@ export function DemoTimer({
   onResume,
   onStop,
   onDemoComplete,
+  onDemoAdvance,
+  canAdvance,
 }: DemoTimerProps) {
   const active = timer.status !== "idle";
 
@@ -41,7 +45,9 @@ export function DemoTimer({
               ? "一時停止"
               : timer.status === "finished"
                 ? "満了"
-                : "待機中"}
+                : timer.status === "early"
+                  ? "終了確認中"
+                  : "待機中"}
         </span>
       </div>
       <div
@@ -52,7 +58,7 @@ export function DemoTimer({
       >
         {active ? formatSeconds(timer.remainingSeconds) : "25:00"}
       </div>
-      {active && timer.status !== "finished" ? (
+      {active && timer.status !== "finished" && timer.status !== "early" ? (
         <>
           <div className="timer-actions">
             {timer.status === "running" ? (
@@ -82,6 +88,14 @@ export function DemoTimer({
           </div>
           <button
             className="demo-complete-button"
+            onClick={onDemoAdvance}
+            disabled={!canAdvance}
+            type="button"
+          >
+            短時間分まで進める <span>DEMO</span>
+          </button>
+          <button
+            className="demo-complete-button"
             onClick={onDemoComplete}
             type="button"
           >
@@ -90,7 +104,7 @@ export function DemoTimer({
         </>
       ) : (
         <p className="timer-hint">
-          {timer.status === "finished"
+          {timer.status === "finished" || timer.status === "early"
             ? "終了を確認してください。"
             : "今やる一手・今日の3件から開始"}
         </p>

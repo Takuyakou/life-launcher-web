@@ -56,8 +56,8 @@ export function TimerActions({
             </span>
           </button>
         </>
-      ) : status === "finished" ? (
-        <span role="status">満了</span>
+      ) : status === "finished" || status === "early" ? (
+        <span role="status">{status === "early" ? "終了確認中" : "満了"}</span>
       ) : (
         <>
           <button

@@ -1,4 +1,4 @@
-export type TimerStatus = "idle" | "running" | "paused" | "finished";
+export type TimerStatus = "idle" | "running" | "paused" | "finished" | "early";
 
 export type DemoVictory = {
   text: string;
@@ -101,6 +101,9 @@ export type DemoAction =
       durationSeconds: number;
     }
   | { type: "TICK_TIMER" }
+  | { type: "ADVANCE_TO_EARLY_THRESHOLD" }
+  | { type: "REQUEST_STOP_TIMER"; now: Date }
+  | { type: "CONFIRM_EARLY_TIMER"; now: Date; complete: boolean }
   | { type: "FINISH_TIMER" }
   | { type: "CONFIRM_TIMER"; now: Date; nextStep?: string }
   | { type: "PAUSE_TIMER" }

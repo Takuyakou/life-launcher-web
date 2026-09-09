@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { DO_NOW_CANDIDATES, launchActionsForProject } from "../demo/seed";
 import { createTodayBuilderCandidates } from "../demo/todayBuilder";
+import { earlyTarget, earlyThresholdSeconds } from "../demo/earlyCompletion";
 import type {
   DemoAction,
   DemoBuilderCandidate,
@@ -219,6 +220,16 @@ export function DemoFrame({
             ))}
           </div>
           <DemoTimer
+            onDemoAdvance={() =>
+              dispatch({ type: "ADVANCE_TO_EARLY_THRESHOLD" })
+            }
+            canAdvance={
+              Boolean(earlyTarget(state)) &&
+              earlyThresholdSeconds(earlyTarget(state)?.shortMinutes) <
+                state.timer.durationSeconds &&
+              state.timer.elapsedSeconds <
+                earlyThresholdSeconds(earlyTarget(state)?.shortMinutes)
+            }
             onDemoComplete={onDemoComplete}
             onPause={onPauseTimer}
             onResume={onResumeTimer}
@@ -422,7 +433,11 @@ export function DemoFrame({
                         type="button"
                         className="today-remove-button"
                         disabled={status !== "idle"}
-                        title={status !== "idle" ? "タイマーを停止してから外してください" : undefined}
+                        title={
+                          status !== "idle"
+                            ? "タイマーを停止してから外してください"
+                            : undefined
+                        }
                         onClick={() => onRemoveTodayItem(item.id)}
                       >
                         <UiIcon name="back" size={16} />

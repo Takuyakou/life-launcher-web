@@ -1,10 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useId } from "react";
 
 type ConfirmDialogProps = {
   open: boolean;
   title: string;
   description: string;
   confirmLabel: string;
+  cancelLabel?: string;
+  confirmTone?: "danger" | "good";
+  closeOnBackdrop?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -14,10 +17,14 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
+  cancelLabel = "キャンセル",
+  confirmTone = "danger",
+  closeOnBackdrop = true,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
   const cancelRef = useRef<HTMLButtonElement>(null);
+  const id = useId();
   const dialogRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -36,16 +43,23 @@ export function ConfirmDialog({
     <div
       className="modal-backdrop"
       onMouseDown={(event) =>
-        event.target === event.currentTarget && onCancel()
+        closeOnBackdrop && event.target === event.currentTarget && onCancel()
       }
     >
       <section
-        aria-describedby="reset-description"
-        aria-labelledby="reset-title"
+        aria-describedby={`${id}-description`}
+        aria-labelledby={`${id}-title`}
         aria-modal="true"
         className="confirm-dialog"
         ref={dialogRef}
         onKeyDown={(event) => {
+          if (
+            (event.nativeEvent.isComposing || event.keyCode === 229) &&
+            (event.key === "Enter" || event.key === "Escape")
+          ) {
+            event.preventDefault();
+            return;
+          }
           if (event.key === "Escape") {
             event.preventDefault();
             onCancel();
@@ -68,11 +82,11 @@ export function ConfirmDialog({
         role="dialog"
       >
         <p className="eyebrow">WEB DEMO</p>
-        <h2 id="reset-title">{title}</h2>
-        <p id="reset-description">{description}</p>
+        <h2 id={`${id}-title`}>{title}</h2>
+        <p id={`${id}-description`}>{description}</p>
         <div className="dialog-actions">
           <button
-            className="button button-danger"
+            className={`button button-${confirmTone}`}
             onClick={onConfirm}
             type="button"
           >
@@ -84,7 +98,7 @@ export function ConfirmDialog({
             ref={cancelRef}
             type="button"
           >
-            キャンセル
+            {cancelLabel}
           </button>
         </div>
       </section>
