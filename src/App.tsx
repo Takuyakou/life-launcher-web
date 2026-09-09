@@ -260,7 +260,7 @@ function App() {
               </a>
               <a
                 className="button button-quiet button-large"
-                href="https://github.com/Takuyakou/life-launcher/releases/tag/v1.0.0"
+                href="https://github.com/Takuyakou/life-launcher/releases/latest"
                 rel="noopener noreferrer"
                 target="_blank"
               >
@@ -485,7 +485,7 @@ function App() {
             </a>
             <a
               className="button button-quiet button-large"
-              href="https://github.com/Takuyakou/life-launcher/releases/tag/v1.0.0"
+              href="https://github.com/Takuyakou/life-launcher/releases/latest"
               rel="noopener noreferrer"
               target="_blank"
             >
@@ -506,7 +506,7 @@ function App() {
             GitHub
           </a>
           <a
-            href="https://github.com/Takuyakou/life-launcher/releases/tag/v1.0.0"
+            href="https://github.com/Takuyakou/life-launcher/releases/latest"
             rel="noopener noreferrer"
             target="_blank"
           >

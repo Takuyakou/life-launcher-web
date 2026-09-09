@@ -8,12 +8,16 @@ test.beforeEach(async ({ page }) => {
 
 test("landing CTAs point to the approved destinations", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "Life Launcher" })).toBeVisible();
-  const release = page.getByRole("link", { name: /Windows版をダウンロード/ }).first();
-  await expect(release).toHaveAttribute(
-    "href",
-    "https://github.com/Takuyakou/life-launcher/releases/tag/v1.0.0",
-  );
-  await expect(release).toHaveAttribute("target", "_blank");
+  const releases = page.locator('a[href*="github.com/Takuyakou/life-launcher/releases"]');
+  await expect(releases).toHaveCount(3);
+  for (const release of await releases.all()) {
+    await expect(release).toHaveAttribute(
+      "href",
+      "https://github.com/Takuyakou/life-launcher/releases/latest",
+    );
+    await expect(release).toHaveAttribute("target", "_blank");
+    await expect(release).toHaveAttribute("rel", "noopener noreferrer");
+  }
   await expect(page.getByRole("link", { name: /GitHub/ }).first()).toHaveAttribute(
     "href",
     "https://github.com/Takuyakou/life-launcher",
