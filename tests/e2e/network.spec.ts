@@ -1,12 +1,17 @@
 import { expect, test } from "@playwright/test";
 
-test("interactive demo performs no fetch, XHR, WebSocket, or external request", async ({ page }) => {
+test("interactive demo performs no fetch, XHR, WebSocket, or external request", async ({
+  page,
+  baseURL,
+}) => {
   const runtimeRequests: string[] = [];
   const externalRequests: string[] = [];
   page.on("request", (request) => {
-    if (["fetch", "xhr", "websocket"].includes(request.resourceType())) runtimeRequests.push(request.url());
+    if (["fetch", "xhr", "websocket"].includes(request.resourceType()))
+      runtimeRequests.push(request.url());
     const url = new URL(request.url());
-    if (url.hostname !== "127.0.0.1") externalRequests.push(request.url());
+    if (url.origin !== new URL(baseURL!).origin)
+      externalRequests.push(request.url());
   });
 
   await page.goto("/");
@@ -15,7 +20,10 @@ test("interactive demo performs no fetch, XHR, WebSocket, or external request", 
   await page.getByRole("searchbox", { name: "辞書を検索" }).fill("読書");
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
-  await page.getByRole("button", { name: /終了/ }).click();
+  await page
+    .locator(".demo-timer")
+    .getByRole("button", { name: /終了/ })
+    .click();
 
   expect(runtimeRequests).toEqual([]);
   expect(externalRequests).toEqual([]);

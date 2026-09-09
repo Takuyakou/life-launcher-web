@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 type CompletionDialogProps = {
+  editable?: boolean;
   initialValue: string;
   open: boolean;
   projectName: string;
@@ -8,17 +9,45 @@ type CompletionDialogProps = {
   onSkip: () => void;
 };
 
-export function CompletionDialog({ initialValue, open, projectName, onSave, onSkip }: CompletionDialogProps) {
+export function CompletionDialog({
+  initialValue,
+  open,
+  projectName,
+  onSave,
+  onSkip,
+  editable = true,
+}: CompletionDialogProps) {
   const [draft, setDraft] = useState(initialValue);
   const dialogRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
-    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previous =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     setDraft(initialValue);
-    window.requestAnimationFrame(() => inputRef.current?.focus());
-    return () => previous?.focus();
+    window.requestAnimationFrame(() =>
+      (
+        inputRef.current ??
+        dialogRef.current?.querySelector<HTMLButtonElement>("button")
+      )?.focus(),
+    );
+    return () => {
+      window.requestAnimationFrame(() => {
+        if (
+          previous?.isConnected &&
+          previous !== document.body &&
+          previous !== document.documentElement
+        )
+          previous.focus();
+        else
+          document
+            .querySelector<HTMLElement>(".today-section")
+            ?.focus({ preventScroll: true });
+      });
+    };
   }, [initialValue, open]);
 
   if (!open) return null;
@@ -30,7 +59,9 @@ export function CompletionDialog({ initialValue, open, projectName, onSave, onSk
       return;
     }
     if (event.key !== "Tab") return;
-    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>("input, button:not([disabled])");
+    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+      "input, button:not([disabled])",
+    );
     if (!focusable?.length) return;
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
@@ -61,26 +92,48 @@ export function CompletionDialog({ initialValue, open, projectName, onSave, onSk
       >
         <p className="eyebrow">TIMER COMPLETE</p>
         <h2 id="completion-title">おつかれさまでした</h2>
-        <p id="completion-description">{projectName}の次にやることを、今のうちに残しますか？</p>
-        <label className="completion-field">
-          <span>次の一手</span>
-          <input
-            aria-label="次の一手"
-            maxLength={120}
-            onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                submit();
-              }
-            }}
-            ref={inputRef}
-            value={draft}
-          />
-        </label>
+        <p id="completion-description">
+          {projectName}の予定時間に到達しました。
+          {editable
+            ? "次の一手を残して終了できます。"
+            : "終了して実行を記録します。"}
+        </p>
+        {editable && (
+          <label className="completion-field">
+            <span>次の一手</span>
+            <input
+              aria-label="次の一手"
+              maxLength={120}
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  submit();
+                }
+              }}
+              ref={inputRef}
+              value={draft}
+            />
+          </label>
+        )}
         <div className="dialog-actions">
-          <button className="button button-quiet" onClick={onSkip} type="button">今は変更しない</button>
-          <button className="button button-gold" disabled={!draft.trim()} onClick={submit} type="button">保存</button>
+          {editable && (
+            <button
+              className="button button-gold"
+              disabled={!draft.trim()}
+              onClick={submit}
+              type="button"
+            >
+              保存して終わる
+            </button>
+          )}
+          <button
+            className="button button-quiet"
+            onClick={onSkip}
+            type="button"
+          >
+            終わる
+          </button>
         </div>
       </section>
     </div>

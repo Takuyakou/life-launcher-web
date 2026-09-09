@@ -121,11 +121,20 @@ describe("demo reducer", () => {
     ).toBe(false);
   });
 
-  it("toggles one Today 3 item", () => {
+  it("completes only the timed Today item after confirmation", () => {
     const state = createDemoSeed(fixedNow);
-    const next = demoReducer(state, {
-      type: "TOGGLE_TODAY_ITEM",
-      id: "today-reading",
+    const running = demoReducer(state, {
+      type: "START_TIMER",
+      todayItemId: "today-reading",
+      label: "本を読む",
+      projectId: "reading",
+      projectName: "読書",
+      durationSeconds: 300,
+    });
+    const finished = demoReducer(running, { type: "FINISH_TIMER" });
+    const next = demoReducer(finished, {
+      type: "CONFIRM_TIMER",
+      now: fixedNow,
     });
     expect(next.todayItems[1].completed).toBe(true);
     expect(next.todayItems[0]).toEqual(state.todayItems[0]);

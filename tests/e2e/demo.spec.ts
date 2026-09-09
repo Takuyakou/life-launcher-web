@@ -66,7 +66,7 @@ test("Builder is the only Today adoption surface and enforces the three-item lim
   await builder
     .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
     .click();
-  await expect(page.getByText("3/3", { exact: true })).toBeVisible();
+  await expect(page.locator(".today-row")).toHaveCount(3);
   await expect(
     page
       .locator(".today-list")
@@ -106,7 +106,7 @@ test("timer start shows launch simulation and stop appends Today Activity once",
   page,
 }) => {
   await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
-  await expect(page.getByText("実行中", { exact: true })).toBeVisible();
+  await expect(page.locator(".demo-timer .timer-status")).toHaveText("実行中");
   await expect(page.getByText("環境を準備", { exact: true })).toBeVisible();
   await expect(page.getByText("読書メモを開く", { exact: true })).toBeVisible();
   await expect(
@@ -115,11 +115,22 @@ test("timer start shows launch simulation and stop appends Today Activity once",
   await expect(page.getByText("タイマーを開始", { exact: true })).toHaveCount(
     1,
   );
-  await page.getByRole("button", { name: /一時停止/ }).click();
-  await expect(page.getByText("一時停止", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: /再開/ }).click();
+  await page
+    .locator(".demo-timer")
+    .getByRole("button", { name: /一時停止/ })
+    .click();
+  await expect(page.locator(".demo-timer .timer-status")).toHaveText(
+    "一時停止",
+  );
+  await page
+    .locator(".demo-timer")
+    .getByRole("button", { name: /再開/ })
+    .click();
   await page.waitForTimeout(1100);
-  await page.getByRole("button", { name: /終了/ }).click();
+  await page
+    .locator(".demo-timer")
+    .getByRole("button", { name: /終了/ })
+    .click();
   await expect(
     page.getByText("今日の実行にサンプル記録を追加しました"),
   ).toBeVisible();
@@ -149,7 +160,7 @@ test("demo completion can be skipped without updating the project", async ({
 }) => {
   await page.locator("[data-demo-do-now-short]").click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
-  await page.getByRole("button", { name: "今は変更しない" }).click();
+  await page.getByRole("button", { name: "終わる", exact: true }).click();
   await expect(
     page.getByRole("dialog", { name: "おつかれさまでした" }),
   ).toHaveCount(0);
@@ -161,7 +172,7 @@ test("demo completion can be skipped without updating the project", async ({
 test("sections open and reset restores every v2 seed field", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: /やりたいこと/ }).click();
+  await page.locator(".wishlist-section .section-toggle").click();
   await expect(
     page.getByText("気になっていた本を読む", { exact: true }),
   ).toHaveCount(2);
@@ -184,7 +195,7 @@ test("sections open and reset restores every v2 seed field", async ({
   await expect(
     page.getByText("後回しにしていたことを1つ終わらせる"),
   ).toBeVisible();
-  await expect(page.getByText("2/3", { exact: true })).toBeVisible();
+  await expect(page.locator(".today-row")).toHaveCount(2);
   await expect(resetButton).toBeFocused();
   await expect(page.locator("#demo")).not.toBeFocused();
 });

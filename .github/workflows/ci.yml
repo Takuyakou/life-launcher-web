@@ -24,4 +24,6 @@ jobs:
       - run: npm run test
       - run: npm run build
       - run: npm run test:e2e
+        env:
+          WEB11_PREVIEW: "1"
       - run: npm run test:visual

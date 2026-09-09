@@ -1,4 +1,4 @@
-export type TimerStatus = "idle" | "running" | "paused";
+export type TimerStatus = "idle" | "running" | "paused" | "finished";
 
 export type DemoVictory = {
   text: string;
@@ -9,6 +9,8 @@ export type DemoTodayItem = {
   id: string;
   sourceId: string;
   label: string;
+  shortMinutes?: number;
+  normalMinutes?: number;
   projectId?: string;
   completed: boolean;
 };
@@ -49,6 +51,7 @@ export type DemoSession = {
 
 export type DemoTimerState = {
   status: TimerStatus;
+  todayItemId?: string;
   label: string;
   projectId: string;
   projectName: string;
@@ -58,6 +61,7 @@ export type DemoTimerState = {
 };
 
 export type DemoSectionState = {
+  nextStep: boolean;
   todayBuilder: boolean;
   wishlist: boolean;
   activity: boolean;
@@ -82,19 +86,25 @@ export type DemoAction =
   | { type: "ROTATE_DO_NOW" }
   | { type: "ADD_TODAY_ITEM"; item: DemoTodayItem }
   | { type: "EXCLUDE_TODAY_CANDIDATE"; sourceId: string }
-  | { type: "TOGGLE_TODAY_ITEM"; id: string }
+  | { type: "NEXT_TODAY_BATCH" }
+  | { type: "OPEN_BUILDER" }
+  | { type: "ADD_WISHLIST"; id: string; label: string }
   | { type: "UPDATE_PROJECT_NEXT_STEP"; projectId: string; nextStep: string }
   | {
       type: "START_TIMER";
+      todayItemId?: string;
+      now?: Date;
       label: string;
       projectId: string;
       projectName: string;
       durationSeconds: number;
     }
   | { type: "TICK_TIMER" }
+  | { type: "FINISH_TIMER" }
+  | { type: "CONFIRM_TIMER"; now: Date; nextStep?: string }
   | { type: "PAUSE_TIMER" }
   | { type: "RESUME_TIMER" }
-  | { type: "STOP_TIMER"; now: Date }
+  | { type: "STOP_TIMER"; now: Date; complete?: boolean }
   | { type: "TOGGLE_SECTION"; section: keyof DemoSectionState }
   | { type: "RESET_DEMO"; state: DemoState };
 
