@@ -12,11 +12,15 @@ it("shipped copy no longer promises manual Today completion or a free-input Buil
   expect(frame).toContain("Demoでは起動動作を演出しています。");
 });
 
-it("prepared README references a real synthetic PNG and documents demo-only limits", () => {
-  const draft = readFileSync("docs/v1.1-sync/README-v1.1-draft.md", "utf8");
-  expect(draft).toContain("../screenshots/web-demo-v1.1.png");
-  expect(draft).toContain("Resetまで保持");
-  expect(draft).toContain("未確定timer");
+it("published README references a real synthetic PNG and documents current demo limits", () => {
+  const readme = readFileSync("README.md", "utf8");
+  expect(readme).toContain("docs/screenshots/web-demo-v1.1.png");
+  expect(readme).toContain("今日の3件から外す");
+  expect(readme).toContain("日付が変わっても自動ではリセットされません");
+  expect(readme).toContain("満了未確定");
+  expect(readme).toContain("localStorage");
+  expect(readme).toContain("releases/latest");
+  expect(readme).not.toContain("releases/tag/v1.0.0");
   const png = readFileSync("docs/screenshots/web-demo-v1.1.png");
   expect(png.subarray(1, 4).toString()).toBe("PNG");
   expect(png.readUInt32BE(16)).toBeGreaterThan(1000);

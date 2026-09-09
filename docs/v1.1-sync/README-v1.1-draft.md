@@ -1,6 +1,6 @@
 # Web README差し替え原稿
 
-適用待ち: Windows v1.1リリース → 本体README更新 → この原稿をWeb READMEへ適用。以下の画像pathはこの文書用で、root READMEでは`docs/screenshots/web-demo-v1.1.png`へ変更する。公開リンクの動作とbranchの本番反映を適用時に再確認する。
+適用済み（2026-09-09）: この原稿を基に、公開済みの機能・解除操作・配信状況を反映して [root README](../../README.md) を更新しました。以下は準備時点の原稿として保存しています。現在の説明はroot READMEを参照してください。
 
 ---
 

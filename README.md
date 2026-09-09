@@ -2,47 +2,45 @@
 
 「何をしよう？」を「今これをやる」に変える、Life LauncherのインタラクティブWeb Demoです。
 
-**[Live Demoをブラウザで試す](https://life-launcher-web.takuyakou.workers.dev)**
+**[Live Demoをブラウザで試す](https://life-launcher-web.takuyakou.workers.dev/)**
 
-[Windows版 v1.0.0](https://github.com/Takuyakou/life-launcher/releases/tag/v1.0.0) ・ [Life Launcher本体](https://github.com/Takuyakou/life-launcher)
+[Windows版をダウンロード](https://github.com/Takuyakou/life-launcher/releases/latest) ・ [Life Launcher本体](https://github.com/Takuyakou/life-launcher)
 
-<img src="docs/screenshots/web-demo.png" alt="Life Launcher Web DemoのLanding HeroとミニUI" width="960">
+<img src="docs/screenshots/web-demo-v1.1.png" alt="Life Launcher Web Demoの今日の3件、解除ボタン、今日を組み立てる" width="960">
 
-## What
+## できること
 
-Life Launcherの中心的な流れを、ブラウザ上のサンプルデータで体験できます。
+Life Launcher v1.1の中心的な流れを、ブラウザ上のサンプルデータで体験できます。
 
-- 「今日の勝利条件」の編集・完了と、「今やる一手」の切り替え
-- 次の一手・やりたいことを候補にまとめる「今日を組み立てる」
-- 「今日へ」で選んだ項目だけを最大3件で実行する「今日の3件」
-- 短時間 / 通常タイマーの開始・一時停止・再開・終了
-- Demo用の満了フロー、次の一手の更新、「今日の実行」への記録
-- 辞書の検索とデモ状態のリセット
-- Windows版で「開始すると環境が揃う」流れのDemo演出
+- 「今日の勝利条件」の編集・達成と、「今やる一手」の切り替え
+- やりたいことを登録し、次の一手と一緒に「今日を組み立てる」で選択
+- 5件ずつ表示される候補から「今日へ」で最大3件を採用
+- 5分 / 25分タイマーの開始・一時停止・再開・終了
+- 予定時間の満了後に確定して完了。3件すべて完了したら「次の3件を選ぶ」で次へ
+- 満了時の次の一手の更新、「今日の実行」への記録、辞書検索、状態のリセット
+- 「今日の3件から外す」で、元の次の一手・やりたいこと・候補・実行記録を残して採用だけを解除
 
-Web Demoでは、Windows版のアプリ・ファイル・URL起動を実際には行わず、開始時の流れを演出として確認できます。
+「今日を組み立てる」は初回表示・リセット後に開きます。以降は自分で変更した開閉状態を保存します。
 
-## Windows Product
+「今日の3件から外す」は確認ダイアログなしで利用できます。対象のタイマー実行中・一時停止中・満了確認待ちは解除できません。完了済みの項目を外しても実行記録は残ります。
 
-Web DemoはLife Launcherの中心体験を紹介するショーケースです。
+Web Demoでは起動動作を演出しています。Windows版では登録したアプリ・ファイル・URLを実際に開きます。
 
-実際のWindows版では、アプリ・ファイル・フォルダ・URLの起動、手順書ビューア、ネイティブウィンドウなどを利用できます。
+## Web Demoの範囲
 
-- [Life Launcher](https://github.com/Takuyakou/life-launcher)
-- [Download v1.0.0](https://github.com/Takuyakou/life-launcher/releases/tag/v1.0.0)
+※Windows製品版の完全移植ではありません。
 
-## Limitations
+- 合成サンプルを使用しています。推薦理由は固定で、Rustの推薦ロジックは移植していません。
+- プロジェクトは用意された4件です。新規登録はやりたいことから行い、プロジェクトの次の一手はタイマー満了時に編集できます。
+- D&D、手順書ビューア、ネイティブウィンドウ、複数ディスプレイ対応、バックアップ、設定の完全機能は含みません。
+- アプリ・ファイル・URLの起動は演出のみで、外部アプリやローカルファイルを実際には開きません。
+- 入力・選択・候補の除外・実行記録・開閉状態は、このブラウザのlocalStorageに保存します。入力内容をアプリ側サーバーへ送信しません。
+- 保存に失敗した変更は画面に反映せず、変更前の状態を保持します。
+- 今日の3件と候補の除外状態は、日付が変わっても自動ではリセットされません。解除・次の3件の選択・リセットなどの操作で変更します。
+- 再読み込みすると、進行中・一時停止中・満了未確定のタイマーは待機状態へ戻ります。
+- Demo用の「満了まで進める」で予定時間まで進められます。途中終了もサンプル記録になりますが、今日の3件の完了にはなりません。
 
-Web DemoはWindows製品版の完全移植ではありません。
-
-- データは汎用的なsynthetic dataです
-- Rustの推薦ロジックは再実装せず、説明可能な固定サンプルを使用します
-- アプリ・ファイル・URLの起動はDemo演出のみです
-- D&D、手順書、バックアップ、設定、記録の完全機能は含みません
-- visitorが変更したDemo stateはブラウザのlocalStorageに保存します
-- 入力内容をアプリ側サーバーへ送信しません
-
-## Development
+## 開発
 
 React 18 / TypeScript / Viteで構築しています。
 
@@ -51,30 +49,39 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Validation:
+自動検証:
 
 ```powershell
 npm.cmd run public:check
 npm.cmd run lint
 npm.cmd run test
 npm.cmd run build
+$env:WEB11_PREVIEW = "1"
 npm.cmd run test:e2e
 npm.cmd run test:visual
 ```
 
-OG画像を再生成する場合は、dev serverを起動してから`npm.cmd run screenshot:og`を実行します。
+`WEB11_PREVIEW=1`ではビルド済みの`dist`を使用します。開発サーバーを停止してから実行してください。通常の開発サーバーで確認する場合は、この環境変数を解除します。
 
-## Deployment
+E2Eでは解除・保存失敗・タイマー・キーボード操作などを、Visual QAでは3列 / 2列 / 1列や長文表示を確認します。README画像はVisual QAで生成する合成データのスクリーンショットです。
 
-Production: [life-launcher-web.takuyakou.workers.dev](https://life-launcher-web.takuyakou.workers.dev)
+仕様・検証記録は [docs](docs/README.md) を参照してください。
 
-Cloudflare Workers + Static Assetsで配信しています。GitHubの`main`更新をCloudflareがbuild / deployします。
+## 配信
+
+公開先: [life-launcher-web.takuyakou.workers.dev](https://life-launcher-web.takuyakou.workers.dev/)
+
+Cloudflare Workers + Static Assetsで配信しています。
 
 - Build command: `npm run build`
 - Build output: `dist`
+- `main`へのマージ後、CloudflareのGit連携で自動ビルド・本番反映します。
+- 作業ブランチのビルドではプレビューを作成します。プレビューの成功だけで本番反映済みとは判断せず、公開URLでも確認します。
 
-backend、database、authentication、analytics、secretは使用しません。
+2026-09-09に、v1.1同期と「今日の3件から外す」の本番反映・公開URLでのE2E / Visual QAを確認しました。デプロイ設定はCloudflare側で管理され、リポジトリにはWrangler設定ファイルを置いていません。
 
-## Usage
+アプリ用のバックエンド・データベース・認証・アクセス解析は使用しません。
+
+## 利用条件
 
 Source available for viewing. All rights reserved unless otherwise stated.
