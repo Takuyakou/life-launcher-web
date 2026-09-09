@@ -160,6 +160,15 @@ function App() {
     });
   };
 
+  const removeTodayItem = (id: string) => {
+    if (!dispatch({ type: "REMOVE_TODAY_ITEM", id })) return;
+    setToast({
+      id: Date.now(),
+      message: "今日の3件から外しました",
+      tone: "success",
+    });
+  };
+
   const excludeTodayCandidate = (candidate: DemoBuilderCandidate) => {
     if (
       !dispatch({
@@ -356,6 +365,7 @@ function App() {
           <DemoFrame
             dispatch={dispatch}
             onAddTodayCandidate={addTodayCandidate}
+            onRemoveTodayItem={removeTodayItem}
             onExcludeTodayCandidate={excludeTodayCandidate}
             onDemoComplete={completeTimerDemo}
             onNativeOnly={showNativeToast}

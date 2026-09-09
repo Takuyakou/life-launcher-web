@@ -30,6 +30,7 @@ type Props = {
   onStopTimer: () => void;
   onDemoComplete: () => void;
   onAddTodayCandidate: (candidate: DemoBuilderCandidate) => void;
+  onRemoveTodayItem: (id: string) => void;
   onExcludeTodayCandidate: (candidate: DemoBuilderCandidate) => void;
 };
 
@@ -45,6 +46,7 @@ export function DemoFrame({
   onStopTimer,
   onDemoComplete,
   onAddTodayCandidate,
+  onRemoveTodayItem,
   onExcludeTodayCandidate,
 }: Props) {
   const [editingVictory, setEditingVictory] = useState(false);
@@ -416,6 +418,16 @@ export function DemoFrame({
                     </div>
                     <strong className="sync-card-title">{item.label}</strong>
                     <div className="sync-card-footer">
+                      <button
+                        type="button"
+                        className="today-remove-button"
+                        disabled={status !== "idle"}
+                        title={status !== "idle" ? "タイマーを停止してから外してください" : undefined}
+                        onClick={() => onRemoveTodayItem(item.id)}
+                      >
+                        <UiIcon name="back" size={16} />
+                        今日の3件から外す
+                      </button>
                       {item.completed ? (
                         <span className="sync-complete">予定時間まで完了</span>
                       ) : (
