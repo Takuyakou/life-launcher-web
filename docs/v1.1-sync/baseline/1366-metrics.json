@@ -1,0 +1,232 @@
+{
+  "viewport": {
+    "width": 1366,
+    "height": 768
+  },
+  "hero": {
+    "overflow": 0,
+    "todayRows": [
+      {
+        "x": 261,
+        "y": 1580,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": 1631,
+        "width": 1056,
+        "height": 51
+      }
+    ],
+    "manualChecks": 2,
+    "builderRows": 7
+  },
+  "default": {
+    "overflow": 0,
+    "todayRows": [
+      {
+        "x": 261,
+        "y": 631,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": 682,
+        "width": 1056,
+        "height": 51
+      }
+    ],
+    "manualChecks": 2,
+    "builderRows": 7
+  },
+  "builder": {
+    "overflow": 0,
+    "todayRows": [
+      {
+        "x": 261,
+        "y": -59,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": -8,
+        "width": 1056,
+        "height": 51
+      }
+    ],
+    "manualChecks": 2,
+    "builderRows": 7
+  },
+  "lower": {
+    "overflow": 0,
+    "todayRows": [
+      {
+        "x": 261,
+        "y": -529,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": -478,
+        "width": 1056,
+        "height": 51
+      }
+    ],
+    "manualChecks": 2,
+    "builderRows": 7
+  },
+  "today3": {
+    "overflow": 0,
+    "todayRows": [
+      {
+        "x": 261,
+        "y": 110,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": 161,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": 212,
+        "width": 1056,
+        "height": 51
+      }
+    ],
+    "manualChecks": 3,
+    "builderRows": 7
+  },
+  "timer": {
+    "overflow": 0,
+    "todayRows": [
+      {
+        "x": 261,
+        "y": -688,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": -637,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": -586,
+        "width": 1056,
+        "height": 51
+      }
+    ],
+    "manualChecks": 3,
+    "builderRows": 7
+  },
+  "completion-dialog": {
+    "overflow": 0,
+    "todayRows": [
+      {
+        "x": 261,
+        "y": -770,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": -719,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": -668,
+        "width": 1056,
+        "height": 51
+      }
+    ],
+    "manualChecks": 3,
+    "builderRows": 7
+  },
+  "after-timer": {
+    "overflow": 0,
+    "todayRows": [
+      {
+        "x": 261,
+        "y": 110,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": 161,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": 212,
+        "width": 1056,
+        "height": 51
+      }
+    ],
+    "manualChecks": 3,
+    "builderRows": 7
+  },
+  "completed-no-next-batch": {
+    "overflow": 0,
+    "todayRows": [
+      {
+        "x": 261,
+        "y": 110,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": 161,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": 212,
+        "width": 1056,
+        "height": 51
+      }
+    ],
+    "manualChecks": 3,
+    "builderRows": 7
+  },
+  "dictionary": {
+    "overflow": 0,
+    "todayRows": [
+      {
+        "x": 261,
+        "y": 658,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": 709,
+        "width": 1056,
+        "height": 51
+      },
+      {
+        "x": 261,
+        "y": 760,
+        "width": 1056,
+        "height": 51
+      }
+    ],
+    "manualChecks": 3,
+    "builderRows": 7
+  }
+}

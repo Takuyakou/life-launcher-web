@@ -1,0 +1,18 @@
+{
+  "project": "Life Launcher Web Demo",
+  "target": "v1.1 sync",
+  "repository": "Takuyakou/life-launcher-web",
+  "start_entry": "WEB11-CODEX-START.txt",
+  "workflow": "single-start-human-gated",
+  "references": [
+    "reference/phase6.1-final-report.md",
+    "reference/2026-09-07-followup-report.md"
+  ],
+  "execution_order": [
+    "01-WEB11-00-current-gap-audit.md",
+    "02-WEB11-01-main-ui-today3-sync.md",
+    "03-WEB11-02-builder-selection-flow-sync.md",
+    "04-WEB11-03-copy-readme-accessibility.md",
+    "05-WEB11-04-qa-cloudflare-readiness.md"
+  ]
+}

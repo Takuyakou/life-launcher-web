@@ -1,0 +1,38 @@
+{
+  "project": "Life Launcher Web Demo",
+  "phase": "WEB11",
+  "name": "v1.1 Sync",
+  "workflow": "single-start-human-gated",
+  "production": "https://life-launcher-web.takuyakou.workers.dev",
+  "current_stage": "WEB11-00",
+  "stages": {
+    "WEB11-00": {
+      "status": "COMPLETE_AWAITING_HUMAN_REVIEW",
+      "approved": false,
+      "completed_on": "2026-09-08",
+      "baseline_commit": "e08d69a3975632611177a0166661116ed274b597",
+      "branch": "docs/web11-00-gap-audit",
+      "pull_request": "https://github.com/Takuyakou/life-launcher-web/pull/5",
+      "external_build_status": "CLOUDFLARE_FAILURE_CAUSE_UNVERIFIED",
+      "report": "docs/v1.1-sync/workreports/web11-00-report.md"
+    },
+    "WEB11-01": {
+      "status": "BLOCKED_BY_WEB11-00",
+      "approved": false
+    },
+    "WEB11-02": {
+      "status": "BLOCKED_BY_WEB11-01",
+      "approved": false
+    },
+    "WEB11-03": {
+      "status": "BLOCKED_BY_WEB11-02",
+      "approved": false
+    },
+    "WEB11-04": {
+      "status": "BLOCKED_BY_WEB11-03",
+      "approved": false
+    }
+  },
+  "windows_repo_write_allowed": false,
+  "production_deploy_allowed": false
+}
