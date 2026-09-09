@@ -5,6 +5,8 @@
 
 ## 再現
 
+以下は監査時commit `f34770d`での再現コマンド。同期実装後のHEADでは、この歴史的監査testをskipし、`tests/visual/sync.spec.ts`で新仕様を検証する。旧画像は上書きしない。
+
 ```sh
 npm ci
 npx playwright test tests/audit/web11-baseline.spec.ts --workers=1

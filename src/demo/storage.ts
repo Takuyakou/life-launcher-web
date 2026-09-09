@@ -27,6 +27,51 @@ export function isDemoState(value: unknown): value is DemoState {
   if (!Array.isArray(value.wishlist) || !Array.isArray(value.sessions))
     return false;
   if (!isRecord(value.sections) || !isRecord(value.timer)) return false;
+  if (!Number.isInteger(value.doNowIndex) || (value.doNowIndex as number) < 0)
+    return false;
+  if (
+    !value.projects.every(
+      (item) =>
+        isRecord(item) &&
+        typeof item.id === "string" &&
+        typeof item.name === "string" &&
+        typeof item.nextStep === "string" &&
+        ["amber", "green", "blue", "violet"].includes(String(item.color)),
+    )
+  )
+    return false;
+  if (
+    !value.wishlist.every(
+      (item) =>
+        isRecord(item) &&
+        typeof item.id === "string" &&
+        typeof item.label === "string",
+    )
+  )
+    return false;
+  if (
+    !value.sessions.every(
+      (item) =>
+        isRecord(item) &&
+        typeof item.id === "string" &&
+        typeof item.projectId === "string" &&
+        typeof item.projectName === "string" &&
+        typeof item.label === "string" &&
+        typeof item.minutes === "number" &&
+        Number.isFinite(item.minutes) &&
+        item.minutes >= 0 &&
+        typeof item.endedAt === "string" &&
+        Number.isFinite(Date.parse(item.endedAt)),
+    )
+  )
+    return false;
+  for (const key of ["todayBuilder", "wishlist", "activity"])
+    if (typeof value.sections[key] !== "boolean") return false;
+  if (
+    value.sections.nextStep !== undefined &&
+    typeof value.sections.nextStep !== "boolean"
+  )
+    return false;
   return true;
 }
 
@@ -56,6 +101,20 @@ const normalizeTodayItem = (
     label: item.label,
     projectId,
     completed: item.completed === true,
+    shortMinutes:
+      typeof item.shortMinutes === "number" &&
+      Number.isFinite(item.shortMinutes) &&
+      item.shortMinutes >= 1 &&
+      item.shortMinutes <= 120
+        ? item.shortMinutes
+        : 5,
+    normalMinutes:
+      typeof item.normalMinutes === "number" &&
+      Number.isFinite(item.normalMinutes) &&
+      item.normalMinutes >= 1 &&
+      item.normalMinutes <= 120
+        ? item.normalMinutes
+        : 25,
   };
 };
 
@@ -87,6 +146,7 @@ export function loadDemoState(
       ...parsed,
       todayItems,
       candidateExcludedSourceIds,
+      sections: { ...fallback.sections, ...parsed.sections },
       timer: createIdleTimer(),
     };
   } catch {

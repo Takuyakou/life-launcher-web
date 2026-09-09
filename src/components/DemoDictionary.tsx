@@ -9,16 +9,26 @@ type DemoDictionaryProps = {
   onNativeOnly: (label: string) => void;
 };
 
-export function DemoDictionary({ open, onClose, onNativeOnly }: DemoDictionaryProps) {
+export function DemoDictionary({
+  open,
+  onClose,
+  onNativeOnly,
+}: DemoDictionaryProps) {
   const [query, setQuery] = useState("");
   const dialogRef = useRef<HTMLElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
-  const filtered = useMemo(() => filterDictionary(DICTIONARY_TILES, query), [query]);
+  const filtered = useMemo(
+    () => filterDictionary(DICTIONARY_TILES, query),
+    [query],
+  );
 
   useEffect(() => {
     if (!open) return;
-    openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    openerRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     searchRef.current?.focus();
     return () => openerRef.current?.focus();
   }, [open]);
@@ -30,6 +40,65 @@ export function DemoDictionary({ open, onClose, onNativeOnly }: DemoDictionaryPr
   if (!open) return null;
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (
+      [
+        "ArrowDown",
+        "ArrowUp",
+        "ArrowLeft",
+        "ArrowRight",
+        "Home",
+        "End",
+      ].includes(event.key)
+    ) {
+      const tiles = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLButtonElement>(
+          ".dictionary-tile",
+        ) ?? [],
+      );
+      const index = tiles.findIndex((tile) => tile === document.activeElement);
+      if (
+        event.target === searchRef.current &&
+        event.key === "ArrowDown" &&
+        tiles.length
+      ) {
+        event.preventDefault();
+        tiles[0].focus();
+        return;
+      }
+      if (index >= 0) {
+        event.preventDefault();
+        let next = index;
+        if (event.key === "Home") next = 0;
+        else if (event.key === "End") next = tiles.length - 1;
+        else if (event.key === "ArrowLeft") next = Math.max(0, index - 1);
+        else if (event.key === "ArrowRight")
+          next = Math.min(tiles.length - 1, index + 1);
+        else {
+          const origin = tiles[index].getBoundingClientRect();
+          const targets = tiles
+            .map((tile, i) => ({ i, box: tile.getBoundingClientRect() }))
+            .filter(({ box }) =>
+              event.key === "ArrowDown"
+                ? box.top > origin.top + 1
+                : box.top < origin.top - 1,
+            )
+            .sort(
+              (a, b) =>
+                Math.abs(a.box.top - origin.top) -
+                  Math.abs(b.box.top - origin.top) ||
+                Math.abs(a.box.left - origin.left) -
+                  Math.abs(b.box.left - origin.left),
+            );
+          if (targets[0]) next = targets[0].i;
+          else if (event.key === "ArrowUp") {
+            searchRef.current?.focus();
+            return;
+          }
+        }
+        tiles[next].focus();
+        return;
+      }
+    }
     if (event.key === "Escape") {
       event.preventDefault();
       onClose();
@@ -52,7 +121,10 @@ export function DemoDictionary({ open, onClose, onNativeOnly }: DemoDictionaryPr
   };
 
   return (
-    <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+    <div
+      className="modal-backdrop"
+      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
+    >
       <section
         aria-labelledby="dictionary-title"
         aria-modal="true"
@@ -66,7 +138,12 @@ export function DemoDictionary({ open, onClose, onNativeOnly }: DemoDictionaryPr
             <p className="eyebrow">WEB DEMO</p>
             <h2 id="dictionary-title">辞書</h2>
           </div>
-          <button aria-label="辞書を閉じる" className="icon-button" onClick={onClose} type="button">
+          <button
+            aria-label="辞書を閉じる"
+            className="icon-button"
+            onClick={onClose}
+            type="button"
+          >
             ×
           </button>
         </header>
@@ -86,7 +163,12 @@ export function DemoDictionary({ open, onClose, onNativeOnly }: DemoDictionaryPr
         </div>
         <div className="dictionary-grid">
           {filtered.map((tile) => (
-            <button className="dictionary-tile" key={tile.id} onClick={() => onNativeOnly(tile.label)} type="button">
+            <button
+              className="dictionary-tile"
+              key={tile.id}
+              onClick={() => onNativeOnly(tile.label)}
+              type="button"
+            >
               <span className={`tile-icon tile-icon-${tile.icon}`}>
                 <UiIcon name={tile.icon} size={24} />
               </span>
@@ -94,9 +176,13 @@ export function DemoDictionary({ open, onClose, onNativeOnly }: DemoDictionaryPr
               <small>{tile.category}</small>
             </button>
           ))}
-          {filtered.length === 0 ? <p className="dictionary-empty">一致する項目はありません。</p> : null}
+          {filtered.length === 0 ? (
+            <p className="dictionary-empty">一致する項目はありません。</p>
+          ) : null}
         </div>
-        <p className="dictionary-note">項目の登録・並べ替え・実行はWindows版で利用できます。</p>
+        <p className="dictionary-note">
+          項目の登録・並べ替え・実行はWindows版で利用できます。
+        </p>
       </section>
     </div>
   );

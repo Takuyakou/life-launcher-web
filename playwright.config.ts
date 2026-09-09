@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: [["list"], ["html", { open: "never" }]],
   outputDir: "test-results/artifacts",
   use: {
-    baseURL: "http://127.0.0.1:4173",
+    baseURL: process.env.WEB11_BASE_URL || "http://127.0.0.1:4173",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
@@ -19,10 +19,12 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: {
-    command: "npm run dev",
-    url: "http://127.0.0.1:4173",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: process.env.WEB11_BASE_URL
+    ? undefined
+    : {
+        command: process.env.WEB11_PREVIEW ? "npm run preview" : "npm run dev",
+        url: "http://127.0.0.1:4173",
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      },
 });

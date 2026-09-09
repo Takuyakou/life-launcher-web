@@ -26,6 +26,17 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         todayItems: [...state.todayItems, { ...action.item }],
       };
     case "EXCLUDE_TODAY_CANDIDATE":
+      if (
+        state.timer.status !== "idle" &&
+        (state.todayItems.some(
+          (item) =>
+            item.sourceId === action.sourceId &&
+            item.id === state.timer.todayItemId,
+        ) ||
+          (!state.timer.todayItemId &&
+            action.sourceId === `project:${state.timer.projectId}`))
+      )
+        return state;
       return {
         ...state,
         todayItems: state.todayItems.filter(
@@ -35,14 +46,32 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
           new Set([...state.candidateExcludedSourceIds, action.sourceId]),
         ),
       };
-    case "TOGGLE_TODAY_ITEM":
+    case "OPEN_BUILDER":
+      return { ...state, sections: { ...state.sections, todayBuilder: true } };
+    case "NEXT_TODAY_BATCH":
+      if (
+        state.timer.status !== "idle" ||
+        state.todayItems.length !== 3 ||
+        !state.todayItems.every((item) => item.completed)
+      )
+        return state;
       return {
         ...state,
-        todayItems: state.todayItems.map((item) =>
-          item.id === action.id
-            ? { ...item, completed: !item.completed }
-            : item,
-        ),
+        todayItems: [],
+        sections: { ...state.sections, todayBuilder: true },
+      };
+    case "ADD_WISHLIST":
+      if (
+        !action.label.trim() ||
+        state.wishlist.some((item) => item.id === action.id)
+      )
+        return state;
+      return {
+        ...state,
+        wishlist: [
+          { id: action.id, label: action.label.trim().slice(0, 120) },
+          ...state.wishlist,
+        ],
       };
     case "UPDATE_PROJECT_NEXT_STEP":
       return {
@@ -53,11 +82,32 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
             : project,
         ),
       };
-    case "START_TIMER":
+    case "START_TIMER": {
+      if (
+        !Number.isFinite(action.durationSeconds) ||
+        action.durationSeconds < 60 ||
+        action.durationSeconds > 7200
+      )
+        return state;
+      if (
+        action.todayItemId &&
+        !state.todayItems.some(
+          (item) => item.id === action.todayItemId && !item.completed,
+        )
+      )
+        return state;
+      const previous =
+        state.timer.status === "idle"
+          ? state
+          : demoReducer(state, {
+              type: "STOP_TIMER",
+              now: action.now ?? new Date(),
+            });
       return {
-        ...state,
+        ...previous,
         timer: {
           status: "running",
+          todayItemId: action.todayItemId,
           label: action.label,
           projectId: action.projectId,
           projectName: action.projectName,
@@ -66,16 +116,48 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
           elapsedSeconds: 0,
         },
       };
+    }
     case "TICK_TIMER":
       if (state.timer.status !== "running") return state;
       return {
         ...state,
         timer: {
           ...state.timer,
+          status: state.timer.remainingSeconds <= 1 ? "finished" : "running",
           remainingSeconds: Math.max(0, state.timer.remainingSeconds - 1),
-          elapsedSeconds: state.timer.elapsedSeconds + 1,
+          elapsedSeconds: Math.min(
+            state.timer.durationSeconds,
+            state.timer.elapsedSeconds + 1,
+          ),
         },
       };
+    case "FINISH_TIMER":
+      if (state.timer.status !== "running" && state.timer.status !== "paused")
+        return state;
+      return {
+        ...state,
+        timer: {
+          ...state.timer,
+          status: "finished",
+          remainingSeconds: 0,
+          elapsedSeconds: state.timer.durationSeconds,
+        },
+      };
+    case "CONFIRM_TIMER": {
+      if (state.timer.status !== "finished") return state;
+      const updated = action.nextStep?.trim()
+        ? demoReducer(state, {
+            type: "UPDATE_PROJECT_NEXT_STEP",
+            projectId: state.timer.projectId,
+            nextStep: action.nextStep.trim().slice(0, 120),
+          })
+        : state;
+      return demoReducer(updated, {
+        type: "STOP_TIMER",
+        now: action.now,
+        complete: true,
+      });
+    }
     case "PAUSE_TIMER":
       if (state.timer.status !== "running") return state;
       return { ...state, timer: { ...state.timer, status: "paused" } };
@@ -85,7 +167,7 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
     case "STOP_TIMER": {
       if (state.timer.status === "idle") return state;
       const session: DemoSession = {
-        id: `session-${action.now.getTime()}`,
+        id: `session-${action.now.getTime()}-${state.sessions.length}`,
         projectId: state.timer.projectId,
         projectName: state.timer.projectName || "デモ",
         label: state.timer.label,
@@ -95,6 +177,14 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
       return {
         ...state,
         sessions: [...state.sessions, session],
+        todayItems: state.todayItems.map((item) =>
+          item.id === state.timer.todayItemId &&
+          action.complete &&
+          state.timer.status === "finished" &&
+          state.timer.elapsedSeconds >= state.timer.durationSeconds
+            ? { ...item, completed: true }
+            : item,
+        ),
         timer: createIdleTimer(),
       };
     }

@@ -30,5 +30,7 @@ export function todayItemFromCandidate(
     label: candidate.label,
     projectId: candidate.projectId,
     completed: false,
+    shortMinutes: 5,
+    normalMinutes: 25,
   };
 }

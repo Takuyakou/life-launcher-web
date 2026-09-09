@@ -4,14 +4,17 @@ import { createTodayBuilderCandidates } from "../demo/todayBuilder";
 import type {
   DemoAction,
   DemoBuilderCandidate,
+  DemoSectionState,
   DemoState,
 } from "../demo/types";
 import { DemoTimer } from "./DemoTimer";
+import { TimerActions } from "./TimerActions";
+import { WishlistDialog } from "./WishlistDialog";
 import { UiIcon } from "./UiIcon";
 
-type DemoFrameProps = {
+type Props = {
   state: DemoState;
-  dispatch: React.Dispatch<DemoAction>;
+  dispatch: (action: DemoAction) => boolean;
   onOpenDictionary: () => void;
   onOpenReset: () => void;
   onNativeOnly: (label: string) => void;
@@ -20,6 +23,7 @@ type DemoFrameProps = {
     projectId: string,
     projectName: string,
     seconds: number,
+    todayItemId?: string,
   ) => void;
   onPauseTimer: () => void;
   onResumeTimer: () => void;
@@ -28,8 +32,6 @@ type DemoFrameProps = {
   onAddTodayCandidate: (candidate: DemoBuilderCandidate) => void;
   onExcludeTodayCandidate: (candidate: DemoBuilderCandidate) => void;
 };
-
-const projectColorClass = (color: string) => `project-${color}`;
 
 export function DemoFrame({
   state,
@@ -44,64 +46,120 @@ export function DemoFrame({
   onDemoComplete,
   onAddTodayCandidate,
   onExcludeTodayCandidate,
-}: DemoFrameProps) {
+}: Props) {
   const [editingVictory, setEditingVictory] = useState(false);
   const [victoryDraft, setVictoryDraft] = useState(state.victory.text);
+  const [addingWishlist, setAddingWishlist] = useState(false);
+  const [requestedPage, setRequestedPage] = useState(0);
   const victoryEditButtonRef = useRef<HTMLButtonElement>(null);
   const victoryInputRef = useRef<HTMLInputElement>(null);
-  const doNowCandidate = DO_NOW_CANDIDATES[state.doNowIndex];
+  const builderRef = useRef<HTMLButtonElement>(null);
+  const wishlistAddRef = useRef<HTMLButtonElement>(null);
+  const doNowCandidate =
+    DO_NOW_CANDIDATES[state.doNowIndex % DO_NOW_CANDIDATES.length] ??
+    DO_NOW_CANDIDATES[0];
   const doNowProject = state.projects.find(
     (project) => project.id === doNowCandidate.projectId,
   );
   const doNowText = doNowProject?.nextStep ?? doNowCandidate.text;
+  const doNowStatus =
+    !state.timer.todayItemId &&
+    state.timer.projectId === doNowCandidate.projectId
+      ? state.timer.status
+      : "idle";
+  const candidates = createTodayBuilderCandidates(state);
+  const pageCount = Math.max(1, Math.ceil(candidates.length / 5));
+  const pageIndex = Math.min(requestedPage, pageCount - 1);
+  const visibleCandidates = candidates.slice(pageIndex * 5, pageIndex * 5 + 5);
+  const completedCount = state.todayItems.filter(
+    (item) => item.completed,
+  ).length;
+  const allThreeCompleted =
+    state.todayItems.length === 3 && completedCount === 3;
   const launchActions =
     state.timer.status === "idle"
       ? []
       : launchActionsForProject(state.timer.projectId);
-  const builderCandidates = createTodayBuilderCandidates(state);
-  const builderGroups = [
-    {
-      id: "nextStep" as const,
-      label: "次の一手",
-      items: builderCandidates.filter(
-        (candidate) => candidate.sourceType === "nextStep",
-      ),
-    },
-    {
-      id: "wishlist" as const,
-      label: "やりたいこと",
-      items: builderCandidates.filter(
-        (candidate) => candidate.sourceType === "wishlist",
-      ),
-    },
-  ];
-
+  const timerHandlers = {
+    onPause: onPauseTimer,
+    onResume: onResumeTimer,
+    onStop: onStopTimer,
+  };
   useEffect(() => {
     if (editingVictory) victoryInputRef.current?.focus();
   }, [editingVictory]);
-
   useEffect(() => setVictoryDraft(state.victory.text), [state.victory.text]);
+  useEffect(() => {
+    setRequestedPage(0);
+  }, [state.wishlist]);
 
   const finishVictoryEdit = () => {
     setEditingVictory(false);
-    window.requestAnimationFrame(() => victoryEditButtonRef.current?.focus());
+    requestAnimationFrame(() => victoryEditButtonRef.current?.focus());
   };
-
   const saveVictory = () => {
-    const trimmed = victoryDraft.trim();
-    if (trimmed && trimmed !== state.victory.text)
-      dispatch({ type: "UPDATE_VICTORY", text: trimmed });
-    else setVictoryDraft(state.victory.text);
+    const text = victoryDraft.trim();
+    if (
+      text &&
+      text !== state.victory.text &&
+      !dispatch({ type: "UPDATE_VICTORY", text })
+    )
+      return;
+    setVictoryDraft(text || state.victory.text);
     finishVictoryEdit();
   };
-
-  const projectFor = (projectId?: string) =>
-    projectId
-      ? state.projects.find((project) => project.id === projectId)
-      : undefined;
+  const focusBuilder = (nextBatch = false) => {
+    if (nextBatch && !dispatch({ type: "NEXT_TODAY_BATCH" })) return;
+    if (!nextBatch) dispatch({ type: "OPEN_BUILDER" });
+    setRequestedPage(0);
+    requestAnimationFrame(() => {
+      builderRef.current?.scrollIntoView({
+        block: "center",
+        behavior: "smooth",
+      });
+      builderRef.current?.focus({ preventScroll: true });
+    });
+  };
+  const sectionToggle = (
+    section: keyof DemoSectionState,
+    title: string,
+    count: string,
+    description: string,
+  ) => (
+    <button
+      type="button"
+      className="section-toggle"
+      aria-expanded={state.sections[section]}
+      aria-controls={`section-${section}`}
+      ref={section === "todayBuilder" ? builderRef : undefined}
+      onClick={() => dispatch({ type: "TOGGLE_SECTION", section })}
+    >
+      <span className="chevron" aria-hidden="true">
+        ›
+      </span>
+      <strong>{title}</strong>
+      <span className="section-count">{count}</span>
+      <small>{description}</small>
+    </button>
+  );
 
   return (
-    <div className="demo-window">
+    <div
+      className="demo-window sync-demo"
+      onKeyDown={(event) => {
+        if (
+          (event.ctrlKey || event.metaKey) &&
+          event.key.toLowerCase() === "k" &&
+          event.target instanceof HTMLElement &&
+          !event.target.closest(
+            'input, textarea, [contenteditable="true"], [role="dialog"]',
+          )
+        ) {
+          event.preventDefault();
+          onOpenDictionary();
+        }
+      }}
+    >
       <header className="demo-titlebar">
         <div className="demo-brand">
           <span className="brand-mark" aria-hidden="true">
@@ -127,7 +185,6 @@ export function DemoFrame({
           </button>
         </div>
       </header>
-
       <div className="demo-layout">
         <aside className="quick-sidebar">
           <div className="quick-heading">
@@ -167,7 +224,6 @@ export function DemoFrame({
             timer={state.timer}
           />
         </aside>
-
         <main className="demo-main">
           <div className="demo-day-header">
             <div>
@@ -188,7 +244,6 @@ export function DemoFrame({
               }).format(new Date())}
             </time>
           </div>
-
           <section className="victory-card" aria-labelledby="victory-heading">
             <div className="victory-icon" aria-hidden="true">
               🏆
@@ -216,9 +271,10 @@ export function DemoFrame({
                     maxLength={120}
                     onChange={(event) => setVictoryDraft(event.target.value)}
                     onKeyDown={(event) => {
-                      if (event.key !== "Escape") return;
-                      setVictoryDraft(state.victory.text);
-                      finishVictoryEdit();
+                      if (event.key === "Escape") {
+                        setVictoryDraft(state.victory.text);
+                        finishVictoryEdit();
+                      }
                     }}
                     ref={victoryInputRef}
                     value={victoryDraft}
@@ -247,20 +303,28 @@ export function DemoFrame({
               )}
             </div>
           </section>
-
           <section className="do-now-card" aria-labelledby="do-now-heading">
             <div className="do-now-copy">
               <div
-                className={`project-label ${doNowProject ? projectColorClass(doNowProject.color) : "project-green"}`}
+                className={`project-label project-${doNowProject?.color ?? "green"}`}
               >
                 <span />
-                今やる一手{doNowProject ? ` · ${doNowProject.name}` : ""}
+                今やる一手 · {doNowProject?.name}
               </div>
               <h2 id="do-now-heading">{doNowText}</h2>
               <p className="do-now-reason">{doNowCandidate.reason}</p>
               <p className="demo-rule-note">
                 Web Demoでは固定のサンプル理由を使用
               </p>
+              {doNowStatus !== "idle" && (
+                <span role="status" className="sync-running">
+                  {doNowStatus === "running"
+                    ? "実行中"
+                    : doNowStatus === "paused"
+                      ? "一時停止"
+                      : "満了"}
+                </span>
+              )}
               <button
                 className="text-button"
                 onClick={() => dispatch({ type: "ROTATE_DO_NOW" })}
@@ -269,217 +333,237 @@ export function DemoFrame({
                 <UiIcon name="rotate" size={15} /> 別の候補
               </button>
             </div>
-            <div className="start-actions">
-              <button
-                className="button button-good"
-                data-demo-do-now-short
-                onClick={() =>
-                  onStartTimer(
-                    doNowText,
-                    doNowCandidate.projectId,
-                    doNowProject?.name ?? "今やる一手",
-                    5 * 60,
-                  )
-                }
-                type="button"
-              >
-                <UiIcon name="play" size={14} /> 5分で始める
-              </button>
-              <button
-                className="button button-normal"
-                onClick={() =>
-                  onStartTimer(
-                    doNowText,
-                    doNowCandidate.projectId,
-                    doNowProject?.name ?? "今やる一手",
-                    25 * 60,
-                  )
-                }
-                type="button"
-              >
-                <UiIcon name="play" size={14} /> 通常25分
-              </button>
-            </div>
+            <TimerActions
+              label={doNowText}
+              status={doNowStatus}
+              primary
+              onStart={(minutes) =>
+                onStartTimer(
+                  doNowText,
+                  doNowCandidate.projectId,
+                  doNowProject?.name ?? "今やる一手",
+                  minutes * 60,
+                )
+              }
+              {...timerHandlers}
+            />
           </section>
-
-          {launchActions.length > 0 ? (
+          {launchActions.length > 0 && (
             <section aria-live="polite" className="launch-simulation">
               <div>
                 <strong>環境を準備</strong>
                 <span>Web Demo上の演出</span>
               </div>
               <ul>
-                {launchActions.map((action, index) => (
-                  <li
-                    key={action}
-                    style={{ animationDelay: `${index * 180}ms` }}
-                  >
+                {launchActions.map((action) => (
+                  <li key={action}>
                     <UiIcon name="check" size={14} /> {action}
                   </li>
                 ))}
               </ul>
               <p>
-                Windows版では登録したアプリ・ファイル・URLを実際に開きます。
+                Web
+                Demoでは起動動作を演出しています。Windows版では登録したアプリ・ファイル・URLを実際に開きます。
               </p>
             </section>
-          ) : null}
-
+          )}
           <section
             className="demo-section today-section"
             aria-labelledby="today-three-heading"
+            tabIndex={-1}
           >
-            <div className="section-heading-row">
-              <div>
-                <h2 id="today-three-heading">今日の3件</h2>
-                <p>やることを増やさず、今日やる3件だけに絞る</p>
-              </div>
-              <span>{state.todayItems.length}/3</span>
+            <div className="sync-heading">
+              <h2 id="today-three-heading">今日の3件</h2>
+              <span>{state.todayItems.length}件</span>
+              <span
+                role="status"
+                className={allThreeCompleted ? "sync-complete" : ""}
+              >
+                {completedCount} / {state.todayItems.length} 完了
+              </span>
             </div>
             <div className="today-list">
               {state.todayItems.map((item) => {
-                const project = projectFor(item.projectId);
+                const project = state.projects.find(
+                  (entry) => entry.id === item.projectId,
+                );
+                const status =
+                  state.timer.todayItemId === item.id
+                    ? state.timer.status
+                    : "idle";
                 return (
-                  <div className="today-row" key={item.id}>
-                    <input
-                      aria-label={`${item.label}を完了`}
-                      checked={item.completed}
-                      onChange={() =>
-                        dispatch({ type: "TOGGLE_TODAY_ITEM", id: item.id })
-                      }
-                      type="checkbox"
-                    />
-                    <div>
-                      <strong className={item.completed ? "is-complete" : ""}>
-                        {item.label}
-                      </strong>
-                      {project ? (
-                        <span
-                          className={`project-label ${projectColorClass(project.color)}`}
-                        >
-                          <span />
-                          {project.name}
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className="row-actions">
-                      <button
-                        aria-label={`${item.label}を5分で開始`}
-                        className="start-icon start-short"
-                        onClick={() =>
-                          onStartTimer(
-                            item.label,
-                            item.projectId ?? item.sourceId,
-                            project?.name ?? "今日の3件",
-                            5 * 60,
-                          )
-                        }
-                        type="button"
+                  <article
+                    className={`today-row ${project ? `project-${project.color}` : ""} ${item.completed ? "today-completed" : ""}`}
+                    key={item.id}
+                    aria-label={item.label}
+                  >
+                    <div className="sync-card-header">
+                      <span className="project-label">
+                        <span />
+                        {project?.name ?? "やりたいこと"}
+                      </span>
+                      <span
+                        className="sync-completion-mark"
+                        role="status"
+                        aria-label={`${item.label}：${item.completed ? "完了" : "未完了"}`}
                       >
-                        <UiIcon name="play" size={14} />
-                        <span>5分</span>
-                      </button>
-                      <button
-                        aria-label={`${item.label}を25分で開始`}
-                        className="start-icon start-normal"
-                        onClick={() =>
-                          onStartTimer(
-                            item.label,
-                            item.projectId ?? item.sourceId,
-                            project?.name ?? "今日の3件",
-                            25 * 60,
-                          )
-                        }
-                        type="button"
-                      >
-                        <UiIcon name="play" size={14} />
-                        <span>25分</span>
-                      </button>
+                        {item.completed ? (
+                          <UiIcon name="check" size={14} />
+                        ) : (
+                          "○"
+                        )}
+                      </span>
                     </div>
-                  </div>
+                    <strong className="sync-card-title">{item.label}</strong>
+                    <div className="sync-card-footer">
+                      {item.completed ? (
+                        <span className="sync-complete">予定時間まで完了</span>
+                      ) : (
+                        <>
+                          <span className="sync-running" role="status">
+                            {status === "running"
+                              ? "実行中"
+                              : status === "paused"
+                                ? "一時停止"
+                                : status === "finished"
+                                  ? "満了"
+                                  : ""}
+                          </span>
+                          <TimerActions
+                            label={item.label}
+                            status={status}
+                            shortMinutes={item.shortMinutes}
+                            normalMinutes={item.normalMinutes}
+                            onStart={(minutes) =>
+                              onStartTimer(
+                                item.label,
+                                item.projectId ?? item.sourceId,
+                                project?.name ?? "やりたいこと",
+                                minutes * 60,
+                                item.id,
+                              )
+                            }
+                            {...timerHandlers}
+                          />
+                        </>
+                      )}
+                    </div>
+                  </article>
                 );
               })}
             </div>
+            {state.todayItems.length === 0 && (
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => focusBuilder()}
+              >
+                今日の候補を見る
+              </button>
+            )}
+            {allThreeCompleted && (
+              <button
+                type="button"
+                className="button button-good sync-next-batch"
+                disabled={state.timer.status !== "idle"}
+                onClick={() => focusBuilder(true)}
+              >
+                次の3件を選ぶ
+              </button>
+            )}
           </section>
-
           <section className="demo-section compact-section builder-section">
-            <button
-              aria-expanded={state.sections.todayBuilder}
-              className="section-toggle"
-              onClick={() =>
-                dispatch({ type: "TOGGLE_SECTION", section: "todayBuilder" })
-              }
-              type="button"
+            {sectionToggle(
+              "todayBuilder",
+              "今日を組み立てる",
+              `${candidates.length}件`,
+              "次の一手・やりたいことから選ぶ",
+            )}
+            <div
+              id="section-todayBuilder"
+              hidden={!state.sections.todayBuilder}
             >
-              <span className="chevron" aria-hidden="true">
-                ›
-              </span>
-              <strong>今日を組み立てる</strong>
-              <small>登録した候補から今日の行動を選ぶ</small>
-              <span className="section-count">
-                {builderCandidates.length}件
-              </span>
-            </button>
-            {state.sections.todayBuilder ? (
               <div className="builder-content">
-                <p className="builder-intro">
-                  「今日へ」で選んだ項目が、上の今日の3件に入ります。
-                </p>
-                {builderGroups.map((group) =>
-                  group.items.length > 0 ? (
+                {(["nextStep", "wishlist"] as const).map((type) => {
+                  const items = visibleCandidates.filter(
+                    (candidate) => candidate.sourceType === type,
+                  );
+                  if (!items.length) return null;
+                  return (
                     <section
-                      aria-labelledby={`builder-${group.id}`}
                       className="builder-group"
-                      key={group.id}
+                      aria-labelledby={`builder-${type}`}
+                      key={type}
                     >
                       <div className="builder-group-heading">
-                        <strong id={`builder-${group.id}`}>
-                          {group.label}
+                        <strong id={`builder-${type}`}>
+                          {type === "nextStep" ? "次の一手" : "やりたいこと"}
                         </strong>
-                        <span>{group.items.length}件</span>
+                        <span>
+                          {
+                            candidates.filter(
+                              (candidate) => candidate.sourceType === type,
+                            ).length
+                          }
+                          件
+                        </span>
                       </div>
-                      {group.items.map((candidate) => {
-                        const project = projectFor(candidate.projectId);
+                      {items.map((candidate) => {
+                        const project = state.projects.find(
+                          (entry) => entry.id === candidate.projectId,
+                        );
                         const selected = state.todayItems.some(
                           (item) => item.sourceId === candidate.sourceId,
                         );
-                        const full = state.todayItems.length >= 3;
+                        const active =
+                          state.timer.status !== "idle" &&
+                          (state.todayItems.some(
+                            (item) =>
+                              item.sourceId === candidate.sourceId &&
+                              item.id === state.timer.todayItemId,
+                          ) ||
+                            (!state.timer.todayItemId &&
+                              state.timer.projectId === candidate.projectId));
                         return (
                           <div className="builder-row" key={candidate.sourceId}>
                             <div className="builder-row-copy">
-                              {project ? (
+                              {project && (
                                 <span
-                                  className={`project-label ${projectColorClass(project.color)}`}
+                                  className={`project-label project-${project.color}`}
                                 >
                                   <span />
                                   {project.name}
                                 </span>
-                              ) : null}
+                              )}
                               <strong>{candidate.label}</strong>
                             </div>
                             <div className="builder-row-actions">
                               <button
-                                aria-label={`${candidate.label}を今日の3件に追加`}
+                                type="button"
                                 className="button builder-add"
-                                disabled={selected || full}
-                                onClick={() => onAddTodayCandidate(candidate)}
+                                aria-label={`${candidate.label}を今日の3件に追加`}
+                                disabled={
+                                  selected || state.todayItems.length >= 3
+                                }
                                 title={
                                   selected
                                     ? "今日に選択済み"
-                                    : full
+                                    : state.todayItems.length >= 3
                                       ? "今日の3件は3件までです"
                                       : "今日へ"
                                 }
-                                type="button"
+                                onClick={() => onAddTodayCandidate(candidate)}
                               >
                                 {selected ? "選択済み" : "今日へ"}
                               </button>
                               <button
-                                aria-label={`${candidate.label}を今日の候補から外す`}
+                                type="button"
                                 className="builder-exclude"
+                                aria-label={`${candidate.label}を今日の候補から外す`}
+                                disabled={active}
                                 onClick={() =>
                                   onExcludeTodayCandidate(candidate)
                                 }
-                                type="button"
                               >
                                 候補から外す
                               </button>
@@ -488,97 +572,109 @@ export function DemoFrame({
                         );
                       })}
                     </section>
-                  ) : null,
-                )}
-                {builderCandidates.length === 0 ? (
-                  <p className="builder-empty">
-                    候補がありません。リセットするとサンプル候補に戻ります。
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
-          </section>
-
-          <section
-            className="demo-section next-section"
-            aria-labelledby="next-heading"
-          >
-            <div className="section-heading-row">
-              <div>
-                <h2 id="next-heading">次の一手</h2>
-                <p>今日を組み立てるための候補を登録する</p>
-              </div>
-              <span>{state.projects.length}件</span>
-            </div>
-            <div className="project-grid">
-              {state.projects.map((project) => (
-                <article
-                  className={`project-card ${projectColorClass(project.color)}`}
-                  key={project.id}
-                >
-                  <div>
-                    <div
-                      className={`project-label ${projectColorClass(project.color)}`}
+                  );
+                })}
+                {candidates.length === 0 && (
+                  <div className="builder-empty">
+                    <p>候補がありません</p>
+                    <button
+                      type="button"
+                      className="text-button"
+                      onClick={() => {
+                        wishlistAddRef.current?.focus();
+                        setAddingWishlist(true);
+                      }}
                     >
+                      やりたいことを登録
+                    </button>
+                  </div>
+                )}
+                {pageCount > 1 && (
+                  <nav className="sync-pagination" aria-label="候補のページ">
+                    <button
+                      type="button"
+                      className="icon-button"
+                      aria-label="前の候補ページ"
+                      title="前の候補ページ"
+                      disabled={pageIndex === 0}
+                      onClick={() => setRequestedPage(pageIndex - 1)}
+                    >
+                      ←
+                    </button>
+                    <span aria-live="polite">
+                      {pageIndex + 1} / {pageCount}
+                    </span>
+                    <button
+                      type="button"
+                      className="icon-button"
+                      aria-label="次の候補ページ"
+                      title="次の候補ページ"
+                      disabled={pageIndex + 1 === pageCount}
+                      onClick={() => setRequestedPage(pageIndex + 1)}
+                    >
+                      →
+                    </button>
+                  </nav>
+                )}
+              </div>
+            </div>
+          </section>
+          <section className="demo-section compact-section next-section">
+            {sectionToggle(
+              "nextStep",
+              "次の一手",
+              `${state.projects.length}件`,
+              "各プロジェクトの、次回すぐ再開するための一手",
+            )}
+            <div id="section-nextStep" hidden={!state.sections.nextStep}>
+              <ul className="sync-source-list">
+                {state.projects.map((project) => (
+                  <li key={project.id}>
+                    <span className={`project-label project-${project.color}`}>
                       <span />
                       {project.name}
-                    </div>
+                    </span>
                     <strong>{project.nextStep}</strong>
-                  </div>
-                </article>
-              ))}
+                  </li>
+                ))}
+              </ul>
             </div>
           </section>
-
-          <section className="demo-section compact-section">
-            <button
-              aria-expanded={state.sections.wishlist}
-              className="section-toggle"
-              onClick={() =>
-                dispatch({ type: "TOGGLE_SECTION", section: "wishlist" })
-              }
-              type="button"
-            >
-              <span className="chevron" aria-hidden="true">
-                ›
-              </span>
-              <strong>やりたいこと</strong>
-              <small>あとで整理する一時置き場</small>
-              <span className="section-count">{state.wishlist.length}</span>
-            </button>
-            {state.sections.wishlist ? (
+          <section className="demo-section compact-section wishlist-section">
+            <div className="sync-disclosure-header">
+              {sectionToggle(
+                "wishlist",
+                "やりたいこと",
+                `${state.wishlist.length}件`,
+                "あとで整理する一時置き場",
+              )}
+              <button
+                ref={wishlistAddRef}
+                type="button"
+                className="icon-button"
+                aria-label="やりたいことを追加"
+                title="やりたいことを追加"
+                onClick={() => setAddingWishlist(true)}
+              >
+                +
+              </button>
+            </div>
+            <div id="section-wishlist" hidden={!state.sections.wishlist}>
               <ul className="simple-list">
                 {state.wishlist.map((item) => (
                   <li key={item.id}>{item.label}</li>
                 ))}
               </ul>
-            ) : null}
+            </div>
           </section>
-
-          <section className="demo-section compact-section">
-            <button
-              aria-expanded={state.sections.activity}
-              className="section-toggle"
-              onClick={() =>
-                dispatch({ type: "TOGGLE_SECTION", section: "activity" })
-              }
-              type="button"
-            >
-              <span className="chevron" aria-hidden="true">
-                ›
-              </span>
-              <strong>今日の実行</strong>
-              <small>タイマーで実行した内容</small>
-              <span className="activity-count">
-                <i />
-                {state.sessions.reduce(
-                  (sum, session) => sum + session.minutes,
-                  0,
-                )}
-                分
-              </span>
-            </button>
-            {state.sections.activity ? (
+          <section className="demo-section compact-section activity-section">
+            {sectionToggle(
+              "activity",
+              "今日の実行",
+              `${state.sessions.length}件`,
+              "タイマーで実行した内容",
+            )}
+            <div id="section-activity" hidden={!state.sections.activity}>
               <ul className="activity-list" aria-live="polite">
                 {state.sessions.map((session) => (
                   <li key={session.id}>
@@ -598,10 +694,18 @@ export function DemoFrame({
                   </li>
                 ))}
               </ul>
-            ) : null}
+            </div>
           </section>
         </main>
       </div>
+      {addingWishlist && (
+        <WishlistDialog
+          onClose={() => setAddingWishlist(false)}
+          onSave={(label) =>
+            dispatch({ type: "ADD_WISHLIST", id: crypto.randomUUID(), label })
+          }
+        />
+      )}
     </div>
   );
 }

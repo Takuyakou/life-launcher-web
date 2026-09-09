@@ -98,6 +98,8 @@ export function createDemoSeed(now: Date): DemoState {
         label: "ストレッチをする",
         projectId: "exercise",
         completed: true,
+        shortMinutes: 5,
+        normalMinutes: 25,
       },
       {
         id: "today-reading",
@@ -105,6 +107,8 @@ export function createDemoSeed(now: Date): DemoState {
         label: "本を読む",
         projectId: "reading",
         completed: false,
+        shortMinutes: 5,
+        normalMinutes: 25,
       },
     ],
     candidateExcludedSourceIds: [],
@@ -146,6 +150,7 @@ export function createDemoSeed(now: Date): DemoState {
     ],
     timer: createIdleTimer(),
     sections: {
+      nextStep: true,
       todayBuilder: true,
       wishlist: false,
       activity: true,

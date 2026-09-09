@@ -10,48 +10,90 @@ type DemoTimerProps = {
 };
 
 const formatSeconds = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60).toString().padStart(2, "0");
+  const minutes = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
   const remainder = (seconds % 60).toString().padStart(2, "0");
   return `${minutes}:${remainder}`;
 };
 
-export function DemoTimer({ timer, onPause, onResume, onStop, onDemoComplete }: DemoTimerProps) {
+export function DemoTimer({
+  timer,
+  onPause,
+  onResume,
+  onStop,
+  onDemoComplete,
+}: DemoTimerProps) {
   const active = timer.status !== "idle";
 
   return (
-    <aside aria-label="デモタイマー" className={`demo-timer timer-${timer.status}`}>
+    <aside
+      aria-label="デモタイマー"
+      className={`demo-timer timer-${timer.status}`}
+    >
       <div>
         <p className="eyebrow">Timer</p>
         <strong>{active ? timer.label : "開始を待っています"}</strong>
         <span className="timer-status">
-          {timer.status === "running" ? "実行中" : timer.status === "paused" ? "一時停止" : "待機中"}
+          {timer.status === "running"
+            ? "実行中"
+            : timer.status === "paused"
+              ? "一時停止"
+              : timer.status === "finished"
+                ? "満了"
+                : "待機中"}
         </span>
       </div>
-      <div aria-live="polite" className="timer-clock">
+      <div
+        role="timer"
+        aria-label="残り時間"
+        aria-live="off"
+        className="timer-clock"
+      >
         {active ? formatSeconds(timer.remainingSeconds) : "25:00"}
       </div>
-      {active ? (
+      {active && timer.status !== "finished" ? (
         <>
           <div className="timer-actions">
             {timer.status === "running" ? (
-              <button className="button button-quiet" onClick={onPause} type="button">
+              <button
+                className="button button-quiet"
+                onClick={onPause}
+                type="button"
+              >
                 <UiIcon name="pause" size={15} /> 一時停止
               </button>
             ) : (
-              <button className="button button-good" onClick={onResume} type="button">
+              <button
+                className="button button-good"
+                onClick={onResume}
+                type="button"
+              >
                 <UiIcon name="play" size={15} /> 再開
               </button>
             )}
-            <button className="button button-danger" onClick={onStop} type="button">
+            <button
+              className="button button-danger"
+              onClick={onStop}
+              type="button"
+            >
               <UiIcon name="stop" size={15} /> 終了
             </button>
           </div>
-          <button className="demo-complete-button" onClick={onDemoComplete} type="button">
+          <button
+            className="demo-complete-button"
+            onClick={onDemoComplete}
+            type="button"
+          >
             満了まで進める <span>DEMO</span>
           </button>
         </>
       ) : (
-        <p className="timer-hint">次の一手から5分または25分を選べます。</p>
+        <p className="timer-hint">
+          {timer.status === "finished"
+            ? "終了を確認してください。"
+            : "今やる一手・今日の3件から開始"}
+        </p>
       )}
     </aside>
   );

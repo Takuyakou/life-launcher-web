@@ -61,7 +61,7 @@ test("captures expanded desktop states and layout metrics", async ({
     path: path.join(output, "completion-dialog-1440x900.png"),
     fullPage: false,
   });
-  await page.getByRole("button", { name: "今は変更しない" }).click();
+  await page.getByRole("button", { name: "終わる", exact: true }).click();
   await page
     .locator(".builder-section")
     .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })

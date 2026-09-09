@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CompletionDialog } from "./components/CompletionDialog";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { DemoDictionary } from "./components/DemoDictionary";
@@ -6,61 +6,81 @@ import { DemoFrame } from "./components/DemoFrame";
 import { UiIcon } from "./components/UiIcon";
 import { createDemoSeed } from "./demo/seed";
 import { demoReducer } from "./demo/reducer";
-import { clearDemoState, loadDemoState, saveDemoState } from "./demo/storage";
+import {
+  LEGACY_STORAGE_KEY,
+  loadDemoState,
+  saveDemoState,
+} from "./demo/storage";
 import { todayItemFromCandidate } from "./demo/todayBuilder";
-import type { DemoBuilderCandidate } from "./demo/types";
+import type { DemoAction, DemoBuilderCandidate } from "./demo/types";
 
 type ToastState = {
   id: number;
   message: string;
   tone: "info" | "success";
 } | null;
-type CompletionState = {
-  projectId: string;
-  projectName: string;
-  nextStep: string;
-} | null;
-
 function App() {
-  const [state, dispatch] = useReducer(demoReducer, undefined, () =>
-    loadDemoState(window.localStorage, createDemoSeed(new Date())),
-  );
+  const [state, setState] = useState(() => {
+    const seed = createDemoSeed(new Date());
+    try {
+      return loadDemoState(window.localStorage, seed);
+    } catch {
+      return seed;
+    }
+  });
   const [dictionaryOpen, setDictionaryOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
-  const [completion, setCompletion] = useState<CompletionState>(null);
   const [toast, setToast] = useState<ToastState>(null);
   const demoRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    saveDemoState(window.localStorage, state);
-  }, [state]);
+  const stateRef = useRef(state);
+  const dispatch = useCallback((action: DemoAction): boolean => {
+    const next = demoReducer(stateRef.current, action);
+    if (next === stateRef.current) return false;
+    const volatile = [
+      "TICK_TIMER",
+      "FINISH_TIMER",
+      "PAUSE_TIMER",
+      "RESUME_TIMER",
+    ].includes(action.type);
+    let saved = volatile;
+    if (!volatile) {
+      try {
+        saved = saveDemoState(window.localStorage, next);
+      } catch {
+        saved = false;
+      }
+    }
+    if (!saved) {
+      setToast({
+        id: Date.now(),
+        message: "保存できませんでした。変更前の状態を保持しています。",
+        tone: "info",
+      });
+      return false;
+    }
+    stateRef.current = next;
+    setState(next);
+    return true;
+  }, []);
+  const completionProject = state.projects.find(
+    (project) => project.id === state.timer.projectId,
+  );
+  const completion =
+    state.timer.status === "finished"
+      ? {
+          projectId: completionProject?.id ?? "",
+          projectName: state.timer.projectName,
+          nextStep: completionProject?.nextStep ?? "",
+        }
+      : null;
 
   useEffect(() => {
     if (state.timer.status !== "running") return;
     const timerId = window.setInterval(() => {
-      if (state.timer.remainingSeconds <= 1) {
-        const project = state.projects.find(
-          (item) => item.id === state.timer.projectId,
-        );
-        dispatch({ type: "STOP_TIMER", now: new Date() });
-        if (project) {
-          setCompletion({
-            projectId: project.id,
-            projectName: project.name,
-            nextStep: project.nextStep,
-          });
-        }
-        setToast({
-          id: Date.now(),
-          message: "タイマーが満了し、今日の実行に追加しました",
-          tone: "success",
-        });
-      } else {
-        dispatch({ type: "TICK_TIMER" });
-      }
+      dispatch({ type: "TICK_TIMER" });
     }, 1000);
     return () => window.clearInterval(timerId);
-  }, [state.projects, state.timer]);
+  }, [dispatch, state.timer.status]);
 
   useEffect(() => {
     if (!toast) return;
@@ -81,17 +101,20 @@ function App() {
     projectId: string,
     projectName: string,
     durationSeconds: number,
+    todayItemId?: string,
   ) => {
-    if (state.timer.status !== "idle")
-      dispatch({ type: "STOP_TIMER", now: new Date() });
-    setCompletion(null);
-    dispatch({
-      type: "START_TIMER",
-      label,
-      projectId,
-      projectName,
-      durationSeconds,
-    });
+    if (
+      !dispatch({
+        type: "START_TIMER",
+        todayItemId,
+        now: new Date(),
+        label,
+        projectId,
+        projectName,
+        durationSeconds,
+      })
+    )
+      return;
     setToast({
       id: Date.now(),
       message: `${label}のタイマーを開始しました`,
@@ -100,8 +123,7 @@ function App() {
   };
 
   const stopTimer = () => {
-    dispatch({ type: "STOP_TIMER", now: new Date() });
-    setCompletion(null);
+    if (!dispatch({ type: "STOP_TIMER", now: new Date() })) return;
     setToast({
       id: Date.now(),
       message: "今日の実行にサンプル記録を追加しました",
@@ -110,23 +132,7 @@ function App() {
   };
 
   const completeTimerDemo = () => {
-    if (state.timer.status === "idle") return;
-    const project = state.projects.find(
-      (item) => item.id === state.timer.projectId,
-    );
-    dispatch({ type: "STOP_TIMER", now: new Date() });
-    if (project) {
-      setCompletion({
-        projectId: project.id,
-        projectName: project.name,
-        nextStep: project.nextStep,
-      });
-    }
-    setToast({
-      id: Date.now(),
-      message: "タイマーを満了まで進め、今日の実行に追加しました",
-      tone: "success",
-    });
+    dispatch({ type: "FINISH_TIMER" });
   };
 
   const addTodayCandidate = (candidate: DemoBuilderCandidate) => {
@@ -140,10 +146,13 @@ function App() {
       });
       return;
     }
-    dispatch({
-      type: "ADD_TODAY_ITEM",
-      item: todayItemFromCandidate(candidate),
-    });
+    if (
+      !dispatch({
+        type: "ADD_TODAY_ITEM",
+        item: todayItemFromCandidate(candidate),
+      })
+    )
+      return;
     setToast({
       id: Date.now(),
       message: `${candidate.label}を今日の3件に追加しました`,
@@ -152,7 +161,13 @@ function App() {
   };
 
   const excludeTodayCandidate = (candidate: DemoBuilderCandidate) => {
-    dispatch({ type: "EXCLUDE_TODAY_CANDIDATE", sourceId: candidate.sourceId });
+    if (
+      !dispatch({
+        type: "EXCLUDE_TODAY_CANDIDATE",
+        sourceId: candidate.sourceId,
+      })
+    )
+      return;
     setToast({
       id: Date.now(),
       message: "今日の候補から外しました。登録元は残っています。",
@@ -161,11 +176,15 @@ function App() {
   };
 
   const resetDemo = () => {
-    clearDemoState(window.localStorage);
-    dispatch({ type: "RESET_DEMO", state: createDemoSeed(new Date()) });
+    if (!dispatch({ type: "RESET_DEMO", state: createDemoSeed(new Date()) }))
+      return;
+    try {
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+    } catch {
+      /* Current state was saved successfully. */
+    }
     setDictionaryOpen(false);
     setResetOpen(false);
-    setCompletion(null);
     setToast({
       id: Date.now(),
       message: "Web Demoを初期状態に戻しました",
@@ -387,7 +406,8 @@ function App() {
             <article>
               <h3>タイマー / 今日の実行</h3>
               <p>
-                始めた内容をタイマーで実行し、1分以上の実行を自動で記録します。
+                始めた内容をタイマーで実行し、終了時に記録します。Web
+                Demoでは分単位のサンプル記録を残します。
               </p>
             </article>
             <article>
@@ -399,7 +419,7 @@ function App() {
             <article>
               <h3>辞書</h3>
               <p>
-                登録数が増えても、Ctrl+Kからラベル・分類・キーワードで検索して呼び出せます。
+                Windows版では、Ctrl+Kからラベル・分類・キーワードで検索して呼び出せます。
               </p>
             </article>
           </div>
@@ -493,29 +513,33 @@ function App() {
       />
       <ConfirmDialog
         confirmLabel="リセットする"
-        description="入力した勝利条件、チェック状態、デモの実行記録を初期状態に戻します。"
+        description="勝利条件、今日の3件、次の一手、やりたいこと、候補の除外、タイマー、実行記録、開閉状態をサンプルに戻します。"
         onCancel={() => setResetOpen(false)}
         onConfirm={resetDemo}
         open={resetOpen}
         title="Web Demoをリセットしますか？"
       />
       <CompletionDialog
+        editable={Boolean(completion?.projectId)}
         initialValue={completion?.nextStep ?? ""}
         onSave={(nextStep) => {
           if (!completion) return;
-          dispatch({
-            type: "UPDATE_PROJECT_NEXT_STEP",
-            projectId: completion.projectId,
-            nextStep,
-          });
-          setCompletion(null);
+          if (!dispatch({ type: "CONFIRM_TIMER", now: new Date(), nextStep }))
+            return;
           setToast({
             id: Date.now(),
             message: "次の一手を更新しました",
             tone: "success",
           });
         }}
-        onSkip={() => setCompletion(null)}
+        onSkip={() => {
+          if (!dispatch({ type: "CONFIRM_TIMER", now: new Date() })) return;
+          setToast({
+            id: Date.now(),
+            message: "今日の実行に記録しました",
+            tone: "success",
+          });
+        }}
         open={Boolean(completion)}
         projectName={completion?.projectName ?? ""}
       />
