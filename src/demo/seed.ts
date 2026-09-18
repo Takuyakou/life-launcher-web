@@ -1,27 +1,4 @@
-import type {
-  DemoCandidate,
-  DemoState,
-  DemoTimerState,
-  DictionaryTile,
-} from "./types";
-
-export const DO_NOW_CANDIDATES: DemoCandidate[] = [
-  {
-    projectId: "reading",
-    text: "数分だけ読む",
-    reason: "今日まだ実行していないため",
-  },
-  {
-    projectId: "exercise",
-    text: "ストレッチをする",
-    reason: "今週の重点にある次の一手",
-  },
-  {
-    projectId: "tidy",
-    text: "机の上だけ片付ける",
-    reason: "最後の実行から時間が空いているため",
-  },
-];
+import type { DemoState, DemoTimerState, DictionaryTile } from "./types";
 
 export const LAUNCH_ACTIONS: Record<string, string[]> = {
   reading: ["読書メモを開く", "参考ページを開く", "タイマーを開始"],

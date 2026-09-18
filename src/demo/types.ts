@@ -83,7 +83,6 @@ export type DemoState = {
 export type DemoAction =
   | { type: "UPDATE_VICTORY"; text: string }
   | { type: "TOGGLE_VICTORY" }
-  | { type: "ROTATE_DO_NOW" }
   | { type: "ADD_TODAY_ITEM"; item: DemoTodayItem }
   | { type: "REMOVE_TODAY_ITEM"; id: string }
   | { type: "EXCLUDE_TODAY_CANDIDATE"; sourceId: string }

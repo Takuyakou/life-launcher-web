@@ -361,7 +361,7 @@ function App() {
             <article>
               <span>2</span>
               <h3>一手を小さくする</h3>
-              <p>今週の重点から、説明できる固定ルールで1件だけ提示します。</p>
+              <p>次の一手があるProjectから、登録順で1件だけ提示します。</p>
             </article>
             <article>
               <span>3</span>
@@ -427,7 +427,7 @@ function App() {
             <article>
               <h3>今やる一手</h3>
               <p>
-                今週の重点から固定ルールで1件だけ提示し、必要なら選ばれた理由も確認できます。
+                次の一手があるProjectから登録順で1件だけ提示し、必要なら選ばれた理由も確認できます。
               </p>
             </article>
             <article>

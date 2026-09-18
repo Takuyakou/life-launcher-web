@@ -1,4 +1,4 @@
-import { createIdleTimer, DO_NOW_CANDIDATES } from "./seed";
+import { createIdleTimer } from "./seed";
 import {
   earlyEligible,
   earlyTarget,
@@ -18,11 +18,6 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
       return {
         ...state,
         victory: { ...state.victory, completed: !state.victory.completed },
-      };
-    case "ROTATE_DO_NOW":
-      return {
-        ...state,
-        doNowIndex: (state.doNowIndex + 1) % DO_NOW_CANDIDATES.length,
       };
     case "ADD_TODAY_ITEM":
       if (

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DO_NOW_CANDIDATES, launchActionsForProject } from "../demo/seed";
+import { launchActionsForProject } from "../demo/seed";
+import { createDoNowCandidates } from "../demo/doNow";
 import {
   createTodayBuilderCandidates,
   nextStepSourceId,
@@ -56,6 +57,7 @@ export function DemoFrame({
   onRemoveTodayItem,
 }: Props) {
   const [editingVictory, setEditingVictory] = useState(false);
+  const [doNowIndex, setDoNowIndex] = useState(0);
   const [victoryDraft, setVictoryDraft] = useState(state.victory.text);
   const [addingWishlist, setAddingWishlist] = useState(false);
   const [todayPickerOpen, setTodayPickerOpen] = useState(false);
@@ -66,16 +68,16 @@ export function DemoFrame({
   const victoryInputRef = useRef<HTMLInputElement>(null);
   const wishlistAddRef = useRef<HTMLButtonElement>(null);
   const todayPickerTriggerRef = useRef<HTMLButtonElement>(null);
+  const doNowCandidates = createDoNowCandidates(state);
   const doNowCandidate =
-    DO_NOW_CANDIDATES[state.doNowIndex % DO_NOW_CANDIDATES.length] ??
-    DO_NOW_CANDIDATES[0];
+    doNowCandidates[doNowIndex % Math.max(doNowCandidates.length, 1)];
   const doNowProject = state.projects.find(
     (project) => project.id === doNowCandidate.projectId,
   );
-  const doNowText = doNowProject?.nextStep ?? doNowCandidate.text;
+  const doNowText = doNowCandidate?.text ?? "まだ次の一手がありません";
   const doNowStatus =
     !state.timer.todayItemId &&
-    state.timer.projectId === doNowCandidate.projectId
+    state.timer.projectId === doNowCandidate?.projectId
       ? state.timer.status
       : "idle";
   const candidates = createTodayBuilderCandidates(state);
@@ -119,6 +121,9 @@ export function DemoFrame({
     if (editingVictory) victoryInputRef.current?.focus();
   }, [editingVictory]);
   useEffect(() => setVictoryDraft(state.victory.text), [state.victory.text]);
+  useEffect(() => {
+    if (doNowIndex >= doNowCandidates.length) setDoNowIndex(0);
+  }, [doNowCandidates.length, doNowIndex]);
   const finishVictoryEdit = () => {
     setEditingVictory(false);
     requestAnimationFrame(() => victoryEditButtonRef.current?.focus());
@@ -334,18 +339,29 @@ export function DemoFrame({
               )}
             </div>
           </section>
-          <section className="do-now-card" aria-labelledby="do-now-heading">
+          <section
+            className={`do-now-card project-${doNowProject?.color ?? "green"}`}
+            aria-labelledby="do-now-heading"
+            data-project-color={doNowProject?.color ?? "none"}
+          >
             <div className="do-now-copy">
               <div
                 className={`project-label project-${doNowProject?.color ?? "green"}`}
               >
                 <span />
-                今やる一手 · {doNowProject?.name}
+                今やる一手
+                {doNowProject ? ` · ${doNowProject.name}` : ""}
               </div>
               <h2 id="do-now-heading">{doNowText}</h2>
-              <p className="do-now-reason">{doNowCandidate.reason}</p>
+              <p className="do-now-reason">
+                {doNowCandidate?.reason ??
+                  "Projectに次の一手を設定すると候補になります"}
+              </p>
+              <p className="do-now-description">
+                迷ったときに、今の状況から始めやすい「次にやること」を1つだけ提示します。
+              </p>
               <p className="demo-rule-note">
-                Web Demoでは固定のサンプル理由を使用
+                Web Demoでは次の一手があるProjectを登録順で表示
               </p>
               {doNowStatus !== "idle" && (
                 <span role="status" className="sync-running">
@@ -356,28 +372,34 @@ export function DemoFrame({
                       : "満了"}
                 </span>
               )}
-              <button
-                className="text-button"
-                onClick={() => dispatch({ type: "ROTATE_DO_NOW" })}
-                type="button"
-              >
-                <UiIcon name="rotate" size={15} /> 別の候補
-              </button>
+              {doNowCandidates.length >= 2 && (
+                <button
+                  className="text-button"
+                  onClick={() =>
+                    setDoNowIndex((index) => (index + 1) % doNowCandidates.length)
+                  }
+                  type="button"
+                >
+                  <UiIcon name="rotate" size={15} /> 他の一手
+                </button>
+              )}
             </div>
-            <TimerActions
-              label={doNowText}
-              status={doNowStatus}
-              primary
-              onStart={(minutes) =>
-                onStartTimer(
-                  doNowText,
-                  doNowCandidate.projectId,
-                  doNowProject?.name ?? "今やる一手",
-                  minutes * 60,
-                )
-              }
-              {...timerHandlers}
-            />
+            {doNowCandidate && (
+              <TimerActions
+                label={doNowText}
+                status={doNowStatus}
+                primary
+                onStart={(minutes) =>
+                  onStartTimer(
+                    doNowText,
+                    doNowCandidate.projectId,
+                    doNowProject?.name ?? "今やる一手",
+                    minutes * 60,
+                  )
+                }
+                {...timerHandlers}
+              />
+            )}
           </section>
           {launchActions.length > 0 && (
             <section aria-live="polite" className="launch-simulation">

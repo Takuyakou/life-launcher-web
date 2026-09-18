@@ -792,9 +792,11 @@ input[type="checkbox"] {
 }
 
 .do-now-card {
+  --project: var(--green);
   align-items: center;
   border: 1px solid var(--line);
-  border-left: 3px solid var(--green);
+  border-top-color: color-mix(in srgb, var(--project) 38%, var(--line));
+  border-left: 3px solid var(--project);
   border-radius: var(--radius);
   display: flex;
   justify-content: space-between;

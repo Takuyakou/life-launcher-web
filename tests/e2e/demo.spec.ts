@@ -35,18 +35,22 @@ test("unchanged victory edit closes on Enter and restores its edit button", asyn
   ).toBeFocused();
 });
 
-test("Do Now rotates text, project and fixed reason together", async ({
+test("Do Now rotates text, project and explainable reason together", async ({
   page,
 }) => {
   await expect(
     page.getByRole("heading", { name: "数分だけ読む" }),
   ).toBeVisible();
-  await expect(page.getByText("今日まだ実行していないため")).toBeVisible();
-  await page.getByRole("button", { name: "別の候補" }).click();
+  await expect(
+    page.getByText("読書に次の一手が設定されているため"),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "他の一手" }).click();
   await expect(
     page.getByRole("heading", { name: "ストレッチをする" }),
   ).toBeVisible();
-  await expect(page.getByText("今週の重点にある次の一手")).toBeVisible();
+  await expect(
+    page.getByText("運動に次の一手が設定されているため"),
+  ).toBeVisible();
 });
 
 test("Today Picker is the only Today adoption surface and enforces the three-item limit", async ({

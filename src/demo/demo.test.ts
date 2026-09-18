@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { filterDictionary } from "./dictionary";
+import { createDoNowCandidates } from "./doNow";
 import { demoReducer, totalSessionMinutes } from "./reducer";
 import {
   createDemoSeed,
   DICTIONARY_TILES,
-  DO_NOW_CANDIDATES,
   launchActionsForProject,
 } from "./seed";
 import {
@@ -104,16 +104,20 @@ describe("demo reducer", () => {
     expect(state.victory).toEqual({ text: "散歩に出る", completed: true });
   });
 
-  it("rotates Do Now text and reason together", () => {
-    let state = createDemoSeed(fixedNow);
-    for (let index = 0; index < DO_NOW_CANDIDATES.length; index += 1) {
-      state = demoReducer(state, { type: "ROTATE_DO_NOW" });
-    }
-    expect(state.doNowIndex).toBe(0);
-    expect(DO_NOW_CANDIDATES[state.doNowIndex]).toMatchObject({
+  it("derives Do Now candidates only from Projects with a NextStep", () => {
+    const state = createDemoSeed(fixedNow);
+    state.projects[3].nextStep = undefined;
+    const candidates = createDoNowCandidates(state);
+    expect(candidates).toHaveLength(3);
+    expect(candidates[0]).toMatchObject({
+      projectId: "reading",
       text: "数分だけ読む",
-      reason: "今日まだ実行していないため",
+      reason: "読書に次の一手が設定されているため",
     });
+    state.projects[1].nextStep = undefined;
+    expect(createDoNowCandidates(state)).toHaveLength(2);
+    state.projects[2].nextStep = undefined;
+    expect(createDoNowCandidates(state)).toHaveLength(1);
   });
 
   it("adopts only one third Builder candidate and rejects duplicate or fourth sources", () => {
