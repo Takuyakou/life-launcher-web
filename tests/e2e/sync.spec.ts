@@ -162,14 +162,14 @@ test("Wishlist modal is keyboard operable, text-only, and its add action does no
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
   await expect(
     page
-      .locator(".simple-list")
+      .locator(".wishlist-row")
       .getByText("<img src=x onerror=alert(1)>", { exact: true }),
   ).toHaveCount(1);
   await expect(page.locator("img[src=x]")).toHaveCount(0);
   await page.reload();
   await expect(
     page
-      .locator(".simple-list")
+      .locator(".wishlist-row")
       .getByText("<img src=x onerror=alert(1)>", { exact: true }),
   ).toHaveCount(1);
 });

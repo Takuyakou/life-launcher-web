@@ -6,6 +6,7 @@ type IconName =
   | "check"
   | "edit"
   | "external"
+  | "lock"
   | "note"
   | "pause"
   | "photo"
@@ -28,6 +29,7 @@ const paths: Record<IconName, React.ReactNode> = {
   check: <path d="m5 12 4 4L19 6" />,
   edit: <><path d="m4 20 4.5-1 10-10-3.5-3.5-10 10L4 20Z" /><path d="m13.5 7 3.5 3.5" /></>,
   external: <><path d="M14 4h6v6M20 4 11 13" /><path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5" /></>,
+  lock: <><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
   note: <><path d="M5 3h11l3 3v15H5V3Z" /><path d="M15 3v4h4M8 11h8M8 15h8" /></>,
   pause: <><path d="M8 5v14M16 5v14" /></>,
   photo: <><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9" r="1.5" /><path d="m3 17 5-5 4 4 2-2 7 6" /></>,

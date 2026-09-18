@@ -181,7 +181,11 @@ describe("demo reducer", () => {
   });
 
   it("updates one project next step without changing other projects", () => {
-    const state = createDemoSeed(fixedNow);
+    const initial = createDemoSeed(fixedNow);
+    const state = demoReducer(initial, {
+      type: "REMOVE_TODAY_ITEM",
+      id: "today-reading",
+    });
     const next = demoReducer(state, {
       type: "UPDATE_PROJECT_NEXT_STEP",
       projectId: "reading",

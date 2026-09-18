@@ -183,22 +183,105 @@
   padding: 0;
 }
 .sync-source-list li {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
   padding: 12px;
   border-bottom: 1px solid var(--line-soft);
   min-width: 0;
+}
+.source-row-copy {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
 }
 .sync-source-list strong {
   font-size: 13px;
   overflow-wrap: anywhere;
 }
 .sync-source-list .project-label {
-  flex-shrink: 0;
   font-size: 11px;
 }
-.sync-demo .simple-list li {
+.source-lock {
+  display: inline-flex;
+  color: var(--gold);
+  font-weight: 400;
+}
+.source-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+.source-add,
+.source-change {
+  min-height: 31px;
+  padding: 0 10px;
+  font-size: 10px;
+}
+.source-row .source-row-actions .button,
+.wishlist-row .source-row-actions .button {
+  opacity: 0.68;
+}
+.source-row:hover .source-row-actions .button,
+.source-row:focus-within .source-row-actions .button,
+.wishlist-row:hover .source-row-actions .button,
+.wishlist-row:focus-within .source-row-actions .button {
+  opacity: 1;
+}
+.source-selected-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.source-empty {
+  color: var(--muted);
+  font-size: 11px;
+}
+.dialog-context {
+  margin: -4px 0 14px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.wishlist-groups {
+  border-top: 1px solid var(--line-soft);
+  margin: 0 8px;
+  padding: 4px 14px 8px;
+}
+.wishlist-group + .wishlist-group {
+  border-top: 1px solid var(--line);
+}
+.wishlist-group > h3 {
+  margin: 0;
+  padding: 10px 2px 6px;
+  font-size: 10px;
+}
+.wishlist-group > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.wishlist-row {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  border-top: 1px solid var(--line-soft);
+  padding: 7px 2px 7px 16px;
+}
+.wishlist-row > strong {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  line-height: 1.45;
   overflow-wrap: anywhere;
 }
 .sync-demo [hidden] {
@@ -538,6 +621,13 @@
     padding-left: 22px;
   }
   .sync-source-list li {
-    flex-wrap: wrap;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .source-row-actions {
+    justify-content: flex-start;
+  }
+  .wishlist-row {
+    grid-template-columns: minmax(0, 1fr);
+    padding-left: 8px;
   }
 }

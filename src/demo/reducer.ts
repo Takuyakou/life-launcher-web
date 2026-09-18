@@ -5,6 +5,10 @@ import {
   earlyThresholdSeconds,
 } from "./earlyCompletion";
 import type { DemoAction, DemoSession, DemoState } from "./types";
+import {
+  nextStepSourceId,
+  sourceLockedByUnfinishedToday,
+} from "./todayBuilder";
 
 export function demoReducer(state: DemoState, action: DemoAction): DemoState {
   switch (action.type) {
@@ -90,11 +94,18 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         ],
       };
     case "UPDATE_PROJECT_NEXT_STEP":
+      if (
+        sourceLockedByUnfinishedToday(
+          state,
+          nextStepSourceId(action.projectId),
+        )
+      )
+        return state;
       return {
         ...state,
         projects: state.projects.map((project) =>
           project.id === action.projectId
-            ? { ...project, nextStep: action.nextStep }
+            ? { ...project, nextStep: action.nextStep.trim().slice(0, 120) }
             : project,
         ),
       };
@@ -200,18 +211,18 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
       };
     case "CONFIRM_TIMER": {
       if (state.timer.status !== "finished") return state;
-      const updated = action.nextStep?.trim()
-        ? demoReducer(state, {
-            type: "UPDATE_PROJECT_NEXT_STEP",
-            projectId: state.timer.projectId,
-            nextStep: action.nextStep.trim().slice(0, 120),
-          })
-        : state;
-      return demoReducer(updated, {
+      const completed = demoReducer(state, {
         type: "STOP_TIMER",
         now: action.now,
         complete: true,
       });
+      return action.nextStep?.trim()
+        ? demoReducer(completed, {
+            type: "UPDATE_PROJECT_NEXT_STEP",
+            projectId: state.timer.projectId,
+            nextStep: action.nextStep.trim().slice(0, 120),
+          })
+        : completed;
     }
     case "PAUSE_TIMER":
       if (state.timer.status !== "running") return state;

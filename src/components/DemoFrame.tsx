@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DO_NOW_CANDIDATES, launchActionsForProject } from "../demo/seed";
-import { createTodayBuilderCandidates } from "../demo/todayBuilder";
+import {
+  createTodayBuilderCandidates,
+  nextStepSourceId,
+  sourceLockedByUnfinishedToday,
+  wishlistSourceId,
+} from "../demo/todayBuilder";
 import { earlyTarget, earlyThresholdSeconds } from "../demo/earlyCompletion";
 import type {
   DemoAction,
@@ -9,6 +14,7 @@ import type {
   DemoState,
 } from "../demo/types";
 import { DemoTimer } from "./DemoTimer";
+import { NextStepDialog } from "./NextStepDialog";
 import { TimerActions } from "./TimerActions";
 import { TodayPicker } from "./TodayPicker";
 import { WishlistDialog } from "./WishlistDialog";
@@ -53,6 +59,9 @@ export function DemoFrame({
   const [victoryDraft, setVictoryDraft] = useState(state.victory.text);
   const [addingWishlist, setAddingWishlist] = useState(false);
   const [todayPickerOpen, setTodayPickerOpen] = useState(false);
+  const [editingNextStepId, setEditingNextStepId] = useState<string | null>(
+    null,
+  );
   const victoryEditButtonRef = useRef<HTMLButtonElement>(null);
   const victoryInputRef = useRef<HTMLInputElement>(null);
   const wishlistAddRef = useRef<HTMLButtonElement>(null);
@@ -70,6 +79,28 @@ export function DemoFrame({
       ? state.timer.status
       : "idle";
   const candidates = createTodayBuilderCandidates(state);
+  const selectedSourceIds = new Set(
+    state.todayItems.map((item) => item.sourceId),
+  );
+  const editingNextStepProject = state.projects.find(
+    (project) => project.id === editingNextStepId,
+  );
+  const wishlistGroups = [
+    ...state.projects
+      .map((project) => ({
+        id: project.id,
+        name: project.name,
+        color: project.color,
+        items: state.wishlist.filter((item) => item.projectId === project.id),
+      }))
+      .filter((group) => group.items.length > 0),
+    {
+      id: "unassigned",
+      name: "未分類",
+      color: undefined,
+      items: state.wishlist.filter((item) => !item.projectId),
+    },
+  ].filter((group) => group.items.length > 0);
   const completedCount = state.todayItems.filter(
     (item) => item.completed,
   ).length;
@@ -496,15 +527,80 @@ export function DemoFrame({
             )}
             <div id="section-nextStep" hidden={!state.sections.nextStep}>
               <ul className="sync-source-list">
-                {state.projects.map((project) => (
-                  <li key={project.id}>
-                    <span className={`project-label project-${project.color}`}>
-                      <span />
-                      {project.name}
-                    </span>
-                    <strong>{project.nextStep}</strong>
-                  </li>
-                ))}
+                {state.projects.map((project) => {
+                  const sourceId = nextStepSourceId(project.id);
+                  const selected = selectedSourceIds.has(sourceId);
+                  const locked = sourceLockedByUnfinishedToday(state, sourceId);
+                  return (
+                    <li
+                      className={`source-row ${locked ? "is-locked" : ""}`}
+                      key={project.id}
+                    >
+                      <div className="source-row-copy">
+                        <span
+                          className={`project-label project-${project.color}`}
+                        >
+                          <span />
+                          {project.name}
+                          {locked && (
+                            <b
+                              aria-label="今日の3件で使用中"
+                              className="source-lock"
+                              role="img"
+                            >
+                              <UiIcon name="lock" size={13} />
+                            </b>
+                          )}
+                        </span>
+                        {project.nextStep ? (
+                          <strong>{project.nextStep}</strong>
+                        ) : (
+                          <span className="source-empty">
+                            まだ次の一手がありません
+                          </span>
+                        )}
+                      </div>
+                      <div className="source-row-actions">
+                        {selected ? (
+                          <span className="source-selected-status">
+                            <UiIcon name="check" size={13} /> 今日の3件
+                          </span>
+                        ) : (
+                          project.nextStep && (
+                            <button
+                              aria-label={`${project.nextStep}を今日の3件に追加`}
+                              className="button button-gold source-add"
+                              onClick={() =>
+                                onAddTodayCandidate({
+                                  sourceId,
+                                  sourceType: "nextStep",
+                                  label: project.nextStep!,
+                                  projectId: project.id,
+                                })
+                              }
+                              type="button"
+                            >
+                              ＋ 今日へ
+                            </button>
+                          )
+                        )}
+                        <button
+                          className="button button-quiet source-change"
+                          disabled={locked}
+                          onClick={() => setEditingNextStepId(project.id)}
+                          title={
+                            locked
+                              ? "今日の3件を完了するか外してから変更できます"
+                              : undefined
+                          }
+                          type="button"
+                        >
+                          {project.nextStep ? "変更" : "次の一手を設定"}
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </section>
@@ -528,11 +624,74 @@ export function DemoFrame({
               </button>
             </div>
             <div id="section-wishlist" hidden={!state.sections.wishlist}>
-              <ul className="simple-list">
-                {state.wishlist.map((item) => (
-                  <li key={item.id}>{item.label}</li>
+              <div className="wishlist-groups">
+                {wishlistGroups.map((group) => (
+                  <section className="wishlist-group" key={group.id}>
+                    <h3
+                      className={
+                        group.color
+                          ? `project-label project-${group.color}`
+                          : "project-label"
+                      }
+                    >
+                      <span />
+                      {group.name}
+                    </h3>
+                    <ul>
+                      {group.items.map((item) => {
+                        const sourceId = wishlistSourceId(item.id);
+                        const selected = selectedSourceIds.has(sourceId);
+                        const locked = sourceLockedByUnfinishedToday(
+                          state,
+                          sourceId,
+                        );
+                        return (
+                          <li
+                            className={`wishlist-row ${locked ? "is-locked" : ""}`}
+                            key={item.id}
+                          >
+                            <strong>
+                              {locked && (
+                                <b
+                                  aria-label="今日の3件で使用中"
+                                  className="source-lock"
+                                  role="img"
+                                >
+                                  <UiIcon name="lock" size={13} />
+                                </b>
+                              )}
+                              {item.label}
+                            </strong>
+                            <div className="source-row-actions">
+                              {selected ? (
+                                <span className="source-selected-status">
+                                  <UiIcon name="check" size={13} /> 今日の3件
+                                </span>
+                              ) : (
+                                <button
+                                  aria-label={`${item.label}を今日の3件に追加`}
+                                  className="button button-gold source-add"
+                                  onClick={() =>
+                                    onAddTodayCandidate({
+                                      sourceId,
+                                      sourceType: "wishlist",
+                                      label: item.label,
+                                      projectId: item.projectId,
+                                    })
+                                  }
+                                  type="button"
+                                >
+                                  ＋ 今日へ
+                                </button>
+                              )}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
                 ))}
-              </ul>
+              </div>
             </div>
           </section>
           <section className="demo-section compact-section activity-section">
@@ -572,6 +731,20 @@ export function DemoFrame({
           onSave={(label) =>
             dispatch({ type: "ADD_WISHLIST", id: crypto.randomUUID(), label })
           }
+        />
+      )}
+      {editingNextStepProject && (
+        <NextStepDialog
+          initialValue={editingNextStepProject.nextStep}
+          onClose={() => setEditingNextStepId(null)}
+          onSave={(nextStep) =>
+            dispatch({
+              type: "UPDATE_PROJECT_NEXT_STEP",
+              projectId: editingNextStepProject.id,
+              nextStep,
+            })
+          }
+          projectName={editingNextStepProject.name}
         />
       )}
       {todayPickerOpen && (

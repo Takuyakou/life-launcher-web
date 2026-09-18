@@ -12,7 +12,11 @@ import {
   saveDemoState,
   V2_STORAGE_KEY,
 } from "./demo/storage";
-import { todayItemFromCandidate } from "./demo/todayBuilder";
+import {
+  nextStepSourceId,
+  sourceLockedByUnfinishedToday,
+  todayItemFromCandidate,
+} from "./demo/todayBuilder";
 import type { DemoAction, DemoBuilderCandidate } from "./demo/types";
 
 type ToastState = {
@@ -77,6 +81,16 @@ function App() {
           nextStep: completionProject?.nextStep ?? "",
         }
       : null;
+  const completionSourceId = completion?.projectId
+    ? nextStepSourceId(completion.projectId)
+    : "";
+  const completionTodaySourceId = state.todayItems.find(
+    (item) => item.id === state.timer.todayItemId,
+  )?.sourceId;
+  const completionEditable =
+    Boolean(completion?.projectId) &&
+    (!sourceLockedByUnfinishedToday(state, completionSourceId) ||
+      completionTodaySourceId === completionSourceId);
 
   useEffect(() => {
     if (state.timer.status !== "running") return;
@@ -545,7 +559,7 @@ function App() {
         title="Web Demoをリセットしますか？"
       />
       <CompletionDialog
-        editable={Boolean(completion?.projectId)}
+        editable={completionEditable}
         initialValue={completion?.nextStep ?? ""}
         onSave={(nextStep) => {
           if (!completion) return;

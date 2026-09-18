@@ -141,6 +141,10 @@ test("timer start shows launch simulation and stop appends Today Activity once",
 });
 
 test("demo completion can update the project next step", async ({ page }) => {
+  await page
+    .getByRole("article", { name: "本を読む", exact: true })
+    .getByRole("button", { name: "今日の3件から外す" })
+    .click();
   await page.locator("[data-demo-do-now-short]").click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
   const dialog = page.getByRole("dialog", { name: "おつかれさまでした" });

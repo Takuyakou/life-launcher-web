@@ -132,6 +132,44 @@ describe("WEB11 timer identity and batches", () => {
         .map((item) => item.sourceId),
     ).toEqual(["wishlist:b", "wishlist:a"]);
   });
+  it("locks NextStep replacement only while its source is unfinished Today3", () => {
+    const seed = createDemoSeed(now);
+    expect(
+      demoReducer(seed, {
+        type: "UPDATE_PROJECT_NEXT_STEP",
+        projectId: "reading",
+        nextStep: "変更できない",
+      }),
+    ).toBe(seed);
+
+    const completed = {
+      ...seed,
+      todayItems: seed.todayItems.map((item) =>
+        item.sourceId === "nextstep:reading"
+          ? { ...item, completed: true }
+          : item,
+      ),
+    };
+    expect(
+      demoReducer(completed, {
+        type: "UPDATE_PROJECT_NEXT_STEP",
+        projectId: "reading",
+        nextStep: "変更できる",
+      }).projects.find((project) => project.id === "reading")?.nextStep,
+    ).toBe("変更できる");
+
+    const removed = demoReducer(seed, {
+      type: "REMOVE_TODAY_ITEM",
+      id: "today-reading",
+    });
+    expect(
+      demoReducer(removed, {
+        type: "UPDATE_PROJECT_NEXT_STEP",
+        projectId: "reading",
+        nextStep: "外した後も変更できる",
+      }).projects.find((project) => project.id === "reading")?.nextStep,
+    ).toBe("外した後も変更できる");
+  });
   it("migrates old v2 timer snapshots and next-step disclosure", () => {
     const seed = createDemoSeed(now);
     const raw = JSON.parse(JSON.stringify(seed));
