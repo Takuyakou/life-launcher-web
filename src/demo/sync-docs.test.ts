@@ -14,14 +14,16 @@ it("shipped copy no longer promises manual Today completion or a free-input Buil
 
 it("published README references a real synthetic PNG and documents current demo limits", () => {
   const readme = readFileSync("README.md", "utf8");
-  expect(readme).toContain("docs/screenshots/web-demo-v1.1.png");
+  expect(readme).toContain("docs/screenshots/web-demo-v1.3.png");
+  expect(readme).toContain("Life Launcher v1.3");
+  expect(readme).not.toContain("今日を組み立てる");
   expect(readme).toContain("今日の3件から外す");
   expect(readme).toContain("日付が変わっても自動ではリセットされません");
   expect(readme).toContain("満了未確定");
   expect(readme).toContain("localStorage");
   expect(readme).toContain("releases/latest");
   expect(readme).not.toContain("releases/tag/v1.0.0");
-  const png = readFileSync("docs/screenshots/web-demo-v1.1.png");
+  const png = readFileSync("docs/screenshots/web-demo-v1.3.png");
   expect(png.subarray(1, 4).toString()).toBe("PNG");
   expect(png.readUInt32BE(16)).toBeGreaterThan(1000);
   expect(png.readUInt32BE(20)).toBeGreaterThan(500);
