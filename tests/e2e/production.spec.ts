@@ -59,6 +59,7 @@ test("production bundle works under shipped CSP without runtime network or conso
     .getByRole("dialog")
     .getByRole("button", { name: "追加", exact: true })
     .click();
+  await page.locator(".wishlist-section .section-toggle").click();
   await expect(
     page
       .locator(".wishlist-row")
