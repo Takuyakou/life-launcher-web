@@ -219,19 +219,30 @@ footer {
   padding: 0 13px;
   text-decoration: none;
   transition:
-    background-color 140ms ease,
-    border-color 140ms ease,
-    color 140ms ease,
-    transform 140ms ease;
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
 }
 
-.button:hover {
+.button:hover:not(:disabled) {
   background: #312f28;
   border-color: #676052;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
 }
 
-.button:active {
-  transform: translateY(1px);
+.button:active:not(:disabled) {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.16);
+  transform: translateY(0) scale(0.985);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  box-shadow: none;
+  transform: none;
 }
 
 .button-large {
@@ -245,7 +256,7 @@ footer {
   color: #17140b;
 }
 
-.button-gold:hover {
+.button-gold:hover:not(:disabled) {
   background: #f6d664;
   border-color: #f6d664;
 }
@@ -256,7 +267,7 @@ footer {
   color: var(--green);
 }
 
-.button-good:hover {
+.button-good:hover:not(:disabled) {
   background: #214632;
   border-color: var(--green);
 }
@@ -267,7 +278,7 @@ footer {
   color: #b9d5fa;
 }
 
-.button-normal:hover {
+.button-normal:hover:not(:disabled) {
   background: #233855;
   border-color: var(--blue);
 }
@@ -278,7 +289,7 @@ footer {
   color: #ffaea6;
 }
 
-.button-danger:hover {
+.button-danger:hover:not(:disabled) {
   background: #4b2924;
   border-color: var(--danger);
 }
@@ -299,11 +310,20 @@ footer {
   gap: 5px;
   padding: 8px;
   text-decoration: none;
+  transition:
+    color 120ms ease,
+    transform 120ms ease;
 }
 
 .text-link:hover,
 .text-button:hover {
   color: var(--text);
+  transform: translateY(-1px);
+}
+
+.text-link:active,
+.text-button:active {
+  transform: translateY(0) scale(0.985);
 }
 
 .hero-proof {
@@ -489,12 +509,25 @@ footer {
   gap: 5px;
   height: 32px;
   padding: 0 9px;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
 }
 
 .toolbar-button:hover {
   background: var(--surface-strong);
   border-color: var(--line);
   color: var(--text);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+}
+
+.toolbar-button:active {
+  box-shadow: none;
+  transform: translateY(0) scale(0.985);
 }
 
 .demo-layout {
@@ -540,6 +573,23 @@ footer {
   justify-content: space-between;
   margin-bottom: 17px;
   padding: 0 8px;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.dictionary-open:hover,
+.quick-group button:hover {
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.dictionary-open:active,
+.quick-group button:active {
+  box-shadow: none;
+  transform: translateY(0) scale(0.985);
 }
 
 kbd {
@@ -582,6 +632,11 @@ kbd {
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
 }
 
 .quick-group button:hover {
@@ -764,11 +819,25 @@ input[type="checkbox"] {
   justify-content: center;
   padding: 0;
   width: 28px;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
 }
 
 .icon-button:hover {
   background: var(--surface-strong);
+  border-color: var(--muted-strong);
   color: var(--text);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+}
+
+.icon-button:active {
+  box-shadow: none;
+  transform: translateY(0) scale(0.985);
 }
 
 .victory-edit {
@@ -803,6 +872,16 @@ input[type="checkbox"] {
   margin-top: 14px;
   min-height: 100px;
   padding: 13px 15px;
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.do-now-card:hover,
+.do-now-card:focus-within {
+  background: var(--surface-soft);
+  border-top-color: color-mix(in srgb, var(--project) 65%, var(--line));
+  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.18);
 }
 
 .do-now-copy h2 {
@@ -887,10 +966,23 @@ input[type="checkbox"] {
   padding: 0 8px;
   text-align: left;
   width: 100%;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
 }
 
 .section-toggle:hover {
   background: var(--surface-soft);
+  border-color: var(--muted-strong);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
+  transform: translateY(-1px);
+}
+
+.section-toggle:active {
+  box-shadow: none;
+  transform: translateY(0) scale(0.985);
 }
 
 .section-toggle strong {
@@ -1310,11 +1402,23 @@ footer a:hover {
   min-height: 122px;
   min-width: 0;
   padding: 14px 8px 10px;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
 }
 
 .dictionary-tile:hover {
   background: var(--surface-strong);
   border-color: var(--gold);
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.dictionary-tile:active {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.16);
+  transform: translateY(0) scale(0.985);
 }
 
 .tile-icon {
@@ -1729,5 +1833,25 @@ footer a:hover {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+  .button:hover,
+  .button:active,
+  .text-link:hover,
+  .text-link:active,
+  .text-button:hover,
+  .text-button:active,
+  .toolbar-button:hover,
+  .toolbar-button:active,
+  .dictionary-open:hover,
+  .dictionary-open:active,
+  .quick-group button:hover,
+  .quick-group button:active,
+  .icon-button:hover,
+  .icon-button:active,
+  .section-toggle:hover,
+  .section-toggle:active,
+  .dictionary-tile:hover,
+  .dictionary-tile:active {
+    transform: none !important;
   }
 }
