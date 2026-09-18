@@ -115,7 +115,7 @@ describe("WEB11 timer identity and batches", () => {
       expect(
         demoReducer(state, {
           type: "EXCLUDE_TODAY_CANDIDATE",
-          sourceId: "project:reading",
+          sourceId: "nextstep:reading",
         }),
       ).toBe(state);
   });

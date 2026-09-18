@@ -1,4 +1,5 @@
 import type { DemoState } from "./types";
+import { nextStepSourceId } from "./todayBuilder";
 
 export function earlyThresholdSeconds(snapshot: unknown): number {
   const minutes =
@@ -17,7 +18,7 @@ export function earlyTarget(state: DemoState) {
       !item.completed &&
       (state.timer.todayItemId
         ? item.id === state.timer.todayItemId
-        : item.sourceId === `project:${state.timer.projectId}`),
+        : item.sourceId === nextStepSourceId(state.timer.projectId)),
   );
   return matches.length === 1 ? matches[0] : undefined;
 }

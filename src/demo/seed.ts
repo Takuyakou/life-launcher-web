@@ -85,7 +85,7 @@ export function createDemoSeed(now: Date): DemoState {
   const initialEndedAt = new Date(now.getTime() - 90 * 60 * 1000).toISOString();
 
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     victory: {
       text: "後回しにしていたことを1つ終わらせる",
       completed: false,
@@ -94,7 +94,7 @@ export function createDemoSeed(now: Date): DemoState {
     todayItems: [
       {
         id: "today-stretch",
-        sourceId: "project:exercise",
+        sourceId: "nextstep:exercise",
         label: "ストレッチをする",
         projectId: "exercise",
         completed: true,
@@ -103,7 +103,7 @@ export function createDemoSeed(now: Date): DemoState {
       },
       {
         id: "today-reading",
-        sourceId: "project:reading",
+        sourceId: "nextstep:reading",
         label: "本を読む",
         projectId: "reading",
         completed: false,
@@ -134,8 +134,8 @@ export function createDemoSeed(now: Date): DemoState {
       },
     ],
     wishlist: [
-      { id: "wish-book", label: "気になっていた本を読む" },
-      { id: "wish-drawer", label: "部屋の引き出しを整理する" },
+      { id: "wish-book", label: "気になっていた本を読む", projectId: "reading" },
+      { id: "wish-drawer", label: "部屋の引き出しを整理する", projectId: "tidy" },
       { id: "wish-walk", label: "近所をゆっくり歩く" },
     ],
     sessions: [

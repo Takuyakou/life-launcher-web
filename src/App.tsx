@@ -10,6 +10,7 @@ import {
   LEGACY_STORAGE_KEY,
   loadDemoState,
   saveDemoState,
+  V2_STORAGE_KEY,
 } from "./demo/storage";
 import { todayItemFromCandidate } from "./demo/todayBuilder";
 import type { DemoAction, DemoBuilderCandidate } from "./demo/types";
@@ -205,6 +206,7 @@ function App() {
       return;
     try {
       window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+      window.localStorage.removeItem(V2_STORAGE_KEY);
     } catch {
       /* Current state was saved successfully. */
     }

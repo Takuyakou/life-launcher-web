@@ -49,7 +49,7 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
             item.id === state.timer.todayItemId,
         ) ||
           (!state.timer.todayItemId &&
-            action.sourceId === `project:${state.timer.projectId}`))
+            action.sourceId === `nextstep:${state.timer.projectId}`))
       )
         return state;
       return {
@@ -84,7 +84,11 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
       return {
         ...state,
         wishlist: [
-          { id: action.id, label: action.label.trim().slice(0, 120) },
+          {
+            id: action.id,
+            label: action.label.trim().slice(0, 120),
+            projectId: action.projectId,
+          },
           ...state.wishlist,
         ],
       };

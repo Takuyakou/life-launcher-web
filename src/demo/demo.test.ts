@@ -9,6 +9,7 @@ import {
 } from "./seed";
 import {
   createTodayBuilderCandidates,
+  sourceLockedByUnfinishedToday,
   todayItemFromCandidate,
 } from "./todayBuilder";
 
@@ -32,7 +33,7 @@ describe("Today Builder", () => {
     const candidates = createTodayBuilderCandidates(createDemoSeed(fixedNow));
     expect(candidates).toHaveLength(7);
     expect(candidates[0]).toMatchObject({
-      sourceId: "project:reading",
+      sourceId: "nextstep:reading",
       sourceType: "nextStep",
       label: "数分だけ読む",
     });
@@ -53,6 +54,45 @@ describe("Today Builder", () => {
         .filter((item) => item.label === "同じ文面")
         .map((item) => item.sourceId),
     ).toEqual(["wishlist:wish-a", "wishlist:wish-b"]);
+  });
+
+  it("omits Projects without a NextStep and keeps Wishlist Project identity", () => {
+    const state = createDemoSeed(fixedNow);
+    state.projects[0].nextStep = undefined;
+    const candidates = createTodayBuilderCandidates(state);
+    expect(candidates.some((item) => item.sourceId === "nextstep:reading")).toBe(
+      false,
+    );
+    expect(
+      candidates.find((item) => item.sourceId === "wishlist:wish-book"),
+    ).toMatchObject({ projectId: "reading" });
+  });
+
+  it("derives source lock from unfinished Today identity only", () => {
+    const state = createDemoSeed(fixedNow);
+    expect(sourceLockedByUnfinishedToday(state, "nextstep:reading")).toBe(true);
+    expect(sourceLockedByUnfinishedToday(state, "nextstep:exercise")).toBe(
+      false,
+    );
+    const sameText = {
+      ...state,
+      wishlist: [
+        { id: "a", label: "同じ内容" },
+        { id: "b", label: "同じ内容" },
+      ],
+      todayItems: [
+        {
+          id: "today-a",
+          sourceId: "wishlist:a",
+          label: "同じ内容",
+          completed: false,
+        },
+      ],
+    };
+    expect(sourceLockedByUnfinishedToday(sameText, "wishlist:a")).toBe(true);
+    expect(sourceLockedByUnfinishedToday(sameText, "wishlist:b")).toBe(false);
+    sameText.todayItems[0].completed = true;
+    expect(sourceLockedByUnfinishedToday(sameText, "wishlist:a")).toBe(false);
   });
 });
 
@@ -98,7 +138,7 @@ describe("demo reducer", () => {
     });
     expect(state.todayItems).toHaveLength(3);
     expect(
-      state.todayItems.some((item) => item.sourceId === "project:study"),
+      state.todayItems.some((item) => item.sourceId === "nextstep:study"),
     ).toBe(false);
   });
 
@@ -106,17 +146,17 @@ describe("demo reducer", () => {
     const state = createDemoSeed(fixedNow);
     const next = demoReducer(state, {
       type: "EXCLUDE_TODAY_CANDIDATE",
-      sourceId: "project:exercise",
+      sourceId: "nextstep:exercise",
     });
     expect(
-      next.todayItems.some((item) => item.sourceId === "project:exercise"),
+      next.todayItems.some((item) => item.sourceId === "nextstep:exercise"),
     ).toBe(false);
     expect(
       next.projects.find((project) => project.id === "exercise")?.nextStep,
     ).toBe("ストレッチをする");
     expect(
       createTodayBuilderCandidates(next).some(
-        (item) => item.sourceId === "project:exercise",
+        (item) => item.sourceId === "nextstep:exercise",
       ),
     ).toBe(false);
   });
@@ -196,7 +236,7 @@ describe("demo reducer", () => {
     });
     changed = demoReducer(changed, {
       type: "EXCLUDE_TODAY_CANDIDATE",
-      sourceId: "project:exercise",
+      sourceId: "nextstep:exercise",
     });
     changed = demoReducer(changed, {
       type: "UPDATE_PROJECT_NEXT_STEP",

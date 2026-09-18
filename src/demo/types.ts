@@ -32,12 +32,13 @@ export type DemoProject = {
   id: string;
   name: string;
   color: "amber" | "green" | "blue" | "violet";
-  nextStep: string;
+  nextStep?: string;
 };
 
 export type DemoWishlistItem = {
   id: string;
   label: string;
+  projectId?: string;
 };
 
 export type DemoSession = {
@@ -68,7 +69,7 @@ export type DemoSectionState = {
 };
 
 export type DemoState = {
-  schemaVersion: 2;
+  schemaVersion: 3;
   victory: DemoVictory;
   doNowIndex: number;
   todayItems: DemoTodayItem[];
@@ -89,7 +90,7 @@ export type DemoAction =
   | { type: "EXCLUDE_TODAY_CANDIDATE"; sourceId: string }
   | { type: "NEXT_TODAY_BATCH" }
   | { type: "OPEN_BUILDER" }
-  | { type: "ADD_WISHLIST"; id: string; label: string }
+  | { type: "ADD_WISHLIST"; id: string; label: string; projectId?: string }
   | { type: "UPDATE_PROJECT_NEXT_STEP"; projectId: string; nextStep: string }
   | {
       type: "START_TIMER";
