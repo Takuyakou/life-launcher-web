@@ -62,8 +62,9 @@ test("captures expanded desktop states and layout metrics", async ({
     fullPage: false,
   });
   await page.getByRole("button", { name: "終わる", exact: true }).click();
+  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   await page
-    .locator(".builder-section")
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
     .click();
   await page.screenshot({

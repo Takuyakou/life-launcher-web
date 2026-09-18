@@ -929,7 +929,6 @@ input[type="checkbox"] {
   width: 6px;
 }
 
-.builder-content,
 .simple-list,
 .activity-list {
   border-top: 1px solid var(--line-soft);
@@ -937,91 +936,6 @@ input[type="checkbox"] {
   padding: 10px 22px;
 }
 
-.builder-intro,
-.builder-empty {
-  color: var(--muted);
-  font-size: 10px;
-  margin: 0 0 9px;
-}
-
-.builder-group + .builder-group {
-  margin-top: 10px;
-}
-
-.builder-group-heading {
-  align-items: center;
-  color: var(--muted-strong);
-  display: flex;
-  font-size: 9px;
-  gap: 7px;
-  margin-bottom: 3px;
-}
-
-.builder-group-heading span {
-  color: var(--muted);
-}
-
-.builder-row {
-  align-items: center;
-  border-top: 1px solid var(--line-soft);
-  display: grid;
-  gap: 12px;
-  grid-template-columns: minmax(0, 1fr) auto;
-  min-height: 47px;
-  padding: 5px 0;
-}
-
-.builder-row-copy {
-  align-items: center;
-  display: flex;
-  gap: 9px;
-  min-width: 0;
-}
-
-.builder-row-copy > strong {
-  font-size: 11px;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-}
-
-.builder-row-actions {
-  align-items: center;
-  display: flex;
-  gap: 6px;
-}
-
-.builder-add {
-  background: var(--green-soft);
-  border-color: #355e48;
-  color: var(--green);
-  font-size: 10px;
-  min-height: 31px;
-  min-width: 60px;
-  padding: 0 10px;
-}
-
-.builder-add:hover:not(:disabled) {
-  border-color: var(--green);
-}
-
-.builder-add:disabled {
-  cursor: not-allowed;
-  opacity: 0.48;
-}
-
-.builder-exclude {
-  background: transparent;
-  border: 0;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 9px;
-  min-height: 31px;
-  padding: 0 5px;
-}
-
-.builder-exclude:hover {
-  color: var(--text);
-}
 
 .section-heading-row {
   align-items: end;
@@ -1760,27 +1674,6 @@ footer a:hover {
     align-items: flex-start;
     flex-direction: column;
     gap: 4px;
-  }
-
-  .builder-content {
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-
-  .builder-row {
-    align-items: start;
-    grid-template-columns: 1fr;
-    padding: 9px 0;
-  }
-
-  .builder-row-copy {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .builder-row-actions {
-    justify-content: flex-end;
   }
 
   .row-actions {

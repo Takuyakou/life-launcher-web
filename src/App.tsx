@@ -154,14 +154,14 @@ function App() {
 
   const addTodayCandidate = (candidate: DemoBuilderCandidate) => {
     if (state.todayItems.some((item) => item.sourceId === candidate.sourceId))
-      return;
+      return false;
     if (state.todayItems.length >= 3) {
       setToast({
         id: Date.now(),
         message: "今日の3件は3件までです。今日やることだけに絞ります。",
         tone: "info",
       });
-      return;
+      return false;
     }
     if (
       !dispatch({
@@ -169,36 +169,23 @@ function App() {
         item: todayItemFromCandidate(candidate),
       })
     )
-      return;
+      return false;
     setToast({
       id: Date.now(),
       message: `${candidate.label}を今日の3件に追加しました`,
       tone: "success",
     });
+    return true;
   };
 
   const removeTodayItem = (id: string) => {
-    if (!dispatch({ type: "REMOVE_TODAY_ITEM", id })) return;
+    if (!dispatch({ type: "REMOVE_TODAY_ITEM", id })) return false;
     setToast({
       id: Date.now(),
       message: "今日の3件から外しました",
       tone: "success",
     });
-  };
-
-  const excludeTodayCandidate = (candidate: DemoBuilderCandidate) => {
-    if (
-      !dispatch({
-        type: "EXCLUDE_TODAY_CANDIDATE",
-        sourceId: candidate.sourceId,
-      })
-    )
-      return;
-    setToast({
-      id: Date.now(),
-      message: "今日の候補から外しました。登録元は残っています。",
-      tone: "info",
-    });
+    return true;
   };
 
   const resetDemo = () => {
@@ -395,7 +382,6 @@ function App() {
             dispatch={dispatch}
             onAddTodayCandidate={addTodayCandidate}
             onRemoveTodayItem={removeTodayItem}
-            onExcludeTodayCandidate={excludeTodayCandidate}
             onDemoComplete={completeTimerDemo}
             onNativeOnly={showNativeToast}
             onOpenDictionary={() => setDictionaryOpen(true)}

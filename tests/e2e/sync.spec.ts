@@ -64,6 +64,10 @@ test("Today3 finishes only after confirmation, next batch is manual, and reset r
     0,
   );
   await page
+    .getByRole("button", { name: "今日やるものを選ぶ" })
+    .click();
+  await page
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
     .click();
   for (const label of ["本を読む", "机の上だけ片付ける"]) {
@@ -82,12 +86,16 @@ test("Today3 finishes only after confirmation, next batch is manual, and reset r
   const records = await page.locator(".activity-list li").count();
   await page.getByRole("button", { name: "次の3件を選ぶ" }).click();
   await expect(page.locator(".today-row")).toHaveCount(0);
-  await expect(page.locator(".builder-section .section-toggle")).toBeFocused();
+  await expect(
+    page.getByRole("button", { name: "今日やるものを選ぶを閉じる" }),
+  ).toBeFocused();
   await expect(page.locator(".activity-list li")).toHaveCount(records);
   await page
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "数分だけ読むを今日の3件に追加" })
     .click();
   await expect(page.locator(".today-row")).toHaveCount(1);
+  await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "リセット", exact: true }).click();
   await page.getByRole("button", { name: "リセットする" }).click();
   await expect(page.locator(".today-row")).toHaveCount(2);
@@ -116,26 +124,20 @@ test("paused replacement removes the old active state without completing it", as
   ).toHaveCount(1);
 });
 
-test("Builder pages five candidates and recovers when the last page becomes empty", async ({
+test("Today Picker separates next steps and Wishlist without duplicate selected sources", async ({
   page,
 }) => {
-  await expect(page.locator(".builder-row")).toHaveCount(5);
-  await page.getByRole("button", { name: "次の候補ページ" }).click();
-  await expect(page.locator(".builder-row")).toHaveCount(2);
-  await page
-    .getByRole("button", { name: "近所をゆっくり歩くを今日の候補から外す" })
-    .click();
-  await expect(page.locator(".builder-row")).toHaveCount(1);
-  await page
-    .getByRole("button", {
-      name: "部屋の引き出しを整理するを今日の候補から外す",
-    })
-    .click();
-  await expect(page.locator(".builder-row")).toHaveCount(5);
+  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
+  const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
+  await expect(picker.locator(".today-picker-source-row")).toHaveCount(2);
   await expect(
-    page.getByRole("navigation", { name: "候補のページ" }),
+    picker.getByRole("button", { name: "ストレッチをするを今日の3件に追加" }),
   ).toHaveCount(0);
-  await expect(page.locator(".simple-list li")).toHaveCount(3);
+  await picker.getByRole("tab", { name: /やりたいこと/ }).click();
+  await expect(picker.locator(".today-picker-source-row")).toHaveCount(3);
+  await expect(
+    picker.getByText("近所をゆっくり歩く", { exact: true }),
+  ).toHaveCount(1);
 });
 
 test("Wishlist modal is keyboard operable, text-only, and its add action does not toggle the section", async ({
@@ -160,16 +162,16 @@ test("Wishlist modal is keyboard operable, text-only, and its add action does no
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
   await expect(
     page
-      .locator(".builder-row")
+      .locator(".simple-list")
       .getByText("<img src=x onerror=alert(1)>", { exact: true }),
-  ).toBeVisible();
+  ).toHaveCount(1);
   await expect(page.locator("img[src=x]")).toHaveCount(0);
   await page.reload();
   await expect(
     page
-      .locator(".builder-row")
+      .locator(".simple-list")
       .getByText("<img src=x onerror=alert(1)>", { exact: true }),
-  ).toBeVisible();
+  ).toHaveCount(1);
 });
 
 test("save failure keeps the candidate and modal draft instead of optimistic loss", async ({
@@ -182,12 +184,6 @@ test("save failure keeps the candidate and modal draft instead of optimistic los
   });
   await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
   await expect(page.locator(".demo-timer .timer-status")).toHaveText("待機中");
-  await page
-    .getByRole("button", { name: "ストレッチをするを今日の候補から外す" })
-    .click();
-  await expect(
-    page.locator(".builder-row").getByText("ストレッチをする", { exact: true }),
-  ).toBeVisible();
   await page
     .getByRole("button", { name: "やりたいことを追加", exact: true })
     .click();
@@ -222,12 +218,16 @@ test("disclosure right edge toggles and dictionary arrows stay in the dialog", a
   await expect(opener).toBeFocused();
 });
 
-test("running candidate cannot be excluded and persistence is not written on timer ticks", async ({
+test("running Today item cannot be removed and persistence is not written on timer ticks", async ({
   page,
 }) => {
   await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
+  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   await expect(
-    page.getByRole("button", { name: "数分だけ読むを今日の候補から外す" }),
+    page
+      .getByRole("dialog", { name: "今日やるものを選ぶ" })
+      .locator(".today-picker-slot", { hasText: "本を読む" })
+      .getByRole("button", { name: "今日から外す" }),
   ).toBeDisabled();
   await page.evaluate(() => {
     Storage.prototype.setItem = () => {

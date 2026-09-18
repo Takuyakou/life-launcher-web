@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DO_NOW_CANDIDATES, launchActionsForProject } from "../demo/seed";
 import { createTodayBuilderCandidates } from "../demo/todayBuilder";
 import { earlyTarget, earlyThresholdSeconds } from "../demo/earlyCompletion";
@@ -10,6 +10,7 @@ import type {
 } from "../demo/types";
 import { DemoTimer } from "./DemoTimer";
 import { TimerActions } from "./TimerActions";
+import { TodayPicker } from "./TodayPicker";
 import { WishlistDialog } from "./WishlistDialog";
 import { UiIcon } from "./UiIcon";
 
@@ -30,9 +31,8 @@ type Props = {
   onResumeTimer: () => void;
   onStopTimer: () => void;
   onDemoComplete: () => void;
-  onAddTodayCandidate: (candidate: DemoBuilderCandidate) => void;
-  onRemoveTodayItem: (id: string) => void;
-  onExcludeTodayCandidate: (candidate: DemoBuilderCandidate) => void;
+  onAddTodayCandidate: (candidate: DemoBuilderCandidate) => boolean;
+  onRemoveTodayItem: (id: string) => boolean;
 };
 
 export function DemoFrame({
@@ -48,16 +48,15 @@ export function DemoFrame({
   onDemoComplete,
   onAddTodayCandidate,
   onRemoveTodayItem,
-  onExcludeTodayCandidate,
 }: Props) {
   const [editingVictory, setEditingVictory] = useState(false);
   const [victoryDraft, setVictoryDraft] = useState(state.victory.text);
   const [addingWishlist, setAddingWishlist] = useState(false);
-  const [requestedPage, setRequestedPage] = useState(0);
+  const [todayPickerOpen, setTodayPickerOpen] = useState(false);
   const victoryEditButtonRef = useRef<HTMLButtonElement>(null);
   const victoryInputRef = useRef<HTMLInputElement>(null);
-  const builderRef = useRef<HTMLButtonElement>(null);
   const wishlistAddRef = useRef<HTMLButtonElement>(null);
+  const todayPickerTriggerRef = useRef<HTMLButtonElement>(null);
   const doNowCandidate =
     DO_NOW_CANDIDATES[state.doNowIndex % DO_NOW_CANDIDATES.length] ??
     DO_NOW_CANDIDATES[0];
@@ -71,9 +70,6 @@ export function DemoFrame({
       ? state.timer.status
       : "idle";
   const candidates = createTodayBuilderCandidates(state);
-  const pageCount = Math.max(1, Math.ceil(candidates.length / 5));
-  const pageIndex = Math.min(requestedPage, pageCount - 1);
-  const visibleCandidates = candidates.slice(pageIndex * 5, pageIndex * 5 + 5);
   const completedCount = state.todayItems.filter(
     (item) => item.completed,
   ).length;
@@ -92,10 +88,6 @@ export function DemoFrame({
     if (editingVictory) victoryInputRef.current?.focus();
   }, [editingVictory]);
   useEffect(() => setVictoryDraft(state.victory.text), [state.victory.text]);
-  useEffect(() => {
-    setRequestedPage(0);
-  }, [state.wishlist]);
-
   const finishVictoryEdit = () => {
     setEditingVictory(false);
     requestAnimationFrame(() => victoryEditButtonRef.current?.focus());
@@ -111,18 +103,14 @@ export function DemoFrame({
     setVictoryDraft(text || state.victory.text);
     finishVictoryEdit();
   };
-  const focusBuilder = (nextBatch = false) => {
+  const openTodayPicker = (nextBatch = false) => {
     if (nextBatch && !dispatch({ type: "NEXT_TODAY_BATCH" })) return;
-    if (!nextBatch) dispatch({ type: "OPEN_BUILDER" });
-    setRequestedPage(0);
-    requestAnimationFrame(() => {
-      builderRef.current?.scrollIntoView({
-        block: "center",
-        behavior: "smooth",
-      });
-      builderRef.current?.focus({ preventScroll: true });
-    });
+    setTodayPickerOpen(true);
   };
+  const closeTodayPicker = useCallback(() => {
+    setTodayPickerOpen(false);
+    requestAnimationFrame(() => todayPickerTriggerRef.current?.focus());
+  }, []);
   const sectionToggle = (
     section: keyof DemoSectionState,
     title: string,
@@ -134,7 +122,6 @@ export function DemoFrame({
       className="section-toggle"
       aria-expanded={state.sections[section]}
       aria-controls={`section-${section}`}
-      ref={section === "todayBuilder" ? builderRef : undefined}
       onClick={() => dispatch({ type: "TOGGLE_SECTION", section })}
     >
       <span className="chevron" aria-hidden="true">
@@ -479,13 +466,14 @@ export function DemoFrame({
                 );
               })}
             </div>
-            {state.todayItems.length === 0 && (
+            {state.todayItems.length < 3 && (
               <button
                 type="button"
-                className="text-button"
-                onClick={() => focusBuilder()}
+                className="button button-gold today-picker-trigger"
+                onClick={() => openTodayPicker()}
+                ref={todayPickerTriggerRef}
               >
-                今日の候補を見る
+                ＋ 今日やるものを選ぶ
               </button>
             )}
             {allThreeCompleted && (
@@ -493,158 +481,11 @@ export function DemoFrame({
                 type="button"
                 className="button button-good sync-next-batch"
                 disabled={state.timer.status !== "idle"}
-                onClick={() => focusBuilder(true)}
+                onClick={() => openTodayPicker(true)}
               >
                 次の3件を選ぶ
               </button>
             )}
-          </section>
-          <section className="demo-section compact-section builder-section">
-            {sectionToggle(
-              "todayBuilder",
-              "今日を組み立てる",
-              `${candidates.length}件`,
-              "次の一手・やりたいことから選ぶ",
-            )}
-            <div
-              id="section-todayBuilder"
-              hidden={!state.sections.todayBuilder}
-            >
-              <div className="builder-content">
-                {(["nextStep", "wishlist"] as const).map((type) => {
-                  const items = visibleCandidates.filter(
-                    (candidate) => candidate.sourceType === type,
-                  );
-                  if (!items.length) return null;
-                  return (
-                    <section
-                      className="builder-group"
-                      aria-labelledby={`builder-${type}`}
-                      key={type}
-                    >
-                      <div className="builder-group-heading">
-                        <strong id={`builder-${type}`}>
-                          {type === "nextStep" ? "次の一手" : "やりたいこと"}
-                        </strong>
-                        <span>
-                          {
-                            candidates.filter(
-                              (candidate) => candidate.sourceType === type,
-                            ).length
-                          }
-                          件
-                        </span>
-                      </div>
-                      {items.map((candidate) => {
-                        const project = state.projects.find(
-                          (entry) => entry.id === candidate.projectId,
-                        );
-                        const selected = state.todayItems.some(
-                          (item) => item.sourceId === candidate.sourceId,
-                        );
-                        const active =
-                          state.timer.status !== "idle" &&
-                          (state.todayItems.some(
-                            (item) =>
-                              item.sourceId === candidate.sourceId &&
-                              item.id === state.timer.todayItemId,
-                          ) ||
-                            (!state.timer.todayItemId &&
-                              state.timer.projectId === candidate.projectId));
-                        return (
-                          <div className="builder-row" key={candidate.sourceId}>
-                            <div className="builder-row-copy">
-                              {project && (
-                                <span
-                                  className={`project-label project-${project.color}`}
-                                >
-                                  <span />
-                                  {project.name}
-                                </span>
-                              )}
-                              <strong>{candidate.label}</strong>
-                            </div>
-                            <div className="builder-row-actions">
-                              <button
-                                type="button"
-                                className="button builder-add"
-                                aria-label={`${candidate.label}を今日の3件に追加`}
-                                disabled={
-                                  selected || state.todayItems.length >= 3
-                                }
-                                title={
-                                  selected
-                                    ? "今日に選択済み"
-                                    : state.todayItems.length >= 3
-                                      ? "今日の3件は3件までです"
-                                      : "今日へ"
-                                }
-                                onClick={() => onAddTodayCandidate(candidate)}
-                              >
-                                {selected ? "選択済み" : "今日へ"}
-                              </button>
-                              <button
-                                type="button"
-                                className="builder-exclude"
-                                aria-label={`${candidate.label}を今日の候補から外す`}
-                                disabled={active}
-                                onClick={() =>
-                                  onExcludeTodayCandidate(candidate)
-                                }
-                              >
-                                候補から外す
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </section>
-                  );
-                })}
-                {candidates.length === 0 && (
-                  <div className="builder-empty">
-                    <p>候補がありません</p>
-                    <button
-                      type="button"
-                      className="text-button"
-                      onClick={() => {
-                        wishlistAddRef.current?.focus();
-                        setAddingWishlist(true);
-                      }}
-                    >
-                      やりたいことを登録
-                    </button>
-                  </div>
-                )}
-                {pageCount > 1 && (
-                  <nav className="sync-pagination" aria-label="候補のページ">
-                    <button
-                      type="button"
-                      className="icon-button"
-                      aria-label="前の候補ページ"
-                      title="前の候補ページ"
-                      disabled={pageIndex === 0}
-                      onClick={() => setRequestedPage(pageIndex - 1)}
-                    >
-                      ←
-                    </button>
-                    <span aria-live="polite">
-                      {pageIndex + 1} / {pageCount}
-                    </span>
-                    <button
-                      type="button"
-                      className="icon-button"
-                      aria-label="次の候補ページ"
-                      title="次の候補ページ"
-                      disabled={pageIndex + 1 === pageCount}
-                      onClick={() => setRequestedPage(pageIndex + 1)}
-                    >
-                      →
-                    </button>
-                  </nav>
-                )}
-              </div>
-            </div>
           </section>
           <section className="demo-section compact-section next-section">
             {sectionToggle(
@@ -731,6 +572,15 @@ export function DemoFrame({
           onSave={(label) =>
             dispatch({ type: "ADD_WISHLIST", id: crypto.randomUUID(), label })
           }
+        />
+      )}
+      {todayPickerOpen && (
+        <TodayPicker
+          candidates={candidates}
+          onAdd={onAddTodayCandidate}
+          onClose={closeTodayPicker}
+          onRemove={onRemoveTodayItem}
+          state={state}
         />
       )}
     </div>

@@ -72,7 +72,6 @@ describe("demo storage v3", () => {
   it("migrates v2 without guessing Wishlist Projects or inheriting Builder state", () => {
     const storage = new MemoryStorage();
     const fallback = createDemoSeed(fixedNow);
-    fallback.sections.todayBuilder = false;
     const older = asV2();
     (older.sections as Record<string, unknown>).todayBuilder = true;
     delete older.candidateExcludedSourceIds;
@@ -90,7 +89,7 @@ describe("demo storage v3", () => {
     const loaded = loadDemoState(storage, fallback);
 
     expect(loaded.schemaVersion).toBe(3);
-    expect(loaded.sections.todayBuilder).toBe(false);
+    expect(loaded.sections).not.toHaveProperty("todayBuilder");
     expect(loaded.candidateExcludedSourceIds).toEqual([]);
     expect(loaded.todayItems.map((item) => item.sourceId)).toEqual([
       "nextstep:exercise",

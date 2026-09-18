@@ -217,8 +217,6 @@ const normalizeState = (
         typeof value.sections.nextStep === "boolean"
           ? value.sections.nextStep
           : fallback.sections.nextStep,
-      // The old permanent Builder open state is deliberately not migrated.
-      todayBuilder: fallback.sections.todayBuilder,
       wishlist: value.sections.wishlist as boolean,
       activity: value.sections.activity as boolean,
     },
@@ -229,7 +227,6 @@ export function isDemoState(value: unknown): value is DemoState {
   const fallback = {
     sections: {
       nextStep: true,
-      todayBuilder: true,
       wishlist: false,
       activity: true,
     },

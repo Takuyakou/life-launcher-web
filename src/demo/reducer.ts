@@ -61,8 +61,6 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
           new Set([...state.candidateExcludedSourceIds, action.sourceId]),
         ),
       };
-    case "OPEN_BUILDER":
-      return { ...state, sections: { ...state.sections, todayBuilder: true } };
     case "NEXT_TODAY_BATCH":
       if (
         state.timer.status !== "idle" ||
@@ -73,7 +71,6 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
       return {
         ...state,
         todayItems: [],
-        sections: { ...state.sections, todayBuilder: true },
       };
     case "ADD_WISHLIST":
       if (

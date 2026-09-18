@@ -151,7 +151,6 @@ export function createDemoSeed(now: Date): DemoState {
     timer: createIdleTimer(),
     sections: {
       nextStep: true,
-      todayBuilder: true,
       wishlist: false,
       activity: true,
     },

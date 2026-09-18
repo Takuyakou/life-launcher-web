@@ -49,23 +49,24 @@ test("Do Now rotates text, project and fixed reason together", async ({
   await expect(page.getByText("今週の重点にある次の一手")).toBeVisible();
 });
 
-test("Builder is the only Today adoption surface and enforces the three-item limit", async ({
+test("Today Picker is the only Today adoption surface and enforces the three-item limit", async ({
   page,
 }) => {
-  const builder = page.locator(".builder-section");
-  await expect(builder.getByText("次の一手", { exact: true })).toBeVisible();
-  await expect(
-    builder.getByText("やりたいこと", { exact: true }),
-  ).toBeVisible();
+  await expect(page.locator(".builder-section")).toHaveCount(0);
   await expect(
     page.locator(".next-section").getByText("今日へ", { exact: true }),
   ).toHaveCount(0);
   await expect(
     page.locator(".simple-list").getByText("今日へ", { exact: true }),
   ).toHaveCount(0);
-  await builder
+  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
+  const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
+  await expect(picker.getByRole("tab", { name: /次の一手/ })).toBeVisible();
+  await expect(picker.getByRole("tab", { name: /やりたいこと/ })).toBeVisible();
+  await picker
     .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
     .click();
+  await expect(picker).toHaveCount(0);
   await expect(page.locator(".today-row")).toHaveCount(3);
   await expect(
     page
@@ -73,32 +74,32 @@ test("Builder is the only Today adoption surface and enforces the three-item lim
       .getByText("机の上だけ片付ける", { exact: true }),
   ).toBeVisible();
   await expect(
-    builder.getByRole("button", {
-      name: "気になっていたことを調べるを今日の3件に追加",
-    }),
-  ).toBeDisabled();
+    page.getByRole("button", { name: "今日やるものを選ぶ" }),
+  ).toHaveCount(0);
 });
 
-test("excluding a candidate removes its Today snapshot but keeps its source", async ({
+test("removing in Today Picker removes its snapshot but keeps its source", async ({
   page,
 }) => {
-  const builder = page.locator(".builder-section");
-  await builder
-    .getByRole("button", { name: "ストレッチをするを今日の候補から外す" })
+  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
+  const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
+  await picker
+    .locator(".today-picker-slot", { hasText: "ストレッチをする" })
+    .getByRole("button", { name: "今日から外す" })
     .click();
   await expect(
     page.locator(".today-list").getByText("ストレッチをする", { exact: true }),
   ).toHaveCount(0);
   await expect(
-    builder.getByText("ストレッチをする", { exact: true }),
-  ).toHaveCount(0);
+    picker.getByText("ストレッチをする", { exact: true }),
+  ).toBeVisible();
   await expect(
     page
       .locator(".next-section")
       .getByText("ストレッチをする", { exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByText("今日の候補から外しました。登録元は残っています。"),
+    page.getByText("今日の3件から外しました", { exact: true }),
   ).toBeVisible();
 });
 
@@ -152,7 +153,7 @@ test("demo completion can update the project next step", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "次の章を読む" }),
   ).toBeVisible();
-  await expect(page.getByText("次の章を読む", { exact: true })).toHaveCount(3);
+  await expect(page.getByText("次の章を読む", { exact: true })).toHaveCount(2);
 });
 
 test("demo completion can be skipped without updating the project", async ({
@@ -175,9 +176,10 @@ test("sections open and reset restores every v2 seed field", async ({
   await page.locator(".wishlist-section .section-toggle").click();
   await expect(
     page.getByText("気になっていた本を読む", { exact: true }),
-  ).toHaveCount(2);
+  ).toHaveCount(1);
+  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   await page
-    .locator(".builder-section")
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
     .click();
   await page.getByRole("button", { name: "勝利条件を編集" }).click();

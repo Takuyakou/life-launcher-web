@@ -12,7 +12,13 @@ test("remove persists without confirmation or loss of sources and sessions", asy
   await expect(card).toHaveCount(0);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.getByText("今日の3件から外しました", { exact: true })).toBeVisible();
-  await expect(page.locator(".builder-row").getByText("数分だけ読む", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
+  await expect(
+    page
+      .getByRole("dialog", { name: "今日やるものを選ぶ" })
+      .getByText("数分だけ読む", { exact: true }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
   await expect(page.locator(".today-row")).toHaveCount(1);
   await page.reload();
   await expect(card).toHaveCount(0);

@@ -63,7 +63,6 @@ export type DemoTimerState = {
 
 export type DemoSectionState = {
   nextStep: boolean;
-  todayBuilder: boolean;
   wishlist: boolean;
   activity: boolean;
 };
@@ -89,7 +88,6 @@ export type DemoAction =
   | { type: "REMOVE_TODAY_ITEM"; id: string }
   | { type: "EXCLUDE_TODAY_CANDIDATE"; sourceId: string }
   | { type: "NEXT_TODAY_BATCH" }
-  | { type: "OPEN_BUILDER" }
   | { type: "ADD_WISHLIST"; id: string; label: string; projectId?: string }
   | { type: "UPDATE_PROJECT_NEXT_STEP"; projectId: string; nextStep: string }
   | {

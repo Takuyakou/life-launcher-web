@@ -46,7 +46,10 @@ for (const viewport of [
     await capture("landing");
     await capture("default", ".demo-window");
     await capture("two", ".today-section");
+    await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
+    await capture("picker-two", ".today-picker");
     await page
+      .getByRole("dialog", { name: "今日やるものを選ぶ" })
       .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
       .click();
     await capture("three", ".today-section");
@@ -68,10 +71,6 @@ for (const viewport of [
           style: ".site-header, .skip-link { visibility: hidden !important; }",
         });
     }
-    await capture("builder", ".builder-section");
-    await page.getByRole("button", { name: "次の候補ページ" }).click();
-    await capture("builder-page2", ".builder-section");
-    await page.getByRole("button", { name: "前の候補ページ" }).click();
     await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
     await capture("timer", ".today-section");
     await page.getByRole("button", { name: /満了まで進める/ }).click();
@@ -85,10 +84,12 @@ for (const viewport of [
     await capture("completed", ".today-section");
     await page.getByRole("button", { name: "次の3件を選ぶ" }).click();
     await expect(page.locator(".today-row")).toHaveCount(0);
-    await capture("next-batch", ".today-section");
+    await capture("picker-zero", ".today-picker");
     await page
+      .getByRole("dialog", { name: "今日やるものを選ぶ" })
       .getByRole("button", { name: "数分だけ読むを今日の3件に追加" })
       .click();
+    await page.keyboard.press("Escape");
     await capture("one", ".today-section");
     for (const section of [
       "next-section",
@@ -109,7 +110,13 @@ for (const viewport of [
       .getByRole("dialog")
       .getByRole("button", { name: "追加", exact: true })
       .click();
-    await capture("long-candidate", ".builder-section");
+    await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
+    await page
+      .getByRole("dialog", { name: "今日やるものを選ぶ" })
+      .getByRole("tab", { name: /やりたいこと/ })
+      .click();
+    await capture("long-candidate", ".today-picker");
+    await page.keyboard.press("Escape");
     await page.getByRole("button", { name: /辞書を開く/ }).click();
     await capture("dictionary");
     await page.keyboard.press("Escape");
@@ -128,7 +135,9 @@ for (const viewport of [
 test("medium Today3 uses two stable columns", async ({ page }) => {
   await page.setViewportSize({ width: 1000, height: 900 });
   await page.goto("/");
+  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   await page
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
     .click();
   expect(

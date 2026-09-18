@@ -61,7 +61,7 @@ test("production bundle works under shipped CSP without runtime network or conso
     .click();
   await expect(
     page
-      .locator(".builder-row")
+      .locator(".simple-list")
       .getByText("<svg onload=alert(1)>", { exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "本を読むを25分で開始" }).click();

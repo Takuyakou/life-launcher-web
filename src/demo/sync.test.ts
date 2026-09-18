@@ -92,7 +92,6 @@ describe("WEB11 timer identity and batches", () => {
     expect(next.todayItems).toEqual([]);
     expect(next.sessions).toBe(state.sessions);
     expect(next.projects).toBe(state.projects);
-    expect(next.sections.todayBuilder).toBe(true);
   });
   it("refuses completed or missing Today targets and invalid durations", () => {
     const seed = createDemoSeed(now);
