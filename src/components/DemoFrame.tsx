@@ -423,7 +423,6 @@ export function DemoFrame({
           <section
             className="demo-section today-section"
             aria-labelledby="today-three-heading"
-            tabIndex={-1}
           >
             <div className="sync-heading">
               <h2 id="today-three-heading">今日の3件</h2>
