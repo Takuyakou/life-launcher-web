@@ -220,10 +220,6 @@ function App() {
     });
   };
 
-  const focusDemo = () => {
-    window.requestAnimationFrame(() => demoRef.current?.focus());
-  };
-
   const focusDoNowShortStart = () => {
     demoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     window.requestAnimationFrame(() => {
@@ -284,7 +280,6 @@ function App() {
               <a
                 className="button button-gold button-large hero-primary"
                 href="#demo"
-                onClick={focusDemo}
               >
                 <UiIcon name="play" size={16} /> ブラウザで試す
               </a>
@@ -377,7 +372,6 @@ function App() {
           className="demo-section-shell"
           id="demo"
           ref={demoRef}
-          tabIndex={-1}
         >
           <div className="demo-intro">
             <div>
@@ -508,7 +502,6 @@ function App() {
             <a
               className="button button-gold button-large"
               href="#demo"
-              onClick={focusDemo}
             >
               <UiIcon name="play" size={16} /> ブラウザで試す
             </a>

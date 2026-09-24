@@ -44,7 +44,7 @@ export function CompletionDialog({
           previous.focus();
         else
           document
-            .querySelector<HTMLElement>(".today-section")
+            .querySelector<HTMLElement>(".today-section button:not([disabled])")
             ?.focus({ preventScroll: true });
       });
     };

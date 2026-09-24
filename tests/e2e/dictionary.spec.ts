@@ -26,8 +26,7 @@ test("dictionary supports focus, search, native-only toast, Escape and focus ret
 });
 
 test("dictionary can be opened and closed with keyboard only", async ({ page }) => {
-  await page.locator("#demo").focus();
-  await page.keyboard.press("Tab");
+  await page.getByRole("button", { name: /辞書$/ }).focus();
   await expect(page.getByRole("button", { name: /辞書$/ })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("searchbox", { name: "辞書を検索" })).toBeFocused();

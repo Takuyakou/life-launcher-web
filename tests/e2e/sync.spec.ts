@@ -20,7 +20,8 @@ test("natural expiry waits for confirmation and restores keyboard focus", async 
   ).toHaveCount(1);
   await page.getByRole("button", { name: "終わる", exact: true }).click();
   await page.clock.runFor(50);
-  await expect(page.locator(".today-section")).toBeFocused();
+  await expect(page.locator(".today-section button:focus")).toHaveCount(1);
+  await expect(page.locator(".today-section")).not.toBeFocused();
   await expect(
     page.getByRole("status", { name: "本を読む：完了", exact: true }),
   ).toHaveCount(1);
