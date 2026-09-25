@@ -355,13 +355,13 @@ export function DemoFrame({
               <h2 id="do-now-heading">{doNowText}</h2>
               <p className="do-now-reason">
                 {doNowCandidate?.reason ??
-                  "Projectに次の一手を設定すると候補になります"}
+                  "プロジェクトに次の一手を設定すると候補になります"}
               </p>
               <p className="do-now-description">
                 迷ったときに、今の状況から始めやすい「次にやること」を1つだけ提示します。
               </p>
               <p className="demo-rule-note">
-                Web Demoでは次の一手があるProjectを登録順で表示
+                Web Demoでは次の一手があるプロジェクトを登録順で表示
               </p>
               {doNowStatus !== "idle" && (
                 <span role="status" className="sync-running">

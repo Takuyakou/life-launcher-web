@@ -39,17 +39,17 @@ test("Do Now rotates text, project and explainable reason together", async ({
   page,
 }) => {
   await expect(
+    page.getByRole("heading", { name: "参考書を10ページ進める" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("学習に次の一手が設定されているため"),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "他の一手" }).click();
+  await expect(
     page.getByRole("heading", { name: "数分だけ読む" }),
   ).toBeVisible();
   await expect(
     page.getByText("読書に次の一手が設定されているため"),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "他の一手" }).click();
-  await expect(
-    page.getByRole("heading", { name: "ストレッチをする" }),
-  ).toBeVisible();
-  await expect(
-    page.getByText("運動に次の一手が設定されているため"),
   ).toBeVisible();
 });
 
@@ -68,14 +68,14 @@ test("Today Picker is the only Today adoption surface and enforces the three-ite
   await expect(picker.getByRole("tab", { name: /次の一手/ })).toBeVisible();
   await expect(picker.getByRole("tab", { name: /やりたいこと/ })).toBeVisible();
   await picker
-    .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
+    .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
     .click();
   await expect(picker).toHaveCount(0);
   await expect(page.locator(".today-row")).toHaveCount(3);
   await expect(
     page
       .locator(".today-list")
-      .getByText("机の上だけ片付ける", { exact: true }),
+      .getByText("参考書を10ページ進める", { exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "今日やるものを選ぶ" }),
@@ -154,7 +154,7 @@ test("demo completion can update the project next step", async ({ page }) => {
   const dialog = page.getByRole("dialog", { name: "おつかれさまでした" });
   await expect(dialog).toBeVisible();
   const input = dialog.getByRole("textbox", { name: "次の一手" });
-  await expect(input).toHaveValue("数分だけ読む");
+  await expect(input).toHaveValue("参考書を10ページ進める");
   await input.fill("次の章を読む");
   await dialog.getByRole("button", { name: "保存" }).click();
   await expect(page.getByText("次の一手を更新しました")).toBeVisible();
@@ -174,7 +174,7 @@ test("demo completion can be skipped without updating the project", async ({
     page.getByRole("dialog", { name: "おつかれさまでした" }),
   ).toHaveCount(0);
   await expect(
-    page.getByRole("heading", { name: "数分だけ読む" }),
+    page.getByRole("heading", { name: "参考書を10ページ進める" }),
   ).toBeVisible();
 });
 
@@ -188,7 +188,7 @@ test("sections open and reset restores every v2 seed field", async ({
   await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   await page
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
-    .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
+    .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
     .click();
   await page.getByRole("button", { name: "勝利条件を編集" }).click();
   await page.getByRole("textbox", { name: "勝利条件" }).fill("変更した条件");

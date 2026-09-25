@@ -50,7 +50,7 @@ for (const viewport of [
     await capture("picker-two", ".today-picker");
     await page
       .getByRole("dialog", { name: "今日やるものを選ぶ" })
-      .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
+      .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
       .click();
     await capture("three", ".today-section");
     const columns = await page
@@ -77,7 +77,8 @@ for (const viewport of [
     await capture("completion");
     await page.getByRole("button", { name: "終わる", exact: true }).click();
     await page
-      .getByRole("button", { name: "机の上だけ片付けるを5分で開始" })
+      .getByRole("article", { name: "参考書を10ページ進める", exact: true })
+      .getByRole("button", { name: "参考書を10ページ進めるを5分で開始" })
       .click();
     await page.getByRole("button", { name: /満了まで進める/ }).click();
     await page.getByRole("button", { name: "終わる", exact: true }).click();
@@ -138,7 +139,7 @@ test("medium Today3 uses two stable columns", async ({ page }) => {
   await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   await page
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
-    .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
+    .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
     .click();
   expect(
     await page

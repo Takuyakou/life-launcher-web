@@ -69,10 +69,13 @@ test("Today3 finishes only after confirmation, next batch is manual, and reset r
     .click();
   await page
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
-    .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
+    .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
     .click();
-  for (const label of ["本を読む", "机の上だけ片付ける"]) {
-    await page.getByRole("button", { name: `${label}を5分で開始` }).click();
+  for (const label of ["本を読む", "参考書を10ページ進める"]) {
+    await page
+      .getByRole("article", { name: label, exact: true })
+      .getByRole("button", { name: `${label}を5分で開始` })
+      .click();
     await page.getByRole("button", { name: /満了まで進める/ }).click();
     await expect(
       page.getByRole("status", { name: `${label}：未完了`, exact: true }),
@@ -130,7 +133,7 @@ test("Today Picker separates next steps and Wishlist without duplicate selected 
 }) => {
   await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
-  await expect(picker.locator(".today-picker-source-row")).toHaveCount(2);
+  await expect(picker.locator(".today-picker-source-row")).toHaveCount(1);
   await expect(
     picker.getByRole("button", { name: "ストレッチをするを今日の3件に追加" }),
   ).toHaveCount(0);

@@ -90,6 +90,12 @@ export function createDemoSeed(now: Date): DemoState {
     ],
     candidateExcludedSourceIds: [],
     projects: [
+      {
+        id: "study",
+        name: "学習",
+        color: "violet",
+        nextStep: "参考書を10ページ進める",
+      },
       { id: "reading", name: "読書", color: "amber", nextStep: "数分だけ読む" },
       {
         id: "exercise",
@@ -97,22 +103,10 @@ export function createDemoSeed(now: Date): DemoState {
         color: "green",
         nextStep: "ストレッチをする",
       },
-      {
-        id: "tidy",
-        name: "片付け",
-        color: "blue",
-        nextStep: "机の上だけ片付ける",
-      },
-      {
-        id: "study",
-        name: "学習",
-        color: "violet",
-        nextStep: "気になっていたことを調べる",
-      },
     ],
     wishlist: [
       { id: "wish-book", label: "気になっていた本を読む", projectId: "reading" },
-      { id: "wish-drawer", label: "部屋の引き出しを整理する", projectId: "tidy" },
+      { id: "wish-drawer", label: "英単語を20個復習する", projectId: "study" },
       { id: "wish-walk", label: "近所をゆっくり歩く" },
     ],
     sessions: [
