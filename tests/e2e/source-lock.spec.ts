@@ -51,22 +51,22 @@ test("NextStep presents normal, locked, completed and empty states", async ({
   await page.evaluate(() => {
     const key = "life-launcher-web-demo:v3";
     const state = JSON.parse(localStorage.getItem(key) ?? "{}");
-    delete state.projects.find((project: { id: string }) => project.id === "tidy")
+    delete state.projects.find((project: { id: string }) => project.id === "study")
       .nextStep;
     localStorage.setItem(key, JSON.stringify(state));
   });
   await page.reload();
-  const emptyTidy = page
+  const emptyStudy = page
     .locator(".next-section")
-    .locator(".source-row", { hasText: "片付け" });
+    .locator(".source-row", { hasText: "学習" });
   await expect(
-    emptyTidy.getByText("まだ次の一手がありません", { exact: true }),
+    emptyStudy.getByText("まだ次の一手がありません", { exact: true }),
   ).toBeVisible();
-  await emptyTidy.getByRole("button", { name: "次の一手を設定" }).click();
+  await emptyStudy.getByRole("button", { name: "次の一手を設定" }).click();
   const emptyDialog = page.getByRole("dialog", { name: "次の一手を設定" });
-  await emptyDialog.getByRole("textbox", { name: "次の一手" }).fill("机を拭く");
+  await emptyDialog.getByRole("textbox", { name: "次の一手" }).fill("次の10ページを読む");
   await emptyDialog.getByRole("button", { name: "保存" }).click();
-  await expect(emptyTidy.getByText("机を拭く", { exact: true })).toBeVisible();
+  await expect(emptyStudy.getByText("次の10ページを読む", { exact: true })).toBeVisible();
 });
 
 test("Wishlist is grouped by Project with unassigned last and unlocks on remove", async ({
@@ -75,8 +75,8 @@ test("Wishlist is grouped by Project with unassigned last and unlocks on remove"
   await page.locator(".wishlist-section .section-toggle").click();
   const groups = page.locator(".wishlist-group");
   await expect(groups).toHaveCount(3);
-  await expect(groups.nth(0).getByRole("heading")).toHaveText("読書");
-  await expect(groups.nth(1).getByRole("heading")).toHaveText("片付け");
+  await expect(groups.nth(0).getByRole("heading")).toHaveText("学習");
+  await expect(groups.nth(1).getByRole("heading")).toHaveText("読書");
   await expect(groups.nth(2).getByRole("heading")).toHaveText("未分類");
 
   const walk = groups.nth(2).locator(".wishlist-row", {
@@ -143,6 +143,7 @@ test("same-text Wishlist rows lock only the matching stable source ID", async ({
 test("Do Now completion cannot replace an unfinished locked NextStep", async ({
   page,
 }) => {
+  await page.getByRole("button", { name: "他の一手" }).click();
   await page.locator("[data-demo-do-now-short]").click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
   const dialog = page.getByRole("dialog", { name: "おつかれさまでした" });

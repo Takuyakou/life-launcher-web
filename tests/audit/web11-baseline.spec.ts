@@ -70,7 +70,7 @@ for (const viewport of [
     await capture("builder", ".builder-section");
     await capture("lower", ".next-section");
     await page
-      .getByRole("button", { name: "机の上だけ片付けるを今日の3件に追加" })
+      .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
       .click();
     await expect(page.locator(".today-row")).toHaveCount(3);
     await capture("today3", ".today-section");

@@ -63,7 +63,7 @@ describe("demo storage v3", () => {
       timer: { status: "idle" },
       wishlist: [
         { id: "wish-book", projectId: "reading" },
-        { id: "wish-drawer", projectId: "tidy" },
+        { id: "wish-drawer", projectId: "study" },
         { id: "wish-walk", projectId: undefined },
       ],
     });

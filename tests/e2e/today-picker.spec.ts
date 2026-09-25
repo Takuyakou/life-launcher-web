@@ -36,7 +36,7 @@ test("supports stable 0/3 through 3/3 add and remove flow", async ({ page }) => 
     ),
   ).toBeLessThanOrEqual(1);
 
-  for (const label of ["机の上だけ片付ける", "気になっていたことを調べる"]) {
+  for (const label of ["参考書を10ページ進める", "数分だけ読む"]) {
     await picker
       .getByRole("button", { name: `${label}を今日の3件に追加` })
       .click();

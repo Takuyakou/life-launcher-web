@@ -59,7 +59,7 @@ export function NextStepDialog({
         <h2 id="next-step-dialog-title">
           {initialValue ? "次の一手を変更" : "次の一手を設定"}
         </h2>
-        <p className="dialog-context">Project: {projectName}</p>
+        <p className="dialog-context">プロジェクト: {projectName}</p>
         <form
           onSubmit={(event) => {
             event.preventDefault();

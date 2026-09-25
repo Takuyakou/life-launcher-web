@@ -10,7 +10,7 @@ for (const [width, columns] of [[1440, 3], [1000, 2], [390, 1]]) {
     await page
       .getByRole("dialog", { name: "今日やるものを選ぶ" })
       .getByRole("button", {
-        name: "机の上だけ片付けるを今日の3件に追加",
+        name: "参考書を10ページ進めるを今日の3件に追加",
       })
       .click();
     const list = page.locator(".today-list");

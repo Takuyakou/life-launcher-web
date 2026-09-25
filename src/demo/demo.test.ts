@@ -31,13 +31,13 @@ describe("synthetic demo seed", () => {
 describe("Today Builder", () => {
   it("derives stable candidates from NextStep and Wishlist sources", () => {
     const candidates = createTodayBuilderCandidates(createDemoSeed(fixedNow));
-    expect(candidates).toHaveLength(7);
+    expect(candidates).toHaveLength(6);
     expect(candidates[0]).toMatchObject({
-      sourceId: "nextstep:reading",
+      sourceId: "nextstep:study",
       sourceType: "nextStep",
-      label: "数分だけ読む",
+      label: "参考書を10ページ進める",
     });
-    expect(candidates[4]).toMatchObject({
+    expect(candidates[3]).toMatchObject({
       sourceId: "wishlist:wish-book",
       sourceType: "wishlist",
     });
@@ -60,7 +60,7 @@ describe("Today Builder", () => {
     const state = createDemoSeed(fixedNow);
     state.projects[0].nextStep = undefined;
     const candidates = createTodayBuilderCandidates(state);
-    expect(candidates.some((item) => item.sourceId === "nextstep:reading")).toBe(
+    expect(candidates.some((item) => item.sourceId === "nextstep:study")).toBe(
       false,
     );
     expect(
@@ -106,35 +106,38 @@ describe("demo reducer", () => {
 
   it("derives Do Now candidates only from Projects with a NextStep", () => {
     const state = createDemoSeed(fixedNow);
-    state.projects[3].nextStep = undefined;
+    state.projects[2].nextStep = undefined;
     const candidates = createDoNowCandidates(state);
-    expect(candidates).toHaveLength(3);
+    expect(candidates).toHaveLength(2);
     expect(candidates[0]).toMatchObject({
-      projectId: "reading",
-      text: "数分だけ読む",
-      reason: "読書に次の一手が設定されているため",
+      projectId: "study",
+      text: "参考書を10ページ進める",
+      reason: "学習に次の一手が設定されているため",
     });
     state.projects[1].nextStep = undefined;
-    expect(createDoNowCandidates(state)).toHaveLength(2);
-    state.projects[2].nextStep = undefined;
     expect(createDoNowCandidates(state)).toHaveLength(1);
+    state.projects[0].nextStep = undefined;
+    expect(createDoNowCandidates(state)).toHaveLength(0);
   });
 
   it("adopts only one third Builder candidate and rejects duplicate or fourth sources", () => {
     let state = createDemoSeed(fixedNow);
-    const [reading, , tidy, study] = createTodayBuilderCandidates(state);
+    const candidates = createTodayBuilderCandidates(state);
+    const reading = candidates.find((item) => item.sourceId === "nextstep:reading")!;
+    const study = candidates.find((item) => item.sourceId === "nextstep:study")!;
+    const wishlist = candidates.find((item) => item.sourceId === "wishlist:wish-book")!;
     state = demoReducer(state, {
       type: "ADD_TODAY_ITEM",
-      item: todayItemFromCandidate(tidy),
+      item: todayItemFromCandidate(study),
     });
     expect(state.todayItems).toHaveLength(3);
     state = demoReducer(state, {
       type: "ADD_TODAY_ITEM",
-      item: todayItemFromCandidate(tidy),
+      item: todayItemFromCandidate(study),
     });
     state = demoReducer(state, {
       type: "ADD_TODAY_ITEM",
-      item: todayItemFromCandidate(study),
+      item: todayItemFromCandidate(wishlist),
     });
     state = demoReducer(state, {
       type: "ADD_TODAY_ITEM",
@@ -142,7 +145,7 @@ describe("demo reducer", () => {
     });
     expect(state.todayItems).toHaveLength(3);
     expect(
-      state.todayItems.some((item) => item.sourceId === "nextstep:study"),
+      state.todayItems.some((item) => item.sourceId === "wishlist:wish-book"),
     ).toBe(false);
   });
 

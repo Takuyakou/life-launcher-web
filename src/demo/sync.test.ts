@@ -51,7 +51,7 @@ describe("WEB11 timer identity and batches", () => {
       shortMinutes: 5,
       normalMinutes: 25,
     });
-    expect(state.projects[0].nextStep).toBe("次の章");
+    expect(state.projects.find((project) => project.id === "reading")?.nextStep).toBe("次の章");
     expect(state.sessions.at(-1)?.minutes).toBe(5);
     expect(demoReducer(state, { type: "CONFIRM_TIMER", now })).toBe(state);
   });
@@ -79,7 +79,11 @@ describe("WEB11 timer identity and batches", () => {
     expect(demoReducer(seed, { type: "NEXT_TODAY_BATCH" })).toBe(seed);
     let state = demoReducer(seed, {
       type: "ADD_TODAY_ITEM",
-      item: todayItemFromCandidate(createTodayBuilderCandidates(seed)[2]),
+      item: todayItemFromCandidate(
+        createTodayBuilderCandidates(seed).find(
+          (candidate) => candidate.sourceId === "nextstep:study",
+        )!,
+      ),
     });
     state = {
       ...state,

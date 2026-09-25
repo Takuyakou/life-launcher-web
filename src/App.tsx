@@ -326,8 +326,8 @@ function App() {
                 <strong>後回しを1つ終わらせる</strong>
               </div>
               <div className="hero-mini-step">
-                <span className="hero-mini-project">Project: 読書</span>
-                <strong>本を数分だけ読む</strong>
+                <span className="hero-mini-project">プロジェクト: 学習</span>
+                <strong>参考書を10ページ進める</strong>
               </div>
               <button
                 className="button button-good hero-preview-action"
@@ -356,7 +356,7 @@ function App() {
             <article>
               <span>2</span>
               <h3>一手を小さくする</h3>
-              <p>次の一手があるProjectから、登録順で1件だけ提示します。</p>
+              <p>「次の一手」があるプロジェクトから、今やることを1件だけ示します。</p>
             </article>
             <article>
               <span>3</span>
@@ -421,13 +421,13 @@ function App() {
             <article>
               <h3>今やる一手</h3>
               <p>
-                次の一手があるProjectから登録順で1件だけ提示し、必要なら選ばれた理由も確認できます。
+                「次の一手」を設定したプロジェクトから1件を表示し、理由も確認できます。
               </p>
             </article>
             <article>
               <h3>今日やるものを選ぶ / 今日の3件</h3>
               <p>
-                Today Pickerで次の一手とやりたいことから最大3件を選び、タイマーから実行します。
+                「今日やるものを選ぶ」画面で「次の一手」と「やりたいこと」から最大3件を選び、タイマーから実行します。
               </p>
             </article>
             <article>
