@@ -11,12 +11,10 @@ test("fresh visitors see consistent, general sample content", async ({ page }) =
   await expect(page.locator(".hero-mini-step strong")).toHaveText(
     "参考書を10ページ進める",
   );
-  await expect(page.locator(".do-now-card h2")).toHaveText(
-    "参考書を10ページ進める",
-  );
+  await expect(page.locator(".do-now-card h2")).toHaveText("数分だけ読む");
   await expect(page.locator(".do-now-card")).toHaveAttribute(
     "data-project-color",
-    "violet",
+    "amber",
   );
   await expect(page.getByText("Today Picker", { exact: false })).toHaveCount(0);
 

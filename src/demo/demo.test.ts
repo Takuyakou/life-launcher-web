@@ -106,6 +106,7 @@ describe("demo reducer", () => {
 
   it("derives Do Now candidates only from Projects with a NextStep", () => {
     const state = createDemoSeed(fixedNow);
+    state.todayItems = [];
     state.projects[2].nextStep = undefined;
     const candidates = createDoNowCandidates(state);
     expect(candidates).toHaveLength(2);

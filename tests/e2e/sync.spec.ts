@@ -116,6 +116,7 @@ test("paused replacement removes the old active state without completing it", as
   await expect(
     page.getByRole("button", { name: "本を読むを再開" }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "他の一手" }).click();
   await page.locator("[data-demo-do-now-short]").click();
   await expect(
     page.getByRole("button", { name: "本を読むを再開" }),

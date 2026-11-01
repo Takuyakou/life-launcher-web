@@ -27,7 +27,7 @@ test("cycles three NextStep candidates with complete Project color follow only",
   );
   const seen: string[] = [];
 
-  for (const expected of ["violet", "amber", "green", "violet"]) {
+  for (const expected of ["amber", "violet", "green", "amber"]) {
     await expect(card).toHaveAttribute("data-project-color", expected);
     const colors = await card.evaluate((node) => {
       const dot = node.querySelector<HTMLElement>(".project-label > span");

@@ -57,7 +57,7 @@ export function DemoFrame({
   onRemoveTodayItem,
 }: Props) {
   const [editingVictory, setEditingVictory] = useState(false);
-  const [doNowIndex, setDoNowIndex] = useState(0);
+  const [doNowProjectId, setDoNowProjectId] = useState<string | null>(null);
   const [victoryDraft, setVictoryDraft] = useState(state.victory.text);
   const [addingWishlist, setAddingWishlist] = useState(false);
   const [todayPickerOpen, setTodayPickerOpen] = useState(false);
@@ -70,14 +70,25 @@ export function DemoFrame({
   const todayPickerTriggerRef = useRef<HTMLButtonElement>(null);
   const doNowCandidates = createDoNowCandidates(state);
   const doNowCandidate =
-    doNowCandidates[doNowIndex % Math.max(doNowCandidates.length, 1)];
+    doNowCandidates.find((entry) => entry.projectId === doNowProjectId) ??
+    doNowCandidates[0];
   const doNowProject = state.projects.find(
-    (project) => project.id === doNowCandidate.projectId,
+    (project) => project.id === doNowCandidate?.projectId,
   );
   const doNowText = doNowCandidate?.text ?? "まだ次の一手がありません";
+  const doNowSourceId = doNowCandidate
+    ? nextStepSourceId(doNowCandidate.projectId)
+    : "";
+  const doNowTodayItems = state.todayItems.filter(
+    (item) => !item.completed && item.sourceId === doNowSourceId,
+  );
+  const timerItem = state.todayItems.find(
+    (item) => item.id === state.timer.todayItemId,
+  );
   const doNowStatus =
-    !state.timer.todayItemId &&
-    state.timer.projectId === doNowCandidate?.projectId
+    doNowCandidate &&
+    state.timer.projectId === doNowCandidate.projectId &&
+    (!state.timer.todayItemId || timerItem?.sourceId === doNowSourceId)
       ? state.timer.status
       : "idle";
   const candidates = createTodayBuilderCandidates(state);
@@ -122,8 +133,12 @@ export function DemoFrame({
   }, [editingVictory]);
   useEffect(() => setVictoryDraft(state.victory.text), [state.victory.text]);
   useEffect(() => {
-    if (doNowIndex >= doNowCandidates.length) setDoNowIndex(0);
-  }, [doNowCandidates.length, doNowIndex]);
+    if (
+      doNowProjectId &&
+      !doNowCandidates.some((entry) => entry.projectId === doNowProjectId)
+    )
+      setDoNowProjectId(null);
+  }, [doNowCandidates, doNowProjectId]);
   const finishVictoryEdit = () => {
     setEditingVictory(false);
     requestAnimationFrame(() => victoryEditButtonRef.current?.focus());
@@ -280,7 +295,10 @@ export function DemoFrame({
               }).format(new Date())}
             </time>
           </div>
-          <section className="victory-card" aria-labelledby="victory-heading">
+          <section
+            className={`victory-card${editingVictory ? " is-editing" : ""}${state.victory.text.trim() ? "" : " is-empty"}`}
+            aria-labelledby="victory-heading"
+          >
             <div className="victory-icon" aria-hidden="true">
               🏆
             </div>
@@ -361,7 +379,7 @@ export function DemoFrame({
                 迷ったときに、今の状況から始めやすい「次にやること」を1つだけ提示します。
               </p>
               <p className="demo-rule-note">
-                Web Demoでは次の一手があるプロジェクトを登録順で表示
+                Web Demoでは、今日の3件に入っている一手を先に、ほかは登録順で表示
               </p>
               {doNowStatus !== "idle" && (
                 <span role="status" className="sync-running">
@@ -369,14 +387,21 @@ export function DemoFrame({
                     ? "実行中"
                     : doNowStatus === "paused"
                       ? "一時停止"
-                      : "満了"}
+                      : doNowStatus === "finished"
+                        ? "満了"
+                        : ""}
                 </span>
               )}
               {doNowCandidates.length >= 2 && (
                 <button
                   className="text-button"
                   onClick={() =>
-                    setDoNowIndex((index) => (index + 1) % doNowCandidates.length)
+                    setDoNowProjectId(
+                      doNowCandidates[
+                        (doNowCandidates.indexOf(doNowCandidate) + 1) %
+                          doNowCandidates.length
+                      ].projectId,
+                    )
                   }
                   type="button"
                 >
@@ -395,6 +420,9 @@ export function DemoFrame({
                     doNowCandidate.projectId,
                     doNowProject?.name ?? "今やる一手",
                     minutes * 60,
+                    doNowTodayItems.length === 1
+                      ? doNowTodayItems[0].id
+                      : undefined,
                   )
                 }
                 {...timerHandlers}
@@ -426,12 +454,13 @@ export function DemoFrame({
           >
             <div className="sync-heading">
               <h2 id="today-three-heading">今日の3件</h2>
-              <span>{state.todayItems.length}件</span>
               <span
                 role="status"
                 className={allThreeCompleted ? "sync-complete" : ""}
               >
-                {completedCount} / {state.todayItems.length} 完了
+                {state.todayItems.length === 0
+                  ? "0件"
+                  : `${completedCount} / ${state.todayItems.length} 完了`}
               </span>
             </div>
             <div className="today-list">
@@ -611,12 +640,12 @@ export function DemoFrame({
                           onClick={() => setEditingNextStepId(project.id)}
                           title={
                             locked
-                              ? "今日の3件を完了するか外してから変更できます"
+                              ? "今日の3件を完了するか外してから編集できます"
                               : undefined
                           }
                           type="button"
                         >
-                          {project.nextStep ? "変更" : "次の一手を設定"}
+                          {project.nextStep ? "編集" : "次の一手を設定"}
                         </button>
                       </div>
                     </li>
