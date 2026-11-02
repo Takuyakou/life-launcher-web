@@ -708,3 +708,196 @@
     transform: none !important;
   }
 }
+
+/* W14-02: Windows v1.4.1 colour, border, heading and focus rules (Demo area only) */
+.sync-demo .demo-section {
+  border-bottom-color: transparent;
+}
+
+/* section bars: name -> count -> description, count column aligned to "やりたいこと" + 18px */
+.sync-demo .sync-heading,
+.sync-demo .section-toggle {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font-size: 11px;
+}
+.sync-demo .sync-heading {
+  margin-bottom: 12px;
+}
+.sync-demo .chevron,
+.sync-demo .chevron-spacer {
+  flex: 0 0 14px;
+  width: 14px;
+  margin-right: 10px;
+  text-align: center;
+  line-height: 1;
+}
+.sync-demo .heading-name {
+  display: grid;
+  flex: none;
+  margin: 0 18px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text);
+}
+.sync-demo .heading-name > span {
+  grid-area: 1 / 1;
+  width: 0;
+  white-space: nowrap;
+}
+.sync-demo .heading-name::after {
+  content: "やりたいこと";
+  grid-area: 1 / 1;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  white-space: nowrap;
+}
+.sync-demo .sync-heading .section-count,
+.sync-demo .section-toggle .section-count {
+  flex: none;
+  margin: 0 8px 0 0;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+}
+.sync-demo .sync-heading .section-count.sync-complete {
+  color: var(--green);
+}
+.sync-demo .sync-heading small,
+.sync-demo .section-toggle small {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 450;
+}
+.sync-demo .section-toggle:hover,
+.sync-demo .sync-disclosure-header:hover {
+  background: var(--surface-soft);
+  border-color: var(--muted);
+  box-shadow: none;
+  transform: none;
+}
+.sync-demo .sync-disclosure-header {
+  border: 1px solid var(--line);
+}
+.sync-demo .sync-disclosure-header .section-toggle {
+  border: 0;
+  padding: 10px 12px;
+}
+.sync-demo .sync-disclosure-header .section-toggle:hover {
+  background: transparent;
+}
+
+/* one focus ring: the whole bar for the toggle, only the button for the + control */
+.sync-demo .sync-disclosure-header:has(.section-toggle:focus-visible) {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+.sync-demo .sync-disclosure-header .section-toggle:focus-visible {
+  outline: none;
+  background: transparent;
+}
+
+/* Today 3 entrance: dashed slot in the card grid, no inner border */
+.sync-demo .today-slot {
+  display: grid;
+  place-items: center;
+  min-height: 142px;
+  padding: 12px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+.sync-demo .today-slot:only-child {
+  grid-column: 1 / -1;
+  min-height: 84px;
+}
+.sync-demo .today-slot .today-picker-trigger {
+  margin-top: 0;
+}
+
+/* text buttons in cards: border kept but transparent, hover is background */
+.sync-demo .today-remove-button {
+  border-color: transparent;
+}
+.sync-demo .today-remove-button:hover:not(:disabled) {
+  border-color: transparent;
+}
+
+/* status: running is green */
+.sync-running {
+  color: var(--green);
+}
+
+/* NextStep cards: project line on the left edge */
+.sync-source-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+.sync-source-list li.source-row {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--project);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+.sync-source-list li.source-row:hover,
+.sync-source-list li.source-row:focus-within {
+  background: var(--surface-strong);
+  border-color: color-mix(in srgb, var(--project) 58%, var(--line));
+  border-left-color: var(--project);
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.16);
+}
+.sync-source-list li.source-row:hover {
+  transform: translateY(-1px);
+}
+
+/* keyboard focus lifts like hover (Windows 4.2) */
+.demo-main .button:focus-visible:not(:disabled) {
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+.demo-main .button:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+}
+
+/* dialog action rows: green / red buttons share size and weight */
+.dialog-actions .button {
+  font-size: 12px;
+  font-weight: 700;
+}
+.today-picker-footer .button {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .sync-demo .sync-heading,
+  .sync-demo .section-toggle {
+    flex-wrap: wrap;
+  }
+  .sync-demo .sync-heading small,
+  .sync-demo .section-toggle small {
+    flex-basis: 100%;
+    padding-left: 24px;
+  }
+  .sync-demo .today-slot {
+    min-height: 84px;
+  }
+}

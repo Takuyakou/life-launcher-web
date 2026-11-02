@@ -93,7 +93,7 @@ export function ConfirmDialog({
             {confirmLabel}
           </button>
           <button
-            className="button button-quiet"
+            className="button button-danger"
             onClick={onCancel}
             ref={cancelRef}
             type="button"

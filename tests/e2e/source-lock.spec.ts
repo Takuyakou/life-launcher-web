@@ -17,13 +17,13 @@ test("NextStep presents normal, locked, completed and empty states", async ({
   await expect(
     reading.getByRole("img", { name: "今日の3件で使用中" }),
   ).toBeVisible();
-  await expect(reading.getByRole("button", { name: "変更" })).toBeDisabled();
+  await expect(reading.getByRole("button", { name: "編集" })).toBeDisabled();
   await expect(reading.getByText("今日の3件", { exact: true })).toBeVisible();
 
   await expect(
     exercise.getByRole("img", { name: "今日の3件で使用中" }),
   ).toHaveCount(0);
-  await expect(exercise.getByRole("button", { name: "変更" })).toBeEnabled();
+  await expect(exercise.getByRole("button", { name: "編集" })).toBeEnabled();
   await expect(exercise.getByText("今日の3件", { exact: true })).toBeVisible();
 
   await page
@@ -33,13 +33,13 @@ test("NextStep presents normal, locked, completed and empty states", async ({
   await expect(
     reading.getByRole("img", { name: "今日の3件で使用中" }),
   ).toHaveCount(0);
-  await expect(reading.getByRole("button", { name: "変更" })).toBeEnabled();
+  await expect(reading.getByRole("button", { name: "編集" })).toBeEnabled();
   await expect(
     reading.getByRole("button", { name: "数分だけ読むを今日の3件に追加" }),
   ).toBeVisible();
 
-  await reading.getByRole("button", { name: "変更" }).click();
-  const dialog = page.getByRole("dialog", { name: "次の一手を変更" });
+  await reading.getByRole("button", { name: "編集" }).click();
+  const dialog = page.getByRole("dialog", { name: "次の一手を編集" });
   await dialog.getByRole("textbox", { name: "次の一手" }).fill("次の章を開く");
   await dialog.getByRole("button", { name: "保存" }).click();
   await expect(reading.getByText("次の章を開く", { exact: true })).toBeVisible();
@@ -140,20 +140,20 @@ test("same-text Wishlist rows lock only the matching stable source ID", async ({
   ).toHaveCount(1);
 });
 
-test("Do Now completion cannot replace an unfinished locked NextStep", async ({
+test("Do Now completion of a locked NextStep completes its Today item before the NextStep can be replaced", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "他の一手" }).click();
   await page.locator("[data-demo-do-now-short]").click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
   const dialog = page.getByRole("dialog", { name: "おつかれさまでした" });
-  await expect(dialog.getByRole("textbox", { name: "次の一手" })).toHaveCount(
-    0,
-  );
-  await dialog.getByRole("button", { name: "終わる", exact: true }).click();
+  await dialog.getByRole("textbox", { name: "次の一手" }).fill("次の章を開く");
+  await dialog.getByRole("button", { name: "保存" }).click();
+  await expect(
+    page.getByRole("status", { name: "本を読む：完了" }),
+  ).toBeVisible();
   await expect(
     page
       .locator(".next-section")
-      .getByText("数分だけ読む", { exact: true }),
+      .getByText("次の章を開く", { exact: true }),
   ).toBeVisible();
 });

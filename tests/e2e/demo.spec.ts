@@ -39,17 +39,15 @@ test("Do Now rotates text, project and explainable reason together", async ({
   page,
 }) => {
   await expect(
+    page.getByRole("heading", { name: "数分だけ読む" }),
+  ).toBeVisible();
+  await expect(page.getByText("今日の3件に入っている一手です")).toBeVisible();
+  await page.getByRole("button", { name: "他の一手" }).click();
+  await expect(
     page.getByRole("heading", { name: "参考書を10ページ進める" }),
   ).toBeVisible();
   await expect(
     page.getByText("学習に次の一手が設定されているため"),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "他の一手" }).click();
-  await expect(
-    page.getByRole("heading", { name: "数分だけ読む" }),
-  ).toBeVisible();
-  await expect(
-    page.getByText("読書に次の一手が設定されているため"),
   ).toBeVisible();
 });
 

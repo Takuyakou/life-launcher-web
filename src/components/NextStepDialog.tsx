@@ -57,7 +57,7 @@ export function NextStepDialog({
         role="dialog"
       >
         <h2 id="next-step-dialog-title">
-          {initialValue ? "次の一手を変更" : "次の一手を設定"}
+          {initialValue ? "次の一手を編集" : "次の一手を設定"}
         </h2>
         <p className="dialog-context">プロジェクト: {projectName}</p>
         <form
@@ -90,7 +90,7 @@ export function NextStepDialog({
               保存
             </button>
             <button
-              className="button button-quiet"
+              className="button button-danger"
               onClick={onClose}
               type="button"
             >

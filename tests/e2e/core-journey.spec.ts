@@ -18,8 +18,8 @@ test("core journey keeps Project, NextStep and Wishlist sources after Today exec
   }
 
   const reading = next.locator(".source-row", { hasText: "読書" });
-  await reading.getByRole("button", { name: "変更" }).click();
-  const nextDialog = page.getByRole("dialog", { name: "次の一手を変更" });
+  await reading.getByRole("button", { name: "編集" }).click();
+  const nextDialog = page.getByRole("dialog", { name: "次の一手を編集" });
   await nextDialog
     .getByRole("textbox", { name: "次の一手" })
     .fill("章を1ページ読む");
@@ -68,7 +68,7 @@ test("core journey keeps Project, NextStep and Wishlist sources after Today exec
     page.getByRole("status", { name: "章を1ページ読む：完了" }),
   ).toBeVisible();
   await expect(reading.getByText("次の章を開く", { exact: true })).toBeVisible();
-  await expect(reading.getByRole("button", { name: "変更" })).toBeEnabled();
+  await expect(reading.getByRole("button", { name: "編集" })).toBeEnabled();
   await page.locator(".wishlist-section .section-toggle").click();
   await expect(
     page
