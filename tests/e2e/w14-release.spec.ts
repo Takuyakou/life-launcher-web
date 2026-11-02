@@ -120,6 +120,7 @@ test("core journey runs without console errors, failed assets or network traffic
   page,
   baseURL,
 }) => {
+  test.skip(!process.env.WEB11_PREVIEW, "Run with WEB11_PREVIEW=1 after build");
   const problems: string[] = [];
   page.on("pageerror", (error) => problems.push(`pageerror:${error.message}`));
   page.on("console", (message) => {
