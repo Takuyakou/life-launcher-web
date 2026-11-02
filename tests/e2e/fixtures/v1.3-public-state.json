@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 3,
+  "victory": {
+    "text": "公開版の勝利条件",
+    "completed": true
+  },
+  "doNowIndex": 0,
+  "todayItems": [
+    {
+      "id": "today-stretch",
+      "sourceId": "nextstep:exercise",
+      "label": "ストレッチをする",
+      "projectId": "exercise",
+      "completed": true,
+      "shortMinutes": 5,
+      "normalMinutes": 25
+    },
+    {
+      "id": "today-reading",
+      "sourceId": "nextstep:reading",
+      "label": "本を読む",
+      "projectId": "reading",
+      "completed": true,
+      "shortMinutes": 5,
+      "normalMinutes": 25
+    },
+    {
+      "id": "today:nextstep:study",
+      "sourceId": "nextstep:study",
+      "label": "参考書を10ページ進める",
+      "projectId": "study",
+      "completed": false,
+      "shortMinutes": 5,
+      "normalMinutes": 25
+    }
+  ],
+  "candidateExcludedSourceIds": [
+    "wishlist:wish-walk"
+  ],
+  "projects": [
+    {
+      "id": "study",
+      "name": "学習",
+      "color": "violet",
+      "nextStep": "参考書を10ページ進める"
+    },
+    {
+      "id": "reading",
+      "name": "読書",
+      "color": "amber",
+      "nextStep": "数分だけ読む"
+    },
+    {
+      "id": "exercise",
+      "name": "運動",
+      "color": "green",
+      "nextStep": "ストレッチを1分だけ"
+    }
+  ],
+  "wishlist": [
+    {
+      "id": "43ef81ea-2e70-4f06-945e-33046faaea98",
+      "label": "公開版のやりたいこと"
+    },
+    {
+      "id": "wish-book",
+      "label": "気になっていた本を読む",
+      "projectId": "reading"
+    },
+    {
+      "id": "wish-drawer",
+      "label": "英単語を20個復習する",
+      "projectId": "study"
+    },
+    {
+      "id": "wish-walk",
+      "label": "近所をゆっくり歩く"
+    }
+  ],
+  "sessions": [
+    {
+      "id": "session-initial",
+      "projectId": "exercise",
+      "projectName": "運動",
+      "label": "ストレッチをする",
+      "minutes": 5,
+      "endedAt": "2026-09-25T01:30:00.000Z"
+    },
+    {
+      "id": "session-1790305200000-1",
+      "projectId": "reading",
+      "projectName": "読書",
+      "label": "本を読む",
+      "minutes": 5,
+      "endedAt": "2026-09-25T03:00:00.000Z"
+    }
+  ],
+  "timer": {
+    "status": "idle",
+    "label": "",
+    "projectId": "",
+    "projectName": "",
+    "durationSeconds": 0,
+    "remainingSeconds": 0,
+    "elapsedSeconds": 0
+  },
+  "sections": {
+    "nextStep": true,
+    "wishlist": true,
+    "activity": true
+  }
+}

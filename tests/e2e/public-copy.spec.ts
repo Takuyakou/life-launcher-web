@@ -7,9 +7,13 @@ test("fresh visitors see consistent, general sample content", async ({ page }) =
   await page.evaluate(() => localStorage.clear());
   await page.reload();
 
-  await expect(page.locator(".hero-mini-project")).toHaveText("プロジェクト: 学習");
+  await expect(page.locator(".hero-mini-project")).toHaveText("プロジェクト: 読書");
   await expect(page.locator(".hero-mini-step strong")).toHaveText(
-    "参考書を10ページ進める",
+    "数分だけ読む",
+  );
+  await expect(page.locator(".hero-mini-project")).toHaveCSS(
+    "color",
+    "rgb(232, 173, 85)",
   );
   await expect(page.locator(".do-now-card h2")).toHaveText("数分だけ読む");
   await expect(page.locator(".do-now-card")).toHaveAttribute(

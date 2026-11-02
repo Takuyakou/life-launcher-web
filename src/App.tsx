@@ -325,9 +325,9 @@ function App() {
                 <span>今日の勝利条件</span>
                 <strong>後回しを1つ終わらせる</strong>
               </div>
-              <div className="hero-mini-step">
-                <span className="hero-mini-project">プロジェクト: 学習</span>
-                <strong>参考書を10ページ進める</strong>
+              <div className="hero-mini-step project-amber">
+                <span className="hero-mini-project">プロジェクト: 読書</span>
+                <strong>数分だけ読む</strong>
               </div>
               <button
                 className="button button-good hero-preview-action"

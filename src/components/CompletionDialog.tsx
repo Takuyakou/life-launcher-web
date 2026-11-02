@@ -128,7 +128,7 @@ export function CompletionDialog({
             </button>
           )}
           <button
-            className="button button-quiet"
+            className="button button-danger"
             onClick={onSkip}
             type="button"
           >

@@ -175,3 +175,37 @@ test("keyboard focus on a heading shows exactly one ring", async ({ page }) => {
   await page.keyboard.press("Tab");
   await expect.poll(() => rings(".next-section")).toBe(1);
 });
+
+test("completion dialog: save and finish is green, finish is red (also when it is the only button)", async ({
+  page,
+}) => {
+  const green = "rgb(24, 51, 38)";
+  const red = "rgb(59, 33, 29)";
+  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
+  const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
+  await picker.getByRole("tab", { name: /やりたいこと/ }).click();
+  await picker
+    .getByRole("button", { name: "気になっていた本を読むを今日の3件に追加" })
+    .click();
+  await page
+    .getByRole("button", { name: "気になっていた本を読むを5分で開始" })
+    .click();
+  await page.getByRole("button", { name: /満了まで進める/ }).click();
+  const only = page.getByRole("dialog", { name: "おつかれさまでした" });
+  await expect(only.getByRole("button", { name: "保存して終わる" })).toHaveCount(0);
+  await expect(only.getByRole("button", { name: "終わる", exact: true })).toHaveCSS(
+    "background-color",
+    red,
+  );
+  await only.getByRole("button", { name: "終わる", exact: true }).click();
+
+  await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
+  await page.getByRole("button", { name: /満了まで進める/ }).click();
+  const dialog = page.getByRole("dialog", { name: "おつかれさまでした" });
+  await expect(
+    dialog.getByRole("button", { name: "保存して終わる" }),
+  ).toHaveCSS("background-color", green);
+  await expect(
+    dialog.getByRole("button", { name: "終わる", exact: true }),
+  ).toHaveCSS("background-color", red);
+});
