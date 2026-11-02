@@ -150,7 +150,9 @@ test.describe("victory glow", () => {
     await expect.poll(() => border(page)).toBe(gold);
   });
 
-  test("empty card does not glow", async ({ page }) => {
+  test("empty card reacts with its border only, and editing is strong from the first moment", async ({
+    page,
+  }) => {
     await page.getByRole("checkbox", { name: "今日の勝利条件を完了" }).check();
     await page.evaluate((storageKey) => {
       const state = JSON.parse(localStorage.getItem(storageKey) ?? "{}");
@@ -158,10 +160,31 @@ test.describe("victory glow", () => {
       localStorage.setItem(storageKey, JSON.stringify(state));
     }, key);
     await page.reload();
+    const placeholder = page.locator(".victory-placeholder");
+    const muted = "rgb(170, 163, 151)";
+    await expect(placeholder).toHaveText("今日はこれができれば勝ち");
+    await expect(placeholder).toHaveCSS("color", muted);
+    await page.mouse.move(0, 0);
+    await expect(page.locator(".victory-card")).toHaveCSS(
+      "border-top-color",
+      "rgb(157, 127, 37)",
+    );
     const rest = await border(page);
     await page.locator(".victory-card").hover();
-    await page.waitForTimeout(300);
-    expect(await border(page)).toBe(rest);
+    await expect.poll(() => border(page)).toBe(gold);
+    await expect(placeholder).toHaveCSS("color", muted);
+    await expect(page.locator(".victory-card")).toHaveCSS(
+      "background-color",
+      "rgb(40, 38, 31)",
+    );
+    await page.mouse.move(0, 0);
+    await expect.poll(() => border(page)).toBe(rest);
+
+    await page.getByRole("button", { name: "勝利条件を編集" }).click();
+    await page.mouse.move(0, 0);
+    await expect.poll(() => border(page)).toBe(gold);
+    await page.getByRole("textbox", { name: "勝利条件" }).pressSequentially("あ");
+    await expect.poll(() => border(page)).toBe(gold);
   });
 
   test("keyboard focus shows only the button ring, and editing keeps the strong border", async ({

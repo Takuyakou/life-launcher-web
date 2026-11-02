@@ -776,14 +776,18 @@ kbd {
     transform 120ms ease;
 }
 
-.victory-card:not(.is-empty):hover,
+.victory-card:hover,
 .victory-card.is-editing {
   background: var(--surface-strong);
   border-color: var(--gold);
 }
 
-.victory-card:not(.is-empty):hover {
+.victory-card:hover {
   transform: translateY(-1px);
+}
+
+.victory-value-row > .victory-placeholder {
+  color: var(--muted);
 }
 
 .victory-icon {
@@ -1864,6 +1868,9 @@ footer a:hover {
   .icon-button:active,
   .section-toggle:hover,
   .section-toggle:active,
+  .victory-card:hover,
+  .demo-main .button:focus-visible,
+  .sync-demo .source-row:hover,
   .dictionary-tile:hover,
   .dictionary-tile:active {
     transform: none !important;

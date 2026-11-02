@@ -119,7 +119,7 @@ export function CompletionDialog({
         <div className="dialog-actions">
           {editable && (
             <button
-              className="button button-gold"
+              className="button button-good"
               disabled={!draft.trim()}
               onClick={submit}
               type="button"

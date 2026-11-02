@@ -227,7 +227,7 @@ export function TodayPicker({
 
         <footer className="today-picker-footer">
           <span>選んだ内容はすぐに保存されます。</span>
-          <button className="button button-quiet" onClick={onClose} type="button">
+          <button className="button button-danger" onClick={onClose} type="button">
             キャンセル
           </button>
         </footer>

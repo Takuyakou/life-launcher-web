@@ -90,7 +90,7 @@ export function NextStepDialog({
               保存
             </button>
             <button
-              className="button button-quiet"
+              className="button button-danger"
               onClick={onClose}
               type="button"
             >

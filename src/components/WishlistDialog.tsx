@@ -76,14 +76,14 @@ export function WishlistDialog({
           )}
           <div className="dialog-actions">
             <button
-              className="button button-gold"
+              className="button button-good"
               type="submit"
               disabled={!draft.trim()}
             >
               追加
             </button>
             <button
-              className="button button-quiet"
+              className="button button-danger"
               type="button"
               onClick={onClose}
             >

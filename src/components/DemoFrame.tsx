@@ -178,7 +178,9 @@ export function DemoFrame({
       <span className="chevron" aria-hidden="true">
         ›
       </span>
-      <strong>{title}</strong>
+      <strong className="heading-name">
+        <span>{title}</span>
+      </strong>
       <span className="section-count">{count}</span>
       <small>{description}</small>
     </button>
@@ -296,7 +298,7 @@ export function DemoFrame({
             </time>
           </div>
           <section
-            className={`victory-card${editingVictory ? " is-editing" : ""}${state.victory.text.trim() ? "" : " is-empty"}`}
+            className={`victory-card${editingVictory ? " is-editing" : ""}`}
             aria-labelledby="victory-heading"
           >
             <div className="victory-icon" aria-hidden="true">
@@ -333,17 +335,23 @@ export function DemoFrame({
                     ref={victoryInputRef}
                     value={victoryDraft}
                   />
-                  <button className="button button-gold" type="submit">
+                  <button className="button button-good" type="submit">
                     保存
                   </button>
                 </form>
               ) : (
                 <div className="victory-value-row">
-                  <strong
-                    className={state.victory.completed ? "is-complete" : ""}
-                  >
-                    {state.victory.text}
-                  </strong>
+                  {state.victory.text.trim() ? (
+                    <strong
+                      className={state.victory.completed ? "is-complete" : ""}
+                    >
+                      {state.victory.text}
+                    </strong>
+                  ) : (
+                    <strong className="victory-placeholder">
+                      今日はこれができれば勝ち
+                    </strong>
+                  )}
                   <button
                     aria-label="勝利条件を編集"
                     className="icon-button"
@@ -453,15 +461,19 @@ export function DemoFrame({
             aria-labelledby="today-three-heading"
           >
             <div className="sync-heading">
-              <h2 id="today-three-heading">今日の3件</h2>
+              <span className="chevron-spacer" aria-hidden="true" />
+              <h2 className="heading-name" id="today-three-heading">
+                <span>今日の3件</span>
+              </h2>
               <span
                 role="status"
-                className={allThreeCompleted ? "sync-complete" : ""}
+                className={`section-count${allThreeCompleted ? " sync-complete" : ""}`}
               >
                 {state.todayItems.length === 0
                   ? "0件"
                   : `${completedCount} / ${state.todayItems.length} 完了`}
               </span>
+              <small>今日やると決めたもの。タイマーから開始します。</small>
             </div>
             <div className="today-list">
               {state.todayItems.map((item) => {
@@ -546,17 +558,19 @@ export function DemoFrame({
                   </article>
                 );
               })}
+              {state.todayItems.length < 3 && (
+                <div className="today-slot">
+                  <button
+                    type="button"
+                    className="button button-gold today-picker-trigger"
+                    onClick={() => openTodayPicker()}
+                    ref={todayPickerTriggerRef}
+                  >
+                    ＋ 今日やるものを選ぶ
+                  </button>
+                </div>
+              )}
             </div>
-            {state.todayItems.length < 3 && (
-              <button
-                type="button"
-                className="button button-gold today-picker-trigger"
-                onClick={() => openTodayPicker()}
-                ref={todayPickerTriggerRef}
-              >
-                ＋ 今日やるものを選ぶ
-              </button>
-            )}
             {allThreeCompleted && (
               <button
                 type="button"
@@ -583,7 +597,7 @@ export function DemoFrame({
                   const locked = sourceLockedByUnfinishedToday(state, sourceId);
                   return (
                     <li
-                      className={`source-row ${locked ? "is-locked" : ""}`}
+                      className={`source-row project-${project.color} ${locked ? "is-locked" : ""}`}
                       key={project.id}
                     >
                       <div className="source-row-copy">
@@ -619,7 +633,7 @@ export function DemoFrame({
                           project.nextStep && (
                             <button
                               aria-label={`${project.nextStep}を今日の3件に追加`}
-                              className="button button-gold source-add"
+                              className="button button-quiet source-add"
                               onClick={() =>
                                 onAddTodayCandidate({
                                   sourceId,
@@ -720,7 +734,7 @@ export function DemoFrame({
                               ) : (
                                 <button
                                   aria-label={`${item.label}を今日の3件に追加`}
-                                  className="button button-gold source-add"
+                                  className="button button-quiet source-add"
                                   onClick={() =>
                                     onAddTodayCandidate({
                                       sourceId,
