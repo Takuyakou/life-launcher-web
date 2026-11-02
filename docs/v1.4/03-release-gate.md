@@ -38,7 +38,7 @@ BLOCKED
 | `npm audit --audit-level=moderate` | **失敗**。17 件(高 3・中 14)、すべて開発用の依存 |
 | `npm audit --omit=dev --audit-level=moderate` | 通過。0 件 |
 | CI(候補 `93a1f5f`) | 通過(`verify`: install、public:check、lint、unit、build、E2E、Visual QA) |
-| 公開物の走査 `923f072..HEAD` | 通過。65 ファイル、追加行に個人のパス・メールアドレス・秘密情報・トークンらしい文字列なし(`C:\Users`、`/Users/`、利用者名、`@gmail`、`ghp_`、`sk-`、`AKIA`、`password`、`secret`、`api key`、`token` で検索)。画像は目で確認し、合成データだけで個人データ・実際のパスなし |
+| 公開物の走査 `923f072..HEAD` | 通過。65 ファイル、追加行に個人のパス・メールアドレス・秘密情報・トークンらしい文字列なし(Windows・macOS のユーザーフォルダーのパス、利用者名、メールアドレス、トークンや API キーの接頭辞、`password`、`secret`、`api key`、`token` で検索)。画像は目で確認し、合成データだけで個人データ・実際のパスなし |
 
 ## 本番相当(CSP つき)の確認
 
