@@ -177,7 +177,7 @@
 }
 
 .do-now-copy > .demo-rule-note {
-  color: var(--muted);
+  color: var(--text-muted-readable);
   font-size: 9px;
   margin-top: 3px;
 }
@@ -270,7 +270,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 20px 65px rgba(0, 0, 0, 0.48);
+  box-shadow: var(--dialog-shadow);
   max-width: 520px;
   padding: 22px;
   width: 100%;
@@ -349,7 +349,7 @@
 }
 
 .completion-dialog > p.completion-hint {
-  color: var(--muted);
+  color: var(--text-muted-readable);
   font-size: 11px;
   line-height: 1.6;
   margin: 8px 0 0;

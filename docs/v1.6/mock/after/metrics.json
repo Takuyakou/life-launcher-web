@@ -1,0 +1,105 @@
+{
+  "tokens": {
+    "--surface": "#211f1a",
+    "--surface-strong": "#2b2922",
+    "--surface-soft": "#1b1a17",
+    "--line": "#4a4639",
+    "--line-soft": "#353126",
+    "--text": "#f4f0e8",
+    "--muted": "#b8b0a0",
+    "--text-muted-readable": "#a39c8e",
+    "--gold": "#e7b94d",
+    "--accent-strong": "#ffce5b",
+    "--green": "#6fcf97",
+    "--danger": "#f06f68",
+    "--radius": "8px",
+    "--overlay-scrim": "rgba(12, 11, 9, 0.68)",
+    "--dialog-shadow": "0 24px 60px rgba(0, 0, 0, 0.42)"
+  },
+  "picker1440": {
+    "box": {
+      "x": 230,
+      "y": 50,
+      "width": 980,
+      "height": 800,
+      "bottom": 850
+    },
+    "scrollOverflow": 0,
+    "pageOverflow": 0,
+    "buttons": [
+      {
+        "label": "決定",
+        "top": 792,
+        "bottom": 828,
+        "visible": true
+      },
+      {
+        "label": "キャンセル",
+        "top": 792,
+        "bottom": 828,
+        "visible": true
+      }
+    ],
+    "bodyOverflow": 0
+  },
+  "pickerColors": {
+    "footer": {
+      "color": "rgb(163, 156, 142)",
+      "background": "rgb(22, 21, 18)"
+    },
+    "pill": {
+      "color": "rgb(231, 185, 77)",
+      "background": "rgb(56, 47, 23)"
+    },
+    "pillDot": "rgb(173, 145, 238)"
+  },
+  "picker390": {
+    "box": {
+      "x": 8,
+      "y": 8,
+      "height": 828,
+      "bottom": 836
+    },
+    "pageOverflow": 0,
+    "dialogOverflow": 0
+  },
+  "completion1440": {
+    "box": {
+      "width": 520,
+      "height": 376,
+      "bottom": 638
+    },
+    "buttons": [
+      {
+        "label": "続ける(+15分)",
+        "visible": true
+      },
+      {
+        "label": "保存して終わる",
+        "visible": true
+      },
+      {
+        "label": "終わる",
+        "visible": true
+      }
+    ],
+    "hintColor": "rgb(163, 156, 142)",
+    "dialogBackground": "rgb(33, 31, 26)",
+    "overflow": 0
+  },
+  "contrast": {
+    "bodyText": 14.48,
+    "hint": 6.04,
+    "footerNote": 6.7,
+    "activePill": 7.21
+  },
+  "completion390": {
+    "box": {
+      "width": 350,
+      "height": 368,
+      "bottom": 606
+    },
+    "pageOverflow": 0,
+    "overflow": 0
+  }
+}

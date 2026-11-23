@@ -278,7 +278,7 @@
   font-size: 11px;
 }
 .source-resume-note {
-  color: var(--muted);
+  color: var(--text-muted-readable);
   font-size: 10px;
   line-height: 1.5;
   overflow-wrap: anywhere;
@@ -365,7 +365,7 @@
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--bg);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+  box-shadow: var(--dialog-shadow);
 }
 
 .today-picker-header {
@@ -693,7 +693,7 @@
 }
 
 .today-picker-footer > span {
-  color: var(--muted);
+  color: var(--text-muted-readable);
   font-size: 9px;
 }
 
@@ -778,11 +778,13 @@
 @media (prefers-reduced-motion: reduce) {
   .sync-demo .today-remove-button:hover,
   .sync-demo .today-remove-button:active,
-  .today-picker-remove:hover,
-  .today-picker-remove:active,
-  .today-picker-tabs button:hover,
-  .today-picker-tabs button:active {
+  .today-picker-slot-actions button:hover,
+  .today-picker-slot-actions button:active {
     transform: none !important;
+  }
+  .today-picker-progress > span,
+  .today-picker-pill {
+    transition: none;
   }
 }
 
@@ -879,7 +881,7 @@
 
 /* one focus ring: the whole bar for the toggle, only the button for the + control */
 .sync-demo .sync-disclosure-header:has(.section-toggle:focus-visible) {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--accent-strong);
   outline-offset: 3px;
 }
 .sync-demo .sync-disclosure-header .section-toggle:focus-visible {
