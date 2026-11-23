@@ -134,6 +134,12 @@ export type DemoAction =
   | { type: "EXCLUDE_TODAY_CANDIDATE"; sourceId: string }
   | { type: "NEXT_TODAY_BATCH" }
   | { type: "ADD_WISHLIST"; id: string; label: string; projectId?: string }
+  | {
+      type: "SAVE_TODAY_PICKER_DRAFT";
+      todayItems: DemoTodayItem[];
+      addedWishlist: DemoWishlistItem[];
+      expectedFingerprint: string;
+    }
   | { type: "UPDATE_PROJECT_NEXT_STEP"; projectId: string; nextStep: string }
   | {
       type: "START_TIMER";

@@ -4,7 +4,14 @@ import {
   earlyTarget,
   earlyThresholdSeconds,
 } from "./earlyCompletion";
-import type { DemoAction, DemoSession, DemoState } from "./types";
+import type {
+  DemoAction,
+  DemoSession,
+  DemoState,
+  DemoTodayItem,
+  DemoWishlistItem,
+} from "./types";
+import { stateFingerprint } from "./types";
 import {
   nextStepSourceId,
   sourceLockedByUnfinishedToday,
@@ -88,6 +95,93 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
           ...state.wishlist,
         ],
       };
+    case "SAVE_TODAY_PICKER_DRAFT": {
+      // The dialog reads the state once and saves once: anything changed meanwhile is refused
+      // so a stale draft cannot overwrite newer work.
+      if (stateFingerprint(state) !== action.expectedFingerprint) return state;
+      const items = action.todayItems;
+      if (!Array.isArray(items) || items.length > 3) return state;
+
+      const sourceIds = new Set<string>();
+      for (const item of items) {
+        if (!item || typeof item.sourceId !== "string" || !item.sourceId)
+          return state;
+        if (sourceIds.has(item.sourceId)) return state;
+        sourceIds.add(item.sourceId);
+      }
+
+      const wishlistIds = new Set(state.wishlist.map((item) => item.id));
+      const addedWishlist: DemoWishlistItem[] = [];
+      for (const wish of action.addedWishlist ?? []) {
+        if (!wish || typeof wish.id !== "string" || !wish.id) return state;
+        if (wishlistIds.has(wish.id)) return state;
+        const label = typeof wish.label === "string" ? wish.label.trim() : "";
+        if (!label || label.length > 120) return state;
+        if (wish.projectId !== undefined && typeof wish.projectId !== "string")
+          return state;
+        wishlistIds.add(wish.id);
+        addedWishlist.push({ id: wish.id, label, projectId: wish.projectId });
+      }
+
+      const projectIds = new Set(state.projects.map((project) => project.id));
+      const existingBySource = new Map(
+        state.todayItems.map((item) => [item.sourceId, item]),
+      );
+      const itemIds = new Set(state.todayItems.map((item) => item.id));
+      const nextItems: DemoTodayItem[] = [];
+      for (const item of items) {
+        const existing = existingBySource.get(item.sourceId);
+        if (existing) {
+          // Only the order may change: keep the snapshot attributes as they were.
+          nextItems.push({ ...existing });
+          continue;
+        }
+        if (item.sourceId.startsWith("nextstep:")) {
+          if (!projectIds.has(item.sourceId.slice("nextstep:".length)))
+            return state;
+        } else if (item.sourceId.startsWith("wishlist:")) {
+          if (!wishlistIds.has(item.sourceId.slice("wishlist:".length)))
+            return state;
+        } else {
+          return state;
+        }
+        const label = typeof item.label === "string" ? item.label.trim() : "";
+        if (!label) return state;
+        const id =
+          typeof item.id === "string" && item.id
+            ? item.id
+            : `today:${item.sourceId}`;
+        if (itemIds.has(id)) return state;
+        itemIds.add(id);
+        nextItems.push({
+          id,
+          sourceId: item.sourceId,
+          label,
+          projectId: item.projectId,
+          completed: false,
+          shortMinutes: item.shortMinutes ?? 5,
+          normalMinutes: item.normalMinutes ?? 25,
+        });
+      }
+
+      // The running timer keeps its card, even if the draft dropped or replaced it.
+      if (state.timer.status !== "idle" && state.timer.todayItemId) {
+        const before = state.todayItems.find(
+          (item) => item.id === state.timer.todayItemId,
+        );
+        const after = nextItems.find(
+          (item) => item.id === state.timer.todayItemId,
+        );
+        if (!before || !after || after.sourceId !== before.sourceId)
+          return state;
+      }
+
+      return {
+        ...state,
+        todayItems: nextItems,
+        wishlist: [...addedWishlist, ...state.wishlist],
+      };
+    }
     case "UPDATE_PROJECT_NEXT_STEP": {
       if (
         sourceLockedByUnfinishedToday(

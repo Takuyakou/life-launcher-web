@@ -20,7 +20,12 @@ import {
   sourceLockedByUnfinishedToday,
   todayItemFromCandidate,
 } from "./demo/todayBuilder";
-import type { DemoAction, DemoBuilderCandidate } from "./demo/types";
+import type {
+  DemoAction,
+  DemoBuilderCandidate,
+  DemoTodayItem,
+  DemoWishlistItem,
+} from "./demo/types";
 
 type ToastState = {
   id: number;
@@ -210,6 +215,28 @@ function App() {
     setToast({
       id: Date.now(),
       message: "今日の3件から外しました",
+      tone: "success",
+    });
+    return true;
+  };
+
+  const saveTodayPickerDraft = (
+    todayItems: DemoTodayItem[],
+    addedWishlist: DemoWishlistItem[],
+    expectedFingerprint: string,
+  ) => {
+    if (
+      !dispatch({
+        type: "SAVE_TODAY_PICKER_DRAFT",
+        todayItems,
+        addedWishlist,
+        expectedFingerprint,
+      })
+    )
+      return false;
+    setToast({
+      id: Date.now(),
+      message: "今日の3件を決定しました",
       tone: "success",
     });
     return true;
@@ -416,6 +443,7 @@ function App() {
               });
             }}
             onResumeTimer={() => dispatch({ type: "RESUME_TIMER" })}
+            onSaveTodayPickerDraft={saveTodayPickerDraft}
             onStartTimer={startTimer}
             onStopTimer={stopTimer}
             state={state}

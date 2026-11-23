@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { launchActionsForProject } from "../demo/seed";
 import { createDoNowCandidates } from "../demo/doNow";
 import {
-  createTodayBuilderCandidates,
   nextStepSourceId,
   sourceLockedByUnfinishedToday,
   wishlistSourceId,
@@ -13,6 +12,8 @@ import type {
   DemoBuilderCandidate,
   DemoSectionState,
   DemoState,
+  DemoTodayItem,
+  DemoWishlistItem,
 } from "../demo/types";
 import { DemoTimer } from "./DemoTimer";
 import { NextStepDialog } from "./NextStepDialog";
@@ -40,6 +41,11 @@ type Props = {
   onDemoComplete: () => void;
   onAddTodayCandidate: (candidate: DemoBuilderCandidate) => boolean;
   onRemoveTodayItem: (id: string) => boolean;
+  onSaveTodayPickerDraft: (
+    todayItems: DemoTodayItem[],
+    addedWishlist: DemoWishlistItem[],
+    expectedFingerprint: string,
+  ) => boolean;
 };
 
 export function DemoFrame({
@@ -55,6 +61,7 @@ export function DemoFrame({
   onDemoComplete,
   onAddTodayCandidate,
   onRemoveTodayItem,
+  onSaveTodayPickerDraft,
 }: Props) {
   const [editingVictory, setEditingVictory] = useState(false);
   const [doNowProjectId, setDoNowProjectId] = useState<string | null>(null);
@@ -91,7 +98,6 @@ export function DemoFrame({
     (!state.timer.todayItemId || timerItem?.sourceId === doNowSourceId)
       ? state.timer.status
       : "idle";
-  const candidates = createTodayBuilderCandidates(state);
   const selectedSourceIds = new Set(
     state.todayItems.map((item) => item.sourceId),
   );
@@ -823,10 +829,8 @@ export function DemoFrame({
       )}
       {todayPickerOpen && (
         <TodayPicker
-          candidates={candidates}
-          onAdd={onAddTodayCandidate}
           onClose={closeTodayPicker}
-          onRemove={onRemoveTodayItem}
+          onSave={onSaveTodayPickerDraft}
           state={state}
         />
       )}
