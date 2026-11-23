@@ -314,6 +314,94 @@
   margin-top: 18px;
 }
 
+.completion-subject {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin: 0 0 14px;
+}
+
+.completion-project {
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted-strong);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 9px;
+}
+
+.completion-planned {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.completion-action {
+  flex-basis: 100%;
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.completion-dialog .completion-field {
+  margin-top: 2px;
+}
+
+.completion-dialog > p.completion-hint {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 8px 0 0;
+}
+
+.completion-extend {
+  align-items: center;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 14px;
+}
+
+.completion-extend-label {
+  color: var(--muted-strong);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.completion-stepper {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+}
+
+.completion-step,
+.completion-step-input {
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--text);
+  height: 34px;
+}
+
+.completion-step {
+  cursor: pointer;
+  font-size: 15px;
+  width: 34px;
+}
+
+.completion-step:hover:not(:disabled) {
+  background: var(--surface-strong);
+}
+
+.completion-step-input {
+  font-size: 13px;
+  text-align: center;
+  width: 62px;
+}
+
 .feature-list article {
   padding-bottom: 18px;
   padding-top: 18px;

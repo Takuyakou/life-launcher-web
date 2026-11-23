@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CompletionDialog } from "./components/CompletionDialog";
+import {
+  CompletionDialog,
+  type CompletionMode,
+} from "./components/CompletionDialog";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { DemoDictionary } from "./components/DemoDictionary";
 import { DemoFrame } from "./components/DemoFrame";
@@ -45,6 +48,7 @@ function App() {
       [
         "TICK_TIMER",
         "FINISH_TIMER",
+        "EXTEND_TIMER",
         "PAUSE_TIMER",
         "RESUME_TIMER",
         "ADVANCE_TO_EARLY_THRESHOLD",
@@ -79,6 +83,8 @@ function App() {
           projectId: completionProject?.id ?? "",
           projectName: state.timer.projectName,
           nextStep: completionProject?.nextStep ?? "",
+          label: state.timer.label,
+          durationMinutes: Math.round(state.timer.durationSeconds / 60),
         }
       : null;
   const completionSourceId = completion?.projectId
@@ -91,6 +97,13 @@ function App() {
     Boolean(completion?.projectId) &&
     (!sourceLockedByUnfinishedToday(state, completionSourceId) ||
       completionTodaySourceId === completionSourceId);
+  const completionMode: CompletionMode = !completion
+    ? "plain"
+    : !state.timer.todayItemId && completion.projectId
+      ? "resume"
+      : completionEditable && completionTodaySourceId === completionSourceId
+        ? "nextStep"
+        : "plain";
 
   useEffect(() => {
     if (state.timer.status !== "running") return;
@@ -552,23 +565,32 @@ function App() {
         title="Web Demoをリセットしますか？"
       />
       <CompletionDialog
-        editable={completionEditable}
-        initialValue={completion?.nextStep ?? ""}
-        onSave={(nextStep) => {
+        durationMinutes={completion?.durationMinutes ?? 0}
+        hasProject={Boolean(completion?.projectId)}
+        initialNextStep={completion?.nextStep ?? ""}
+        label={completion?.label ?? ""}
+        mode={completionMode}
+        onExtend={(minutes) => {
+          dispatch({ type: "EXTEND_TIMER", minutes });
+        }}
+        onFinish={({ nextStep, resumeNote }) => {
           if (!completion) return;
-          if (!dispatch({ type: "CONFIRM_TIMER", now: new Date(), nextStep }))
+          if (
+            !dispatch({
+              type: "CONFIRM_TIMER",
+              now: new Date(),
+              nextStep,
+              resumeNote,
+            })
+          )
             return;
           setToast({
             id: Date.now(),
-            message: "次の一手を更新しました",
-            tone: "success",
-          });
-        }}
-        onSkip={() => {
-          if (!dispatch({ type: "CONFIRM_TIMER", now: new Date() })) return;
-          setToast({
-            id: Date.now(),
-            message: "今日の実行に記録しました",
+            message: nextStep
+              ? "次の一手を更新しました"
+              : resumeNote
+                ? "次はここからを保存しました"
+                : "今日の実行に記録しました",
             tone: "success",
           });
         }}

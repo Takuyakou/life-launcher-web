@@ -213,6 +213,22 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
           elapsedSeconds: state.timer.durationSeconds,
         },
       };
+    case "EXTEND_TIMER": {
+      if (state.timer.status !== "finished") return state;
+      if (!Number.isFinite(action.minutes)) return state;
+      // Windows v1.6.3 allows extending past the 2 hour start limit on purpose.
+      const minutes = Math.min(240, Math.max(1, Math.round(action.minutes)));
+      const deltaSeconds = minutes * 60;
+      return {
+        ...state,
+        timer: {
+          ...state.timer,
+          status: "running",
+          durationSeconds: state.timer.durationSeconds + deltaSeconds,
+          remainingSeconds: state.timer.remainingSeconds + deltaSeconds,
+        },
+      };
+    }
     case "CONFIRM_TIMER": {
       if (state.timer.status !== "finished") return state;
       let completed = demoReducer(state, {

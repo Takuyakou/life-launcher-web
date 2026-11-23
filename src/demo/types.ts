@@ -149,6 +149,7 @@ export type DemoAction =
   | { type: "REQUEST_STOP_TIMER"; now: Date }
   | { type: "CONFIRM_EARLY_TIMER"; now: Date; complete: boolean }
   | { type: "FINISH_TIMER" }
+  | { type: "EXTEND_TIMER"; minutes: number }
   | {
       type: "CONFIRM_TIMER";
       now: Date;
