@@ -13,7 +13,7 @@ test("natural expiry waits for confirmation and restores keyboard focus", async 
   await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
   await page.clock.runFor(300000);
   await expect(
-    page.getByRole("dialog", { name: "おつかれさまでした" }),
+    page.getByRole("dialog", { name: "予定時間になりました" }),
   ).toBeVisible();
   await expect(
     page.getByRole("status", { name: "本を読む：未完了", exact: true }),
@@ -71,6 +71,10 @@ test("Today3 finishes only after confirmation, next batch is manual, and reset r
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
     .click();
+  await page
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
+    .getByRole("button", { name: "決定" })
+    .click();
   for (const label of ["本を読む", "参考書を10ページ進める"]) {
     await page
       .getByRole("article", { name: label, exact: true })
@@ -98,8 +102,12 @@ test("Today3 finishes only after confirmation, next batch is manual, and reset r
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "数分だけ読むを今日の3件に追加" })
     .click();
+  await expect(page.locator(".today-row")).toHaveCount(0);
+  await page
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
+    .getByRole("button", { name: "決定" })
+    .click();
   await expect(page.locator(".today-row")).toHaveCount(1);
-  await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "リセット", exact: true }).click();
   await page.getByRole("button", { name: "リセットする" }).click();
   await expect(page.locator(".today-row")).toHaveCount(2);
@@ -129,17 +137,15 @@ test("paused replacement removes the old active state without completing it", as
   ).toHaveCount(1);
 });
 
-test("Today Picker separates next steps and Wishlist without duplicate selected sources", async ({
+test("Today Picker shows both source groups without duplicate selected sources", async ({
   page,
 }) => {
   await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
-  await expect(picker.locator(".today-picker-source-row")).toHaveCount(1);
+  await expect(picker.locator(".today-picker-source-row")).toHaveCount(6);
   await expect(
     picker.getByRole("button", { name: "ストレッチをするを今日の3件に追加" }),
   ).toHaveCount(0);
-  await picker.getByRole("tab", { name: /やりたいこと/ }).click();
-  await expect(picker.locator(".today-picker-source-row")).toHaveCount(3);
   await expect(
     picker.getByText("近所をゆっくり歩く", { exact: true }),
   ).toHaveCount(1);

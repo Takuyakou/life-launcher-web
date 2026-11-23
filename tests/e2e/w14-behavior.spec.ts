@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const key = "life-launcher-web-demo:v3";
-const gold = "rgb(239, 200, 74)";
+const gold = "rgb(231, 185, 77)";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
@@ -41,7 +41,10 @@ test("Do Now puts the unfinished Today 3 NextStep first and reacts to Today 3 ch
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "数分だけ読むを今日の3件に追加" })
     .click();
-  await page.keyboard.press("Escape");
+  await page
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
+    .getByRole("button", { name: "決定" })
+    .click();
   await expect(doNow(page).locator("h2")).toHaveText("数分だけ読む");
   await expect(doNow(page)).toContainText("今日の3件に入っている一手です");
 
@@ -97,7 +100,10 @@ test("Do Now keeps the project chosen with Other Step and does not save it", asy
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "数分だけ読むを今日の3件に追加" })
     .click();
-  await page.keyboard.press("Escape");
+  await page
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
+    .getByRole("button", { name: "決定" })
+    .click();
   await expect(card(page, "数分だけ読む")).toBeVisible();
   await expect(doNow(page).locator("h2")).toHaveText("参考書を10ページ進める");
   await expect(doNow(page)).toContainText("学習に次の一手が設定されているため");
@@ -161,7 +167,7 @@ test.describe("victory glow", () => {
     }, key);
     await page.reload();
     const placeholder = page.locator(".victory-placeholder");
-    const muted = "rgb(170, 163, 151)";
+    const muted = "rgb(184, 176, 160)";
     await expect(placeholder).toHaveText("今日はこれができれば勝ち");
     await expect(placeholder).toHaveCSS("color", muted);
     await page.mouse.move(0, 0);
@@ -175,7 +181,7 @@ test.describe("victory glow", () => {
     await expect(placeholder).toHaveCSS("color", muted);
     await expect(page.locator(".victory-card")).toHaveCSS(
       "background-color",
-      "rgb(40, 38, 31)",
+      "rgb(43, 41, 34)",
     );
     await page.mouse.move(0, 0);
     await expect.poll(() => border(page)).toBe(rest);

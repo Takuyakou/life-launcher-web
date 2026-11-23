@@ -4,24 +4,28 @@
   font-synthesis: none;
   --bg: #161512;
   --bg-deep: #11110f;
-  --surface: #1f1e19;
-  --surface-strong: #28261f;
-  --surface-soft: #1a1915;
-  --line: #454137;
-  --line-soft: #302e27;
-  --text: #f7f3e9;
-  --muted: #aaa397;
+  --surface: #211f1a;
+  --surface-strong: #2b2922;
+  --surface-soft: #1b1a17;
+  --line: #4a4639;
+  --line-soft: #353126;
+  --text: #f4f0e8;
+  --muted: #b8b0a0;
   --muted-strong: #c6beb0;
-  --gold: #efc84a;
+  --text-muted-readable: #a39c8e;
+  --gold: #e7b94d;
   --gold-soft: #382f17;
-  --green: #68daa0;
+  --accent-strong: #ffce5b;
+  --green: #6fcf97;
   --green-soft: #183326;
   --blue: #75aef7;
   --blue-soft: #1b2a40;
   --violet: #ad91ee;
   --rose: #ef8bad;
-  --danger: #f17b70;
-  --radius: 7px;
+  --danger: #f06f68;
+  --radius: 8px;
+  --overlay-scrim: rgba(12, 11, 9, 0.68);
+  --dialog-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
   --content: 1320px;
 }
 
@@ -62,7 +66,7 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--accent-strong);
   outline-offset: 3px;
 }
 
@@ -257,8 +261,8 @@ footer {
 }
 
 .button-gold:hover:not(:disabled) {
-  background: #f6d664;
-  border-color: #f6d664;
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
 }
 
 .button-good {
@@ -1222,7 +1226,7 @@ input[type="checkbox"] {
 
 .activity-list span,
 .activity-list time {
-  color: var(--muted);
+  color: var(--text-muted-readable);
 }
 
 .demo-privacy {
@@ -1314,7 +1318,7 @@ footer a:hover {
 
 .modal-backdrop {
   align-items: center;
-  background: rgba(7, 7, 6, 0.78);
+  background: var(--overlay-scrim);
   display: flex;
   inset: 0;
   justify-content: center;
@@ -1328,7 +1332,7 @@ footer a:hover {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--dialog-shadow);
 }
 
 .confirm-dialog {
@@ -1520,6 +1524,31 @@ footer a:hover {
 
 .toast-success {
   border-left-color: var(--green);
+}
+
+.toast-undoable {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.toast-undo {
+  flex: 0 0 auto;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toast-undo:hover {
+  background: var(--surface-soft);
 }
 
 @keyframes toast-in {

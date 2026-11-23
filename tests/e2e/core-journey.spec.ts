@@ -41,13 +41,12 @@ test("core journey keeps Project, NextStep and Wishlist sources after Today exec
   await picker
     .getByRole("button", { name: "章を1ページ読むを今日の3件に追加" })
     .click();
-  await picker.getByRole("tab", { name: /やりたいこと/ }).click();
   await picker
     .getByRole("button", {
       name: "読書メモを整理するを今日の3件に追加",
     })
     .click();
-  await page.keyboard.press("Escape");
+  await picker.getByRole("button", { name: "決定" }).click();
   await expect(page.locator(".today-row")).toHaveCount(2);
 
   const today = page.getByRole("article", {
@@ -58,11 +57,11 @@ test("core journey keeps Project, NextStep and Wishlist sources after Today exec
     .getByRole("button", { name: "章を1ページ読むを5分で開始" })
     .click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
-  const completion = page.getByRole("dialog", { name: "おつかれさまでした" });
+  const completion = page.getByRole("dialog", { name: "予定時間になりました" });
   await completion
-    .getByRole("textbox", { name: "次の一手" })
+    .getByRole("textbox", { name: "次の次の一手(任意)" })
     .fill("次の章を開く");
-  await completion.getByRole("button", { name: "保存" }).click();
+  await completion.getByRole("button", { name: "保存して終わる" }).click();
 
   await expect(
     page.getByRole("status", { name: "章を1ページ読む：完了" }),

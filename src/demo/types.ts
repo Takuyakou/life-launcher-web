@@ -1,3 +1,5 @@
+import type { ParsedDemoImport } from "./importDemo";
+
 export type TimerStatus = "idle" | "running" | "paused" | "finished" | "early";
 
 export type DemoVictory = {
@@ -33,6 +35,10 @@ export type DemoProject = {
   name: string;
   color: "amber" | "green" | "blue" | "violet";
   nextStep?: string;
+  /** v1.6.3: what the project is aiming for (60 chars). */
+  goal?: string;
+  /** v1.6.3: where to pick the work up next ("次はここから", 80 chars). */
+  resumeNote?: string;
 };
 
 export type DemoWishlistItem = {
@@ -80,6 +86,48 @@ export type DemoState = {
   sections: DemoSectionState;
 };
 
+/**
+ * Identifies the persisted part of the state. The running timer and the view state
+ * (sections, doNowIndex) are left out, so a reload or a repaint never looks like a change.
+ * Key order is fixed here so the same data always yields the same string.
+ */
+export function stateFingerprint(state: DemoState): string {
+  return JSON.stringify({
+    victory: { text: state.victory.text, completed: state.victory.completed },
+    projects: state.projects.map((project) => ({
+      id: project.id,
+      name: project.name,
+      color: project.color,
+      nextStep: project.nextStep ?? null,
+      goal: project.goal ?? null,
+      resumeNote: project.resumeNote ?? null,
+    })),
+    wishlist: state.wishlist.map((item) => ({
+      id: item.id,
+      label: item.label,
+      projectId: item.projectId ?? null,
+    })),
+    todayItems: state.todayItems.map((item) => ({
+      id: item.id,
+      sourceId: item.sourceId,
+      label: item.label,
+      projectId: item.projectId ?? null,
+      completed: item.completed,
+      shortMinutes: item.shortMinutes ?? null,
+      normalMinutes: item.normalMinutes ?? null,
+    })),
+    candidateExcludedSourceIds: state.candidateExcludedSourceIds,
+    sessions: state.sessions.map((session) => ({
+      id: session.id,
+      projectId: session.projectId,
+      projectName: session.projectName,
+      label: session.label,
+      minutes: session.minutes,
+      endedAt: session.endedAt,
+    })),
+  });
+}
+
 export type DemoAction =
   | { type: "UPDATE_VICTORY"; text: string }
   | { type: "TOGGLE_VICTORY" }
@@ -88,6 +136,12 @@ export type DemoAction =
   | { type: "EXCLUDE_TODAY_CANDIDATE"; sourceId: string }
   | { type: "NEXT_TODAY_BATCH" }
   | { type: "ADD_WISHLIST"; id: string; label: string; projectId?: string }
+  | {
+      type: "SAVE_TODAY_PICKER_DRAFT";
+      todayItems: DemoTodayItem[];
+      addedWishlist: DemoWishlistItem[];
+      expectedFingerprint: string;
+    }
   | { type: "UPDATE_PROJECT_NEXT_STEP"; projectId: string; nextStep: string }
   | {
       type: "START_TIMER";
@@ -103,10 +157,28 @@ export type DemoAction =
   | { type: "REQUEST_STOP_TIMER"; now: Date }
   | { type: "CONFIRM_EARLY_TIMER"; now: Date; complete: boolean }
   | { type: "FINISH_TIMER" }
-  | { type: "CONFIRM_TIMER"; now: Date; nextStep?: string }
+  | { type: "EXTEND_TIMER"; minutes: number }
+  | {
+      type: "CONFIRM_TIMER";
+      now: Date;
+      nextStep?: string;
+      resumeNote?: string;
+    }
   | { type: "PAUSE_TIMER" }
   | { type: "RESUME_TIMER" }
   | { type: "STOP_TIMER"; now: Date; complete?: boolean }
+  | {
+      type: "COMMIT_IMPORT";
+      parsed: ParsedDemoImport;
+      excludedKeys: string[];
+      expectedFingerprint: string;
+    }
+  | {
+      type: "UNDO_IMPORT";
+      projects: DemoProject[];
+      wishlist: DemoWishlistItem[];
+      expectedFingerprint: string;
+    }
   | { type: "TOGGLE_SECTION"; section: keyof DemoSectionState }
   | { type: "RESET_DEMO"; state: DemoState };
 

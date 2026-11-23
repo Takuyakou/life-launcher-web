@@ -67,6 +67,10 @@ test("captures expanded desktop states and layout metrics", async ({
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
     .click();
+  await page
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
+    .getByRole("button", { name: "決定" })
+    .click();
   await page.screenshot({
     path: path.join(output, "today3-limit-1440x900.png"),
     fullPage: false,

@@ -104,7 +104,9 @@ test("a failed save keeps the previous state when starting and completing from D
   await failSaves(true);
   await page.getByRole("button", { name: "終わる", exact: true }).click();
   await expect(toast).toBeVisible();
-  await expect(page.getByRole("dialog", { name: "おつかれさまでした" })).toBeVisible();
+  await expect(
+    page.getByRole("dialog", { name: "予定時間になりました" }),
+  ).toBeVisible();
   await expect(
     page.getByRole("status", { name: "参考書を10ページ進める：未完了" }),
   ).toBeVisible();
@@ -167,7 +169,10 @@ test("core journey runs without console errors, failed assets or network traffic
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "章を1ページ読むを今日の3件に追加" })
     .click();
-  await page.keyboard.press("Escape");
+  await page
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
+    .getByRole("button", { name: "決定" })
+    .click();
   await expect(doNow(page).locator("h2")).toHaveText("章を1ページ読む");
   await expect(doNow(page)).toContainText("今日の3件に入っている一手です");
 
@@ -177,8 +182,10 @@ test("core journey runs without console errors, failed assets or network traffic
     page.getByRole("article", { name: "章を1ページ読む", exact: true }).getByText("実行中"),
   ).toBeVisible();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
-  const done = page.getByRole("dialog", { name: "おつかれさまでした" });
-  await done.getByRole("textbox", { name: "次の一手" }).fill("次の章を開く");
+  const done = page.getByRole("dialog", { name: "予定時間になりました" });
+  await done
+    .getByRole("textbox", { name: "次の次の一手(任意)" })
+    .fill("次の章を開く");
   await done.getByRole("button", { name: "保存して終わる" }).click();
   await expect(
     page.getByRole("status", { name: "章を1ページ読む：完了" }),

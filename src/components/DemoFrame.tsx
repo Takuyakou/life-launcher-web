@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { launchActionsForProject } from "../demo/seed";
 import { createDoNowCandidates } from "../demo/doNow";
 import {
-  createTodayBuilderCandidates,
   nextStepSourceId,
   sourceLockedByUnfinishedToday,
   wishlistSourceId,
@@ -13,7 +12,11 @@ import type {
   DemoBuilderCandidate,
   DemoSectionState,
   DemoState,
+  DemoTodayItem,
+  DemoWishlistItem,
 } from "../demo/types";
+import type { ParsedDemoImport } from "../demo/importDemo";
+import { DemoImportDialog } from "./DemoImportDialog";
 import { DemoTimer } from "./DemoTimer";
 import { NextStepDialog } from "./NextStepDialog";
 import { TimerActions } from "./TimerActions";
@@ -40,6 +43,17 @@ type Props = {
   onDemoComplete: () => void;
   onAddTodayCandidate: (candidate: DemoBuilderCandidate) => boolean;
   onRemoveTodayItem: (id: string) => boolean;
+  onSaveTodayPickerDraft: (
+    todayItems: DemoTodayItem[],
+    addedWishlist: DemoWishlistItem[],
+    expectedFingerprint: string,
+  ) => boolean;
+  onCommitImport: (
+    parsed: ParsedDemoImport,
+    excludedKeys: string[],
+    expectedFingerprint: string,
+    selectedCount: number,
+  ) => boolean;
 };
 
 export function DemoFrame({
@@ -55,12 +69,15 @@ export function DemoFrame({
   onDemoComplete,
   onAddTodayCandidate,
   onRemoveTodayItem,
+  onSaveTodayPickerDraft,
+  onCommitImport,
 }: Props) {
   const [editingVictory, setEditingVictory] = useState(false);
   const [doNowProjectId, setDoNowProjectId] = useState<string | null>(null);
   const [victoryDraft, setVictoryDraft] = useState(state.victory.text);
   const [addingWishlist, setAddingWishlist] = useState(false);
   const [todayPickerOpen, setTodayPickerOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editingNextStepId, setEditingNextStepId] = useState<string | null>(
     null,
   );
@@ -68,6 +85,7 @@ export function DemoFrame({
   const victoryInputRef = useRef<HTMLInputElement>(null);
   const wishlistAddRef = useRef<HTMLButtonElement>(null);
   const todayPickerTriggerRef = useRef<HTMLButtonElement>(null);
+  const importTriggerRef = useRef<HTMLButtonElement>(null);
   const doNowCandidates = createDoNowCandidates(state);
   const doNowCandidate =
     doNowCandidates.find((entry) => entry.projectId === doNowProjectId) ??
@@ -91,7 +109,6 @@ export function DemoFrame({
     (!state.timer.todayItemId || timerItem?.sourceId === doNowSourceId)
       ? state.timer.status
       : "idle";
-  const candidates = createTodayBuilderCandidates(state);
   const selectedSourceIds = new Set(
     state.todayItems.map((item) => item.sourceId),
   );
@@ -161,6 +178,10 @@ export function DemoFrame({
   const closeTodayPicker = useCallback(() => {
     setTodayPickerOpen(false);
     requestAnimationFrame(() => todayPickerTriggerRef.current?.focus());
+  }, []);
+  const closeImport = useCallback(() => {
+    setImportOpen(false);
+    requestAnimationFrame(() => importTriggerRef.current?.focus());
   }, []);
   const sectionToggle = (
     section: keyof DemoSectionState,
@@ -379,6 +400,11 @@ export function DemoFrame({
                 {doNowProject ? ` · ${doNowProject.name}` : ""}
               </div>
               <h2 id="do-now-heading">{doNowText}</h2>
+              {doNowProject?.resumeNote && (
+                <p className="do-now-resume-note">
+                  次はここから: {doNowProject.resumeNote}
+                </p>
+              )}
               <p className="do-now-reason">
                 {doNowCandidate?.reason ??
                   "プロジェクトに次の一手を設定すると候補になります"}
@@ -583,12 +609,22 @@ export function DemoFrame({
             )}
           </section>
           <section className="demo-section compact-section next-section">
-            {sectionToggle(
-              "nextStep",
-              "次の一手",
-              `${state.projects.length}件`,
-              "各プロジェクトの、次回すぐ再開するための一手",
-            )}
+            <div className="sync-disclosure-header next-section-header">
+              {sectionToggle(
+                "nextStep",
+                "次の一手",
+                `${state.projects.length}件`,
+                "各プロジェクトの、次回すぐ再開するための一手",
+              )}
+              <button
+                className="import-open-button"
+                onClick={() => setImportOpen(true)}
+                ref={importTriggerRef}
+                type="button"
+              >
+                ＋ まとめて取り込む
+              </button>
+            </div>
             <div id="section-nextStep" hidden={!state.sections.nextStep}>
               <ul className="sync-source-list">
                 {state.projects.map((project) => {
@@ -621,6 +657,11 @@ export function DemoFrame({
                         ) : (
                           <span className="source-empty">
                             まだ次の一手がありません
+                          </span>
+                        )}
+                        {project.resumeNote && (
+                          <span className="source-resume-note">
+                            次はここから: {project.resumeNote}
                           </span>
                         )}
                       </div>
@@ -813,10 +854,15 @@ export function DemoFrame({
       )}
       {todayPickerOpen && (
         <TodayPicker
-          candidates={candidates}
-          onAdd={onAddTodayCandidate}
           onClose={closeTodayPicker}
-          onRemove={onRemoveTodayItem}
+          onSave={onSaveTodayPickerDraft}
+          state={state}
+        />
+      )}
+      {importOpen && (
+        <DemoImportDialog
+          onClose={closeImport}
+          onCommit={onCommitImport}
           state={state}
         />
       )}

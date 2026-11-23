@@ -52,6 +52,10 @@ for (const viewport of [
       .getByRole("dialog", { name: "今日やるものを選ぶ" })
       .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
       .click();
+    await page
+      .getByRole("dialog", { name: "今日やるものを選ぶ" })
+      .getByRole("button", { name: "決定" })
+      .click();
     await capture("three", ".today-section");
     const columns = await page
       .locator(".today-list")
@@ -90,7 +94,10 @@ for (const viewport of [
       .getByRole("dialog", { name: "今日やるものを選ぶ" })
       .getByRole("button", { name: "数分だけ読むを今日の3件に追加" })
       .click();
-    await page.keyboard.press("Escape");
+    await page
+      .getByRole("dialog", { name: "今日やるものを選ぶ" })
+      .getByRole("button", { name: "決定" })
+      .click();
     await capture("one", ".today-section");
     for (const section of [
       "next-section",
@@ -112,10 +119,6 @@ for (const viewport of [
       .getByRole("button", { name: "追加", exact: true })
       .click();
     await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
-    await page
-      .getByRole("dialog", { name: "今日やるものを選ぶ" })
-      .getByRole("tab", { name: /やりたいこと/ })
-      .click();
     await capture("long-candidate", ".today-picker");
     await page.keyboard.press("Escape");
     await page.getByRole("button", { name: /辞書を開く/ }).click();
@@ -140,6 +143,10 @@ test("medium Today3 uses two stable columns", async ({ page }) => {
   await page
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
+    .click();
+  await page
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
+    .getByRole("button", { name: "決定" })
     .click();
   expect(
     await page
