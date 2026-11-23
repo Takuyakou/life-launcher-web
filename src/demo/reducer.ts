@@ -88,7 +88,7 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
           ...state.wishlist,
         ],
       };
-    case "UPDATE_PROJECT_NEXT_STEP":
+    case "UPDATE_PROJECT_NEXT_STEP": {
       if (
         sourceLockedByUnfinishedToday(
           state,
@@ -96,14 +96,23 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         )
       )
         return state;
+      const nextStep = action.nextStep.trim().slice(0, 120);
       return {
         ...state,
         projects: state.projects.map((project) =>
           project.id === action.projectId
-            ? { ...project, nextStep: action.nextStep.trim().slice(0, 120) }
+            ? {
+                ...project,
+                nextStep,
+                // A new generation of the next step retires the "次はここから" note.
+                ...(nextStep !== (project.nextStep ?? "")
+                  ? { resumeNote: undefined }
+                  : {}),
+              }
             : project,
         ),
       };
+    }
     case "START_TIMER": {
       if (state.timer.status === "early") return state;
       if (
@@ -206,11 +215,22 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
       };
     case "CONFIRM_TIMER": {
       if (state.timer.status !== "finished") return state;
-      const completed = demoReducer(state, {
+      let completed = demoReducer(state, {
         type: "STOP_TIMER",
         now: action.now,
         complete: true,
       });
+      if (action.resumeNote !== undefined) {
+        const resumeNote = action.resumeNote.trim().slice(0, 80) || undefined;
+        completed = {
+          ...completed,
+          projects: completed.projects.map((project) =>
+            project.id === state.timer.projectId
+              ? { ...project, resumeNote }
+              : project,
+          ),
+        };
+      }
       return action.nextStep?.trim()
         ? demoReducer(completed, {
             type: "UPDATE_PROJECT_NEXT_STEP",

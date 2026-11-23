@@ -277,6 +277,12 @@
   color: var(--muted);
   font-size: 11px;
 }
+.source-resume-note {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
 .dialog-context {
   margin: -4px 0 14px;
   color: var(--muted);
@@ -333,6 +339,13 @@
 .sync-demo .do-now-copy .sync-running {
   display: inline-block;
   margin-right: 12px;
+}
+.do-now-resume-note {
+  margin: 2px 0 0;
+  color: var(--muted-strong);
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .today-picker-trigger {

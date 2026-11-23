@@ -95,13 +95,22 @@ export function createDemoSeed(now: Date): DemoState {
         name: "学習",
         color: "violet",
         nextStep: "参考書を10ページ進める",
+        goal: "参考書を1冊終える",
       },
-      { id: "reading", name: "読書", color: "amber", nextStep: "数分だけ読む" },
+      {
+        id: "reading",
+        name: "読書",
+        color: "amber",
+        nextStep: "数分だけ読む",
+        goal: "読みたい本を1冊読み終える",
+        resumeNote: "3章のp.84から",
+      },
       {
         id: "exercise",
         name: "運動",
         color: "green",
         nextStep: "ストレッチをする",
+        goal: "毎日少し体を動かす",
       },
     ],
     wishlist: [

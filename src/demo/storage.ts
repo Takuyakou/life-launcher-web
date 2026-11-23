@@ -95,11 +95,21 @@ const normalizeProjects = (value: unknown): DemoProject[] | null => {
       typeof item.nextStep === "string" && item.nextStep.trim()
         ? item.nextStep.trim().slice(0, 120)
         : undefined;
+    const goal =
+      typeof item.goal === "string" && item.goal.trim()
+        ? item.goal.trim().slice(0, 60)
+        : undefined;
+    const resumeNote =
+      typeof item.resumeNote === "string" && item.resumeNote.trim()
+        ? item.resumeNote.trim().slice(0, 80)
+        : undefined;
     projects.push({
       id: item.id,
-      name: item.name.trim().slice(0, 60),
+      name: item.name.trim().slice(0, 120),
       color: item.color as DemoProject["color"],
       nextStep,
+      ...(goal ? { goal } : {}),
+      ...(resumeNote ? { resumeNote } : {}),
     });
   }
   return projects;

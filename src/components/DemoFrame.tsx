@@ -379,6 +379,11 @@ export function DemoFrame({
                 {doNowProject ? ` · ${doNowProject.name}` : ""}
               </div>
               <h2 id="do-now-heading">{doNowText}</h2>
+              {doNowProject?.resumeNote && (
+                <p className="do-now-resume-note">
+                  次はここから: {doNowProject.resumeNote}
+                </p>
+              )}
               <p className="do-now-reason">
                 {doNowCandidate?.reason ??
                   "プロジェクトに次の一手を設定すると候補になります"}
@@ -621,6 +626,11 @@ export function DemoFrame({
                         ) : (
                           <span className="source-empty">
                             まだ次の一手がありません
+                          </span>
+                        )}
+                        {project.resumeNote && (
+                          <span className="source-resume-note">
+                            次はここから: {project.resumeNote}
                           </span>
                         )}
                       </div>
