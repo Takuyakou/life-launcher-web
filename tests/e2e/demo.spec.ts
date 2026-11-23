@@ -63,11 +63,22 @@ test("Today Picker is the only Today adoption surface and enforces the three-ite
   ).toHaveCount(0);
   await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
-  await expect(picker.getByRole("tab", { name: /次の一手/ })).toBeVisible();
-  await expect(picker.getByRole("tab", { name: /やりたいこと/ })).toBeVisible();
+  await expect(picker.getByRole("heading", { name: "次の一手" })).toBeVisible();
+  await expect(
+    picker.getByRole("heading", { name: "やりたいこと" }),
+  ).toBeVisible();
   await picker
     .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
     .click();
+  await expect(picker).toBeVisible();
+  await expect(picker.getByRole("progressbar")).toHaveAttribute(
+    "aria-valuenow",
+    "3",
+  );
+  await expect(
+    picker.getByRole("button", { name: "近所をゆっくり歩くを今日の3件に追加" }),
+  ).toBeDisabled();
+  await picker.getByRole("button", { name: "決定" }).click();
   await expect(picker).toHaveCount(0);
   await expect(page.locator(".today-row")).toHaveCount(3);
   await expect(
@@ -87,21 +98,23 @@ test("removing in Today Picker removes its snapshot but keeps its source", async
   const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
   await picker
     .locator(".today-picker-slot", { hasText: "ストレッチをする" })
-    .getByRole("button", { name: "今日から外す" })
+    .getByRole("button", { name: "ストレッチをするを今日から外す" })
     .click();
+  // The draft is not saved until 決定.
+  await expect(
+    page.locator(".today-list").getByText("ストレッチをする", { exact: true }),
+  ).toHaveCount(1);
+  await picker.getByRole("button", { name: "決定" }).click();
   await expect(
     page.locator(".today-list").getByText("ストレッチをする", { exact: true }),
   ).toHaveCount(0);
-  await expect(
-    picker.getByText("ストレッチをする", { exact: true }),
-  ).toBeVisible();
   await expect(
     page
       .locator(".next-section")
       .getByText("ストレッチをする", { exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByText("今日の3件から外しました", { exact: true }),
+    page.getByText("今日の3件を決定しました", { exact: true }),
   ).toBeVisible();
 });
 
@@ -142,24 +155,29 @@ test("timer start shows launch simulation and stop appends Today Activity once",
   await expect(page.getByText("環境を準備", { exact: true })).toHaveCount(0);
 });
 
-test("demo completion can update the project next step", async ({ page }) => {
+test("demo completion saves 次はここから for a Do Now start", async ({
+  page,
+}) => {
   await page
     .getByRole("article", { name: "本を読む", exact: true })
     .getByRole("button", { name: "今日の3件から外す" })
     .click();
   await page.locator("[data-demo-do-now-short]").click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
-  const dialog = page.getByRole("dialog", { name: "おつかれさまでした" });
+  const dialog = page.getByRole("dialog", { name: "予定時間になりました" });
   await expect(dialog).toBeVisible();
-  const input = dialog.getByRole("textbox", { name: "次の一手" });
-  await expect(input).toHaveValue("参考書を10ページ進める");
-  await input.fill("次の章を読む");
-  await dialog.getByRole("button", { name: "保存" }).click();
-  await expect(page.getByText("次の一手を更新しました")).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "次の章を読む" }),
-  ).toBeVisible();
-  await expect(page.getByText("次の章を読む", { exact: true })).toHaveCount(2);
+  await expect(dialog).toContainText("予定 5分");
+  const input = dialog.getByRole("textbox", { name: "次はここから(任意)" });
+  await expect(input).toHaveValue("");
+  await input.fill("2章の続きから");
+  await dialog.getByRole("button", { name: "終わる", exact: true }).click();
+  await expect(page.getByText("次はここからを保存しました")).toBeVisible();
+  await expect(page.locator(".do-now-card")).toContainText(
+    "次はここから: 2章の続きから",
+  );
+  await expect(page.locator(".next-section")).toContainText(
+    "次はここから: 2章の続きから",
+  );
 });
 
 test("demo completion can be skipped without updating the project", async ({
@@ -167,13 +185,14 @@ test("demo completion can be skipped without updating the project", async ({
 }) => {
   await page.locator("[data-demo-do-now-short]").click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
-  await page.getByRole("button", { name: "終わる", exact: true }).click();
-  await expect(
-    page.getByRole("dialog", { name: "おつかれさまでした" }),
-  ).toHaveCount(0);
+  const dialog = page.getByRole("dialog", { name: "予定時間になりました" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: "終わる", exact: true }).click();
+  await expect(dialog).toHaveCount(0);
   await expect(
     page.getByRole("heading", { name: "参考書を10ページ進める" }),
   ).toBeVisible();
+  await expect(page.locator(".do-now-card")).not.toContainText("次はここから:");
 });
 
 test("sections open and reset restores every v2 seed field", async ({
@@ -187,6 +206,10 @@ test("sections open and reset restores every v2 seed field", async ({
   await page
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
+    .click();
+  await page
+    .getByRole("dialog", { name: "今日やるものを選ぶ" })
+    .getByRole("button", { name: "決定" })
     .click();
   await page.getByRole("button", { name: "勝利条件を編集" }).click();
   await page.getByRole("textbox", { name: "勝利条件" }).fill("変更した条件");

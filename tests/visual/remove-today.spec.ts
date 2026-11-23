@@ -13,6 +13,10 @@ for (const [width, columns] of [[1440, 3], [1000, 2], [390, 1]]) {
         name: "参考書を10ページ進めるを今日の3件に追加",
       })
       .click();
+    await page
+      .getByRole("dialog", { name: "今日やるものを選ぶ" })
+      .getByRole("button", { name: "決定" })
+      .click();
     const list = page.locator(".today-list");
     expect(await list.evaluate(node => getComputedStyle(node).gridTemplateColumns.split(" ").length)).toBe(columns);
     const card = page.getByRole("article", { name: "本を読む", exact: true });

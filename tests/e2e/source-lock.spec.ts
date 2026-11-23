@@ -145,9 +145,11 @@ test("Do Now completion of a locked NextStep completes its Today item before the
 }) => {
   await page.locator("[data-demo-do-now-short]").click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
-  const dialog = page.getByRole("dialog", { name: "おつかれさまでした" });
-  await dialog.getByRole("textbox", { name: "次の一手" }).fill("次の章を開く");
-  await dialog.getByRole("button", { name: "保存" }).click();
+  const dialog = page.getByRole("dialog", { name: "予定時間になりました" });
+  await dialog
+    .getByRole("textbox", { name: "次の次の一手(任意)" })
+    .fill("次の章を開く");
+  await dialog.getByRole("button", { name: "保存して終わる" }).click();
   await expect(
     page.getByRole("status", { name: "本を読む：完了" }),
   ).toBeVisible();

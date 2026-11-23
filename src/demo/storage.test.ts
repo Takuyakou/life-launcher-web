@@ -192,4 +192,43 @@ describe("demo storage v3", () => {
     for (const key of [STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY])
       expect(storage.getItem(key)).toBeNull();
   });
+
+  it("reads goal and resumeNote, keeps 120 characters of a project name, and omits unset fields", () => {
+    const storage = new MemoryStorage();
+    const raw = JSON.parse(
+      JSON.stringify(createDemoSeed(fixedNow)),
+    ) as Record<string, unknown> & {
+      projects: Array<Record<string, unknown>>;
+    };
+    raw.projects[0].name = "あ".repeat(130);
+    raw.projects[0].goal = `  ${"い".repeat(70)}  `;
+    raw.projects[1].resumeNote = "う".repeat(90);
+    raw.projects[2].goal = 42;
+    storage.values.set(STORAGE_KEY, JSON.stringify(raw));
+
+    const loaded = loadDemoState(storage, createDemoSeed(fixedNow));
+    expect(loaded.projects[0].name).toHaveLength(120);
+    expect(loaded.projects[0].goal).toHaveLength(60);
+    expect(loaded.projects[1].resumeNote).toHaveLength(80);
+    expect(loaded.projects[2]).not.toHaveProperty("goal");
+  });
+
+  it("reads v1.3 v3 data that has no goal or resumeNote without adding them", () => {
+    const storage = new MemoryStorage();
+    const raw = JSON.parse(
+      JSON.stringify(createDemoSeed(fixedNow)),
+    ) as { projects: Array<Record<string, unknown>> };
+    for (const project of raw.projects) {
+      delete project.goal;
+      delete project.resumeNote;
+    }
+    storage.values.set(STORAGE_KEY, JSON.stringify(raw));
+    const loaded = loadDemoState(storage, createDemoSeed(fixedNow));
+    expect(
+      loaded.projects.every(
+        (project) =>
+          !Object.hasOwn(project, "goal") && !Object.hasOwn(project, "resumeNote"),
+      ),
+    ).toBe(true);
+  });
 });

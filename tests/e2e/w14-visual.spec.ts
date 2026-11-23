@@ -93,9 +93,9 @@ test("section bars are bordered, other separators are transparent", async ({
 });
 
 test("section bar hover brightens only expandable bars", async ({ page }) => {
-  const toggle = page.locator(".next-section .section-toggle");
-  await toggle.hover();
-  await expect(toggle).toHaveCSS("background-color", "rgb(26, 25, 21)");
+  const header = page.locator(".next-section .sync-disclosure-header");
+  await header.hover();
+  await expect(header).toHaveCSS("background-color", "rgb(27, 26, 23)");
   const heading = page.locator(".today-section .sync-heading");
   await heading.hover();
   await expect(heading).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
@@ -105,7 +105,7 @@ test("button colours follow roles: add is neutral, picker entrance and picker ad
   page,
 }) => {
   const transparent = "rgba(0, 0, 0, 0)";
-  const gold = "rgb(239, 200, 74)";
+  const gold = "rgb(231, 185, 77)";
   await expect(page.locator(".next-section .source-add").first()).toHaveCSS(
     "background-color",
     transparent,
@@ -183,16 +183,17 @@ test("completion dialog: save and finish is green, finish is red (also when it i
   const red = "rgb(59, 33, 29)";
   await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
-  await picker.getByRole("tab", { name: /やりたいこと/ }).click();
   await picker
     .getByRole("button", { name: "気になっていた本を読むを今日の3件に追加" })
     .click();
+  await picker.getByRole("button", { name: "決定" }).click();
   await page
     .getByRole("button", { name: "気になっていた本を読むを5分で開始" })
     .click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
-  const only = page.getByRole("dialog", { name: "おつかれさまでした" });
+  const only = page.getByRole("dialog", { name: "予定時間になりました" });
   await expect(only.getByRole("button", { name: "保存して終わる" })).toHaveCount(0);
+  await expect(only.getByRole("button", { name: "続ける(+15分)" })).toBeVisible();
   await expect(only.getByRole("button", { name: "終わる", exact: true })).toHaveCSS(
     "background-color",
     red,
@@ -201,7 +202,7 @@ test("completion dialog: save and finish is green, finish is red (also when it i
 
   await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
-  const dialog = page.getByRole("dialog", { name: "おつかれさまでした" });
+  const dialog = page.getByRole("dialog", { name: "予定時間になりました" });
   await expect(
     dialog.getByRole("button", { name: "保存して終わる" }),
   ).toHaveCSS("background-color", green);

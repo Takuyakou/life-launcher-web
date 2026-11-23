@@ -7,6 +7,8 @@ import {
   DICTIONARY_TILES,
   launchActionsForProject,
 } from "./seed";
+import { stateFingerprint } from "./types";
+import type { ParsedDemoImport } from "./importDemo";
 import {
   createTodayBuilderCandidates,
   sourceLockedByUnfinishedToday,
@@ -296,5 +298,333 @@ describe("dictionary search", () => {
     expect(filterDictionary(DICTIONARY_TILES, "  ")).toHaveLength(
       DICTIONARY_TILES.length,
     );
+  });
+});
+
+describe("v1.6.3 timer and memo rules", () => {
+  const start = (state: ReturnType<typeof createDemoSeed>, todayItemId?: string) =>
+    demoReducer(state, {
+      type: "START_TIMER",
+      todayItemId,
+      now: fixedNow,
+      label: "本を読む",
+      projectId: "reading",
+      projectName: "読書",
+      durationSeconds: 300,
+    });
+
+  it("extends only a finished timer and clamps the minutes to 1..240", () => {
+    let state = start(createDemoSeed(fixedNow), "today-reading");
+    state = demoReducer(state, { type: "FINISH_TIMER" });
+    const extended = demoReducer(state, { type: "EXTEND_TIMER", minutes: 10 });
+    expect(extended.timer.status).toBe("running");
+    expect(extended.timer.durationSeconds).toBe(900);
+    expect(extended.timer.remainingSeconds).toBe(600);
+    expect(demoReducer(extended, { type: "EXTEND_TIMER", minutes: 5 })).toBe(
+      extended,
+    );
+
+    const high = demoReducer(state, { type: "EXTEND_TIMER", minutes: 999 });
+    expect(high.timer.durationSeconds).toBe(300 + 240 * 60);
+    const low = demoReducer(state, { type: "EXTEND_TIMER", minutes: 0 });
+    expect(low.timer.durationSeconds).toBe(360);
+    expect(demoReducer(state, { type: "EXTEND_TIMER", minutes: Number.NaN })).toBe(
+      state,
+    );
+  });
+
+  it("keeps the completion working after the extension", () => {
+    let state = start(createDemoSeed(fixedNow), "today-reading");
+    state = demoReducer(state, { type: "FINISH_TIMER" });
+    state = demoReducer(state, { type: "EXTEND_TIMER", minutes: 5 });
+    state = demoReducer(state, { type: "FINISH_TIMER" });
+    state = demoReducer(state, { type: "CONFIRM_TIMER", now: fixedNow });
+    expect(
+      state.todayItems.find((item) => item.id === "today-reading")?.completed,
+    ).toBe(true);
+    expect(state.timer.status).toBe("idle");
+  });
+
+  it("stores 次はここから on confirmation and drops it with a new next step", () => {
+    let state = start(createDemoSeed(fixedNow));
+    state = demoReducer(state, { type: "FINISH_TIMER" });
+    state = demoReducer(state, {
+      type: "CONFIRM_TIMER",
+      now: fixedNow,
+      resumeNote: "  3章の途中から  ",
+    });
+    expect(
+      state.projects.find((project) => project.id === "reading")?.resumeNote,
+    ).toBe("3章の途中から");
+
+    let next = start(createDemoSeed(fixedNow), "today-reading");
+    next = demoReducer(next, { type: "FINISH_TIMER" });
+    next = demoReducer(next, {
+      type: "CONFIRM_TIMER",
+      now: fixedNow,
+      nextStep: "次の章を開く",
+      resumeNote: "消えるはず",
+    });
+    const reading = next.projects.find((project) => project.id === "reading")!;
+    expect(reading.nextStep).toBe("次の章を開く");
+    expect(reading.resumeNote).toBeUndefined();
+  });
+
+  it("clears the memo only when the next step text actually changes", () => {
+    const initial = createDemoSeed(fixedNow);
+    const withNote = {
+      ...initial,
+      projects: initial.projects.map((project) =>
+        project.id === "exercise" ? { ...project, resumeNote: "続きから" } : project,
+      ),
+    };
+    const same = demoReducer(withNote, {
+      type: "UPDATE_PROJECT_NEXT_STEP",
+      projectId: "exercise",
+      nextStep: "ストレッチをする",
+    });
+    expect(
+      same.projects.find((project) => project.id === "exercise")?.resumeNote,
+    ).toBe("続きから");
+    const changed = demoReducer(withNote, {
+      type: "UPDATE_PROJECT_NEXT_STEP",
+      projectId: "exercise",
+      nextStep: "肩を回す",
+    });
+    expect(
+      changed.projects.find((project) => project.id === "exercise")?.resumeNote,
+    ).toBeUndefined();
+  });
+});
+
+describe("Today picker draft", () => {
+  const state = () => createDemoSeed(fixedNow);
+  const draftWith = (base: ReturnType<typeof createDemoSeed>, wishId: string) => [
+    ...base.todayItems.map((item) => ({ ...item })),
+    todayItemFromCandidate({
+      sourceId: `wishlist:${wishId}`,
+      sourceType: "wishlist",
+      label: "新しいやりたいこと",
+      projectId: "reading",
+    }),
+  ];
+
+  it("saves the order and the new Wishlist items in one step", () => {
+    const base = state();
+    const items = draftWith(base, "w-new");
+    const next = demoReducer(base, {
+      type: "SAVE_TODAY_PICKER_DRAFT",
+      todayItems: [...items].reverse(),
+      addedWishlist: [
+        { id: "w-new", label: "新しいやりたいこと", projectId: "reading" },
+      ],
+      expectedFingerprint: stateFingerprint(base),
+    });
+    expect(next.todayItems.map((item) => item.sourceId)).toEqual([
+      "wishlist:w-new",
+      "nextstep:reading",
+      "nextstep:exercise",
+    ]);
+    expect(next.wishlist[0]).toMatchObject({ id: "w-new" });
+  });
+
+  it("refuses a stale fingerprint, duplicates, and four items", () => {
+    const base = state();
+    const items = draftWith(base, "w-new");
+    expect(
+      demoReducer(base, {
+        type: "SAVE_TODAY_PICKER_DRAFT",
+        todayItems: items,
+        addedWishlist: [],
+        expectedFingerprint: "stale",
+      }),
+    ).toBe(base);
+    expect(
+      demoReducer(base, {
+        type: "SAVE_TODAY_PICKER_DRAFT",
+        todayItems: [base.todayItems[0], base.todayItems[0]],
+        addedWishlist: [],
+        expectedFingerprint: stateFingerprint(base),
+      }),
+    ).toBe(base);
+    expect(
+      demoReducer(base, {
+        type: "SAVE_TODAY_PICKER_DRAFT",
+        todayItems: [
+          ...base.todayItems,
+          todayItemFromCandidate({
+            sourceId: "nextstep:study",
+            sourceType: "nextStep",
+            label: "参考書",
+            projectId: "study",
+          }),
+          todayItemFromCandidate({
+            sourceId: "wishlist:wish-walk",
+            sourceType: "wishlist",
+            label: "散歩",
+          }),
+        ],
+        addedWishlist: [],
+        expectedFingerprint: stateFingerprint(base),
+      }),
+    ).toBe(base);
+  });
+
+  it("keeps the snapshot attributes of items that already exist", () => {
+    const base = state();
+    const next = demoReducer(base, {
+      type: "SAVE_TODAY_PICKER_DRAFT",
+      todayItems: [
+        {
+          ...base.todayItems[1],
+          id: "hacked-id",
+          label: "書き換え",
+          completed: true,
+          shortMinutes: 99,
+          normalMinutes: 120,
+        },
+        base.todayItems[0],
+      ],
+      addedWishlist: [],
+      expectedFingerprint: stateFingerprint(base),
+    });
+    expect(next.todayItems[0]).toEqual(base.todayItems[1]);
+    expect(next.todayItems[1]).toEqual(base.todayItems[0]);
+  });
+
+  it("protects the item the running timer points at", () => {
+    const base = state();
+    const running = demoReducer(base, {
+      type: "START_TIMER",
+      todayItemId: "today-reading",
+      now: fixedNow,
+      label: "本を読む",
+      projectId: "reading",
+      projectName: "読書",
+      durationSeconds: 300,
+    });
+    const fingerprint = stateFingerprint(running);
+    expect(
+      demoReducer(running, {
+        type: "SAVE_TODAY_PICKER_DRAFT",
+        todayItems: running.todayItems.filter(
+          (item) => item.id !== "today-reading",
+        ),
+        addedWishlist: [],
+        expectedFingerprint: fingerprint,
+      }),
+    ).toBe(running);
+    expect(
+      demoReducer(running, {
+        type: "SAVE_TODAY_PICKER_DRAFT",
+        todayItems: [
+          running.todayItems[0],
+          {
+            ...running.todayItems[1],
+            sourceId: "nextstep:study",
+            projectId: "study",
+          },
+        ],
+        addedWishlist: [],
+        expectedFingerprint: fingerprint,
+      }),
+    ).toBe(running);
+  });
+
+  it("refuses invalid or colliding Wishlist additions", () => {
+    const base = state();
+    const items = draftWith(base, "w-new");
+    for (const wish of [
+      { id: "w-new", label: "   " },
+      { id: "wish-book", label: "重複" },
+      { id: "w-new", label: "あ".repeat(121) },
+    ]) {
+      expect(
+        demoReducer(base, {
+          type: "SAVE_TODAY_PICKER_DRAFT",
+          todayItems: items,
+          addedWishlist: [wish],
+          expectedFingerprint: stateFingerprint(base),
+        }),
+      ).toBe(base);
+    }
+  });
+});
+
+describe("bulk import", () => {
+  const parsed: ParsedDemoImport = {
+    projects: [
+      {
+        name: "英語",
+        color: "blue",
+        goal: "仕事で使える英語",
+        nextStep: "単語を20個音読する",
+        wishes: ["体験レッスンを予約する"],
+      },
+    ],
+    wishes: ["記事を1本読む"],
+    ignoredFields: [],
+  };
+
+  it("applies an import without touching the timer, Today 3 or sessions", () => {
+    let base = createDemoSeed(fixedNow);
+    base = demoReducer(base, {
+      type: "START_TIMER",
+      todayItemId: "today-reading",
+      now: fixedNow,
+      label: "本を読む",
+      projectId: "reading",
+      projectName: "読書",
+      durationSeconds: 300,
+    });
+    const next = demoReducer(base, {
+      type: "COMMIT_IMPORT",
+      parsed,
+      excludedKeys: [],
+      expectedFingerprint: stateFingerprint(base),
+    });
+    expect(next.projects.some((project) => project.name === "英語")).toBe(true);
+    expect(next.timer).toEqual(base.timer);
+    expect(next.todayItems).toEqual(base.todayItems);
+    expect(next.sessions).toEqual(base.sessions);
+  });
+
+  it("refuses a stale import and a stale undo", () => {
+    const base = createDemoSeed(fixedNow);
+    expect(
+      demoReducer(base, {
+        type: "COMMIT_IMPORT",
+        parsed,
+        excludedKeys: [],
+        expectedFingerprint: "stale",
+      }),
+    ).toBe(base);
+    expect(
+      demoReducer(base, {
+        type: "UNDO_IMPORT",
+        projects: base.projects,
+        wishlist: base.wishlist,
+        expectedFingerprint: "stale",
+      }),
+    ).toBe(base);
+  });
+
+  it("undo restores only projects and Wishlist", () => {
+    const base = createDemoSeed(fixedNow);
+    const committed = demoReducer(base, {
+      type: "COMMIT_IMPORT",
+      parsed,
+      excludedKeys: [],
+      expectedFingerprint: stateFingerprint(base),
+    });
+    const undone = demoReducer(committed, {
+      type: "UNDO_IMPORT",
+      projects: base.projects,
+      wishlist: base.wishlist,
+      expectedFingerprint: stateFingerprint(committed),
+    });
+    expect(undone.projects).toEqual(base.projects);
+    expect(undone.wishlist).toEqual(base.wishlist);
+    expect(undone.sessions).toEqual(committed.sessions);
   });
 });

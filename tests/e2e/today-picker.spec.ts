@@ -16,37 +16,32 @@ test.beforeEach(async ({ page }) => {
   await page.locator("#demo").scrollIntoViewIfNeeded();
 });
 
-test("supports stable 0/3 through 3/3 add and remove flow", async ({ page }) => {
+test("supports 0/3 through 3/3 in a draft that only 決定 saves", async ({
+  page,
+}) => {
   const { picker } = await openPicker(page);
-  const destination = picker.locator(".today-picker-destination-heading");
-  const initialHeight = await picker.evaluate((node) => node.getBoundingClientRect().height);
-  await expect(destination).toContainText("2 / 3");
+  const progress = picker.getByRole("progressbar");
+  await expect(progress).toHaveAttribute("aria-valuenow", "2");
 
   for (const label of ["ストレッチをする", "本を読む"]) {
-    await picker
-      .locator(".today-picker-slot", { hasText: label })
-      .getByRole("button", { name: "今日から外す" })
-      .click();
+    await picker.getByRole("button", { name: `${label}を今日から外す` }).click();
   }
-  await expect(destination).toContainText("0 / 3");
-  expect(
-    Math.abs(
-      (await picker.evaluate((node) => node.getBoundingClientRect().height)) -
-        initialHeight,
-    ),
-  ).toBeLessThanOrEqual(1);
+  await expect(progress).toHaveAttribute("aria-valuenow", "0");
 
   for (const label of ["参考書を10ページ進める", "数分だけ読む"]) {
     await picker
       .getByRole("button", { name: `${label}を今日の3件に追加` })
       .click();
   }
-  await expect(destination).toContainText("2 / 3");
-  await picker.getByRole("tab", { name: /やりたいこと/ }).click();
+  await expect(progress).toHaveAttribute("aria-valuenow", "2");
+
   await picker
     .getByRole("button", { name: "近所をゆっくり歩くを今日の3件に追加" })
     .click();
+  await expect(progress).toHaveAttribute("aria-valuenow", "3");
+  await expect(picker).toBeVisible();
 
+  await picker.getByRole("button", { name: "決定" }).click();
   await expect(picker).toHaveCount(0);
   await expect(page.locator(".today-row")).toHaveCount(3);
   await expect(
@@ -96,26 +91,19 @@ test("same text from different sources stays distinct and survives reload", asyn
   });
   await page.reload();
   let { picker } = await openPicker(page);
-  await expect(
-    picker.getByRole("button", { name: "同じ一手を今日の3件に追加" }),
-  ).toHaveCount(2);
-  await picker
-    .getByRole("button", { name: "同じ一手を今日の3件に追加" })
-    .first()
-    .click();
-  await expect(
-    picker.getByRole("button", { name: "同じ一手を今日の3件に追加" }),
-  ).toHaveCount(1);
-  await picker.getByRole("tab", { name: /やりたいこと/ }).click();
-  await expect(
-    picker.getByRole("button", { name: "同じ一手を今日の3件に追加" }),
-  ).toHaveCount(1);
-  await page.keyboard.press("Escape");
+  const adds = picker.getByRole("button", { name: "同じ一手を今日の3件に追加" });
+  await expect(adds).toHaveCount(3);
+  await adds.first().click();
+  await expect(adds).toHaveCount(2);
+  await adds.first().click();
+  await expect(adds).toHaveCount(1);
+  await picker.getByRole("button", { name: "決定" }).click();
+  await expect(page.locator(".today-row")).toHaveCount(2);
   await page.reload();
   ({ picker } = await openPicker(page));
   await expect(
     picker.locator(".today-picker-slot", { hasText: "同じ一手" }),
-  ).toHaveCount(1);
+  ).toHaveCount(2);
   await expect(
     picker.getByRole("button", { name: "同じ一手を今日の3件に追加" }),
   ).toHaveCount(1);
@@ -134,7 +122,6 @@ test("long text remains usable without horizontal overflow at narrow width", asy
   await addDialog.getByRole("button", { name: "追加", exact: true }).click();
 
   const { picker } = await openPicker(page);
-  await picker.getByRole("tab", { name: /やりたいこと/ }).click();
   await expect(picker.getByText(longText, { exact: true })).toBeVisible();
   const layout = await page.evaluate(() => ({
     pageOverflow: document.documentElement.scrollWidth - innerWidth,
