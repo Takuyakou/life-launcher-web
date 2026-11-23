@@ -130,6 +130,28 @@ export function TodayPicker({ state, onClose, onSave }: TodayPickerProps) {
     else onClose();
   };
 
+  const requestCloseRef = useRef(requestClose);
+  useEffect(() => {
+    requestCloseRef.current = requestClose;
+  });
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      // The discard confirmation handles its own Escape.
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        target.closest(".confirm-dialog")
+      )
+        return;
+      if (document.querySelector(".confirm-dialog")) return;
+      event.preventDefault();
+      requestCloseRef.current();
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, []);
+
   const addCandidate = (candidate: DemoBuilderCandidate) => {
     const item = todayItemFromCandidate(candidate);
     if (draftItems.some((entry) => entry.sourceId === candidate.sourceId))
@@ -212,11 +234,6 @@ export function TodayPicker({ state, onClose, onSave }: TodayPickerProps) {
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      requestClose();
-      return;
-    }
     if (event.key !== "Tab") return;
     const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
       "button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex='-1'])",

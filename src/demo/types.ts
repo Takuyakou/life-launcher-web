@@ -1,3 +1,5 @@
+import type { ParsedDemoImport } from "./importDemo";
+
 export type TimerStatus = "idle" | "running" | "paused" | "finished" | "early";
 
 export type DemoVictory = {
@@ -165,6 +167,18 @@ export type DemoAction =
   | { type: "PAUSE_TIMER" }
   | { type: "RESUME_TIMER" }
   | { type: "STOP_TIMER"; now: Date; complete?: boolean }
+  | {
+      type: "COMMIT_IMPORT";
+      parsed: ParsedDemoImport;
+      excludedKeys: string[];
+      expectedFingerprint: string;
+    }
+  | {
+      type: "UNDO_IMPORT";
+      projects: DemoProject[];
+      wishlist: DemoWishlistItem[];
+      expectedFingerprint: string;
+    }
   | { type: "TOGGLE_SECTION"; section: keyof DemoSectionState }
   | { type: "RESET_DEMO"; state: DemoState };
 

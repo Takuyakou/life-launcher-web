@@ -15,6 +15,8 @@ import type {
   DemoTodayItem,
   DemoWishlistItem,
 } from "../demo/types";
+import type { ParsedDemoImport } from "../demo/importDemo";
+import { DemoImportDialog } from "./DemoImportDialog";
 import { DemoTimer } from "./DemoTimer";
 import { NextStepDialog } from "./NextStepDialog";
 import { TimerActions } from "./TimerActions";
@@ -46,6 +48,12 @@ type Props = {
     addedWishlist: DemoWishlistItem[],
     expectedFingerprint: string,
   ) => boolean;
+  onCommitImport: (
+    parsed: ParsedDemoImport,
+    excludedKeys: string[],
+    expectedFingerprint: string,
+    selectedCount: number,
+  ) => boolean;
 };
 
 export function DemoFrame({
@@ -62,12 +70,14 @@ export function DemoFrame({
   onAddTodayCandidate,
   onRemoveTodayItem,
   onSaveTodayPickerDraft,
+  onCommitImport,
 }: Props) {
   const [editingVictory, setEditingVictory] = useState(false);
   const [doNowProjectId, setDoNowProjectId] = useState<string | null>(null);
   const [victoryDraft, setVictoryDraft] = useState(state.victory.text);
   const [addingWishlist, setAddingWishlist] = useState(false);
   const [todayPickerOpen, setTodayPickerOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editingNextStepId, setEditingNextStepId] = useState<string | null>(
     null,
   );
@@ -75,6 +85,7 @@ export function DemoFrame({
   const victoryInputRef = useRef<HTMLInputElement>(null);
   const wishlistAddRef = useRef<HTMLButtonElement>(null);
   const todayPickerTriggerRef = useRef<HTMLButtonElement>(null);
+  const importTriggerRef = useRef<HTMLButtonElement>(null);
   const doNowCandidates = createDoNowCandidates(state);
   const doNowCandidate =
     doNowCandidates.find((entry) => entry.projectId === doNowProjectId) ??
@@ -167,6 +178,10 @@ export function DemoFrame({
   const closeTodayPicker = useCallback(() => {
     setTodayPickerOpen(false);
     requestAnimationFrame(() => todayPickerTriggerRef.current?.focus());
+  }, []);
+  const closeImport = useCallback(() => {
+    setImportOpen(false);
+    requestAnimationFrame(() => importTriggerRef.current?.focus());
   }, []);
   const sectionToggle = (
     section: keyof DemoSectionState,
@@ -594,12 +609,22 @@ export function DemoFrame({
             )}
           </section>
           <section className="demo-section compact-section next-section">
-            {sectionToggle(
-              "nextStep",
-              "次の一手",
-              `${state.projects.length}件`,
-              "各プロジェクトの、次回すぐ再開するための一手",
-            )}
+            <div className="sync-disclosure-header next-section-header">
+              {sectionToggle(
+                "nextStep",
+                "次の一手",
+                `${state.projects.length}件`,
+                "各プロジェクトの、次回すぐ再開するための一手",
+              )}
+              <button
+                className="import-open-button"
+                onClick={() => setImportOpen(true)}
+                ref={importTriggerRef}
+                type="button"
+              >
+                ＋ まとめて取り込む
+              </button>
+            </div>
             <div id="section-nextStep" hidden={!state.sections.nextStep}>
               <ul className="sync-source-list">
                 {state.projects.map((project) => {
@@ -831,6 +856,13 @@ export function DemoFrame({
         <TodayPicker
           onClose={closeTodayPicker}
           onSave={onSaveTodayPickerDraft}
+          state={state}
+        />
+      )}
+      {importOpen && (
+        <DemoImportDialog
+          onClose={closeImport}
+          onCommit={onCommitImport}
           state={state}
         />
       )}

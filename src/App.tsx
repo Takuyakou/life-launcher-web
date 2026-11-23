@@ -23,15 +23,28 @@ import {
 import type {
   DemoAction,
   DemoBuilderCandidate,
+  DemoProject,
   DemoTodayItem,
   DemoWishlistItem,
 } from "./demo/types";
+import { stateFingerprint } from "./demo/types";
+import type { ParsedDemoImport } from "./demo/importDemo";
 
 type ToastState = {
   id: number;
   message: string;
   tone: "info" | "success";
+  undo?: boolean;
 } | null;
+
+type UndoSnapshot = {
+  projects: DemoProject[];
+  wishlist: DemoWishlistItem[];
+  afterFingerprint: string;
+};
+
+const UNDO_TIMEOUT_MS = 5000;
+
 function App() {
   const [state, setState] = useState(() => {
     const seed = createDemoSeed(new Date());
@@ -44,8 +57,13 @@ function App() {
   const [dictionaryOpen, setDictionaryOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
+  const [undo, setUndo] = useState<UndoSnapshot | null>(null);
   const demoRef = useRef<HTMLElement>(null);
   const stateRef = useRef(state);
+  const undoRef = useRef<UndoSnapshot | null>(null);
+  const undoTimerRef = useRef<number | null>(null);
+  const undoRemainingRef = useRef(0);
+  const undoStartedRef = useRef(0);
   const dispatch = useCallback((action: DemoAction): boolean => {
     const next = demoReducer(stateRef.current, action);
     if (next === stateRef.current) return false;
@@ -77,8 +95,65 @@ function App() {
     }
     stateRef.current = next;
     setState(next);
+    // Any other saved change ends the "元に戻す" window for an import.
+    if (!volatile && undoRef.current) {
+      undoRef.current = null;
+      setUndo(null);
+      if (undoTimerRef.current !== null) {
+        window.clearTimeout(undoTimerRef.current);
+        undoTimerRef.current = null;
+      }
+      setToast((current) => (current?.undo ? { ...current, undo: false } : current));
+    }
     return true;
   }, []);
+
+  const clearUndoTimer = useCallback(() => {
+    if (undoTimerRef.current !== null) {
+      window.clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = null;
+    }
+  }, []);
+
+  const dropUndo = useCallback(() => {
+    clearUndoTimer();
+    undoRef.current = null;
+    setUndo(null);
+  }, [clearUndoTimer]);
+
+  const armUndo = useCallback(
+    (milliseconds: number) => {
+      clearUndoTimer();
+      undoRemainingRef.current = milliseconds;
+      undoStartedRef.current = Date.now();
+      undoTimerRef.current = window.setTimeout(() => {
+        undoTimerRef.current = null;
+        undoRef.current = null;
+        setUndo(null);
+        setToast((current) => (current?.undo ? null : current));
+      }, milliseconds);
+    },
+    [clearUndoTimer],
+  );
+
+  const pauseUndo = useCallback(() => {
+    if (undoTimerRef.current === null) return;
+    clearUndoTimer();
+    undoRemainingRef.current = Math.max(
+      0,
+      undoRemainingRef.current - (Date.now() - undoStartedRef.current),
+    );
+  }, [clearUndoTimer]);
+
+  const resumeUndo = useCallback(() => {
+    if (!undoRef.current || undoTimerRef.current !== null) return;
+    if (undoRemainingRef.current <= 0) {
+      dropUndo();
+      setToast((current) => (current?.undo ? null : current));
+      return;
+    }
+    armUndo(undoRemainingRef.current);
+  }, [armUndo, dropUndo]);
   const completionProject = state.projects.find(
     (project) => project.id === state.timer.projectId,
   );
@@ -119,7 +194,7 @@ function App() {
   }, [dispatch, state.timer.status]);
 
   useEffect(() => {
-    if (!toast) return;
+    if (!toast || toast.undo) return;
     const timeoutId = window.setTimeout(() => setToast(null), 3400);
     return () => window.clearTimeout(timeoutId);
   }, [toast]);
@@ -240,6 +315,71 @@ function App() {
       tone: "success",
     });
     return true;
+  };
+
+  const commitImport = (
+    parsed: ParsedDemoImport,
+    excludedKeys: string[],
+    expectedFingerprint: string,
+    selectedCount: number,
+  ) => {
+    const previous = {
+      projects: stateRef.current.projects,
+      wishlist: stateRef.current.wishlist,
+    };
+    if (
+      !dispatch({
+        type: "COMMIT_IMPORT",
+        parsed,
+        excludedKeys,
+        expectedFingerprint,
+      })
+    )
+      return false;
+    const snapshot: UndoSnapshot = {
+      projects: previous.projects,
+      wishlist: previous.wishlist,
+      afterFingerprint: stateFingerprint(stateRef.current),
+    };
+    undoRef.current = snapshot;
+    setUndo(snapshot);
+    setToast({
+      id: Date.now(),
+      message: `${selectedCount}件を取り込みました`,
+      tone: "success",
+      undo: true,
+    });
+    armUndo(UNDO_TIMEOUT_MS);
+    return true;
+  };
+
+  const undoImport = () => {
+    const snapshot = undoRef.current;
+    if (!snapshot) return;
+    if (
+      !dispatch({
+        type: "UNDO_IMPORT",
+        projects: snapshot.projects,
+        wishlist: snapshot.wishlist,
+        expectedFingerprint: snapshot.afterFingerprint,
+      })
+    ) {
+      // Keep the snapshot so the button can be pressed again.
+      setToast({
+        id: Date.now(),
+        message:
+          "元に戻せませんでした。もう一度「元に戻す」を押してください。",
+        tone: "info",
+        undo: true,
+      });
+      return;
+    }
+    dropUndo();
+    setToast({
+      id: Date.now(),
+      message: "取り込みを元に戻しました",
+      tone: "success",
+    });
   };
 
   const resetDemo = () => {
@@ -430,6 +570,7 @@ function App() {
             dispatch={dispatch}
             onAddTodayCandidate={addTodayCandidate}
             onRemoveTodayItem={removeTodayItem}
+            onCommitImport={commitImport}
             onDemoComplete={completeTimerDemo}
             onNativeOnly={showNativeToast}
             onOpenDictionary={() => setDictionaryOpen(true)}
@@ -627,8 +768,24 @@ function App() {
       />
       <div aria-atomic="true" aria-live="polite" className="toast-region">
         {toast ? (
-          <div className={`toast toast-${toast.tone}`} key={toast.id}>
-            {toast.message}
+          <div
+            className={`toast toast-${toast.tone}${toast.undo ? " toast-undoable" : ""}`}
+            key={toast.id}
+            onBlur={resumeUndo}
+            onFocus={pauseUndo}
+            onMouseEnter={pauseUndo}
+            onMouseLeave={resumeUndo}
+          >
+            <span>{toast.message}</span>
+            {toast.undo && undo ? (
+              <button
+                className="toast-undo"
+                onClick={undoImport}
+                type="button"
+              >
+                元に戻す
+              </button>
+            ) : null}
           </div>
         ) : null}
       </div>

@@ -12,6 +12,7 @@ import type {
   DemoWishlistItem,
 } from "./types";
 import { stateFingerprint } from "./types";
+import { applyDemoImport } from "./importDemo";
 import {
   nextStepSourceId,
   sourceLockedByUnfinishedToday,
@@ -389,6 +390,20 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
           [action.section]: !state.sections[action.section],
         },
       };
+    case "COMMIT_IMPORT": {
+      if (stateFingerprint(state) !== action.expectedFingerprint) return state;
+      // Re-read the current projects and wishlist: the preview may be a few seconds old.
+      const { projects, wishlist } = applyDemoImport(
+        state,
+        action.parsed,
+        action.excludedKeys,
+      );
+      return { ...state, projects, wishlist };
+    }
+    case "UNDO_IMPORT": {
+      if (stateFingerprint(state) !== action.expectedFingerprint) return state;
+      return { ...state, projects: action.projects, wishlist: action.wishlist };
+    }
     case "RESET_DEMO":
       return action.state;
     default:

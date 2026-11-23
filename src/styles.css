@@ -1526,6 +1526,31 @@ footer a:hover {
   border-left-color: var(--green);
 }
 
+.toast-undoable {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.toast-undo {
+  flex: 0 0 auto;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toast-undo:hover {
+  background: var(--surface-soft);
+}
+
 @keyframes toast-in {
   from {
     opacity: 0;
