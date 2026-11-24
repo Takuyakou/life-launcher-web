@@ -6,7 +6,7 @@
 
 [Windows版をダウンロード](https://github.com/Takuyakou/life-launcher/releases/latest) ・ [Life Launcher本体](https://github.com/Takuyakou/life-launcher)
 
-<img src="docs/screenshots/web-demo-v1.6.png" alt="Life Launcher Web Demoの今やる一手、今日の3件、次の一手、やりたいこと" width="960">
+<img src="docs/screenshots/web-demo-landing.png" alt="Life Launcher Web Demoのトップ。今やる一手のカードと、ブラウザで試すボタン" width="960">
 
 ## できること
 
@@ -40,7 +40,7 @@ Web Demoでは起動動作を演出しています。Windows版では登録し�
 - 「まとめて取り込む」は、Windows版 v1.6.3 のプロンプト文面をそのまま使い、貼り付けた答えをブラウザ内だけで読み取ります。外部AIへの送信・問い合わせは行いません。取り込みで変わるのはプロジェクトとやりたいことだけで、今日の3件・実行記録・タイマーには触れません。きっかけ(trigger)とタイマー分数設定はプレビューに注記したうえで反映しません。
 - 手順書ビューア、記録画面、設定画面の完全版、表示サイズ(大・特大)、ミニタイマー、拡大タイマー、複数ディスプレイ対応、ZIPバックアップ、複雑なD&D並べ替えは含みません。
 - アプリ・ファイル・URLの起動は演出のみで、外部アプリやローカルファイルを実際には開きません。
-- 入力・選択・候補の除外・実行記録・開閉状態は、このブラウザのlocalStorageに保存します。入力内容をアプリ側サーバーへ送信しません。
+- 入力・選択・候補の除外・実行記録・開閉状態は、このブラウザの中に保存します。入力内容をアプリ側サーバーへ送信しません。
 - 保存に失敗した変更は画面に反映せず、変更前の状態を保持します。
 - 今日の3件と候補の除外状態は、日付が変わっても自動ではリセットされません。解除・次の3件の選択・リセットなどの操作で変更します。
 - 再読み込みすると、進行中・一時停止中・満了未確定のタイマーは待機状態へ戻ります。
@@ -49,6 +49,7 @@ Web Demoでは起動動作を演出しています。Windows版では登録し�
 ## 開発
 
 React 18 / TypeScript / Viteで構築しています。
+見出しの英字にはBricolage Grotesque(SIL Open Font License 1.1。`src/assets/fonts/OFL.txt`)を同梱しています。
 
 ```powershell
 npm.cmd ci
