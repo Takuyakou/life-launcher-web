@@ -463,7 +463,10 @@ export function FinalCta() {
         </span>
         <div className="lp-final-copy">
           <Eyebrow>READY?</Eyebrow>
-          <h2 className="lp-h2">次の一手を、今ここで始める。</h2>
+          <h2 className="lp-h2 lp-final-title">
+            <span>次の一手を、</span>
+            <span>今ここで始める。</span>
+          </h2>
           <a className="lp-final-try" href="#demo">
             <UiIcon name="play" size={16} />
             まずはブラウザで試す

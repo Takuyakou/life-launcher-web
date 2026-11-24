@@ -833,14 +833,14 @@
   overflow: hidden;
 }
 
-/* W19: 見出しと文字のリンクを左、Windows 版の札を右に置き、下端をそろえる。
+/* W20: すぐ上の安全性の段と同じ2列の格子にして、札の左端を安全性の一覧の左端とそろえる。
+   見出しと文字のリンクは左の列、札は右の列の左端から幅 460px。下端をそろえる。
    見出しは「次の一手を、/今ここで始める。」の2行で折り返す(字の大きさは他の段と同じ)。 */
 .lp-final-inner {
-  align-items: flex-end;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 32px 48px;
-  justify-content: space-between;
+  align-items: end;
+  display: grid;
+  gap: 40px 72px;
+  grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr));
   position: relative;
 }
 
@@ -862,11 +862,22 @@
 
 .lp-final-copy {
   display: flex;
-  flex: 1 1 420px;
   flex-direction: column;
   gap: 16px;
-  max-width: 560px;
   position: relative;
+}
+
+/* 見出しは「次の一手を、」と「今ここで始める。」の2つのかたまりで、折り返すならその間だけで折り返す。 */
+.lp-final-title > span {
+  display: inline-block;
+}
+
+/* 2列のときは、必ず2行にする。列の幅に任せると、書体(Windows は句読点が詰まる)と画面の幅で
+   1行に収まることがあるため、かたまりを1行ずつ置く。 */
+@media (min-width: 1032px) {
+  .lp-final-title > span {
+    display: block;
+  }
 }
 
 /* W18: 2つのボタンをやめ、デモへは見出しの下の文字のリンク、Windows 版は右の札にした。 */
@@ -890,7 +901,6 @@
 
 .lp-get {
   background: var(--surface);
-  flex: 0 0 auto;
   border: 1px solid var(--line-soft);
   border-radius: 14px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
@@ -1229,15 +1239,7 @@
   }
 
   .lp-final-inner {
-    align-items: stretch;
-    flex-direction: column;
     gap: 24px;
-  }
-
-  /* 縦並びでは flex の基準幅が高さに効いてしまうので、外す。 */
-  .lp-final-copy {
-    flex: none;
-    max-width: none;
   }
 
   .lp-get {
