@@ -83,7 +83,10 @@ test("W16 landing text keeps a 4.5:1 contrast on its background", async ({ page 
         ".lp-demo-step-note",
         ".lp-demo-privacy",
         ".lp-feature-tag",
-        ".lp-privacy-tech",
+        ".lp-tech-chip",
+        ".lp-final-try",
+        ".lp-get-meta",
+        ".lp-get-note",
         ".lp-footer-inner > span",
       ].map((selector) => [selector, ratio(selector)]),
     );
