@@ -47,6 +47,29 @@ function DownloadButton() {
   );
 }
 
+/* W18: 最後の段の Windows 版の札。版の数字は書かない(公開のたびに直さなくてよいように)。
+   書いてあることは Windows 版 README の「ダウンロード」と同じ(3 形式・SHA256SUMS.txt・WebView2)。 */
+function WindowsCard() {
+  return (
+    <div className="lp-get">
+      <h3 className="lp-get-title">Windows版を入手</h3>
+      <p className="lp-get-meta">Windows 10 / 11 (x64) · WebView2 Runtime</p>
+      <a
+        className="button button-gold start-button lp-get-button"
+        href={RELEASES_URL}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <span>最新版をダウンロード</span>
+        <span>（GitHub Releases）</span>
+      </a>
+      <p className="lp-get-note">インストーラー / 単体実行 EXE / ポータブル ZIP の 3 形式・SHA256SUMS 添付</p>
+    </div>
+  );
+}
+
+const TECH_STACK = ["Tauri 2", "Rust", "React", "TypeScript"];
+
 function TryButton({ className = "" }: { className?: string }) {
   return (
     <a className={`button button-gold lp-cta ${className}`.trim()} href="#demo">
@@ -410,9 +433,13 @@ export function PrivacySection() {
         <div className="lp-privacy-head">
           <Eyebrow>PRIVACY / SECURITY</Eyebrow>
           <h2 className="lp-privacy-title">Local-first.</h2>
-          <p className="lp-privacy-tech">
-            React・TypeScript・Vite・Rust・Tauri 2。Web Demoは静的SPAです。リリース版はWindows向けTauriデスクトップアプリです。
-          </p>
+          <ul className="lp-tech-chips" aria-label="使っている技術">
+            {TECH_STACK.map((name) => (
+              <li className="lp-tech-chip" key={name}>
+                {name}
+              </li>
+            ))}
+          </ul>
         </div>
         <ul className="lp-privacy-list">
           <li>Windows版のユーザーデータは端末内に保存します。</li>
@@ -437,11 +464,12 @@ export function FinalCta() {
         <div className="lp-final-copy">
           <Eyebrow>READY?</Eyebrow>
           <h2 className="lp-h2">次の一手を、今ここで始める。</h2>
+          <a className="lp-final-try" href="#demo">
+            <UiIcon name="play" size={16} />
+            まずはブラウザで試す
+          </a>
         </div>
-        <div className="lp-actions lp-final-actions">
-          <TryButton />
-          <DownloadButton />
-        </div>
+        <WindowsCard />
       </div>
     </section>
   );
