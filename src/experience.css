@@ -16,158 +16,10 @@
   transform: translateY(0);
 }
 
-.site-header {
-  background: #161512;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
-}
-
 #why,
 #demo,
 #privacy {
   scroll-margin-top: 78px;
-}
-
-.hero {
-  align-items: center;
-  gap: 56px;
-  min-height: min(580px, calc(100vh - 62px));
-  padding-bottom: 60px;
-  padding-top: 48px;
-}
-
-.hero h1 {
-  margin-bottom: 20px;
-}
-
-.hero-description {
-  line-height: 1.7;
-  margin-bottom: 26px;
-  margin-top: 20px;
-}
-
-.hero-primary {
-  min-height: 46px;
-  padding-left: 23px;
-  padding-right: 23px;
-}
-
-.hero-proof > div {
-  padding-bottom: 15px;
-  padding-top: 15px;
-}
-
-.hero-proof > .hero-mini-preview {
-  background: var(--surface-soft);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  display: grid;
-  gap: 11px 12px;
-  grid-template-columns: minmax(0, 1fr) auto;
-  margin: 18px 0 0 24px;
-  padding: 13px;
-}
-
-.hero-mini-preview > div {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-}
-
-.hero-mini-preview > div span {
-  color: var(--muted);
-  font-size: 9px;
-  grid-row: auto;
-  padding: 0;
-}
-
-.hero-mini-preview > div strong {
-  font-size: 12px;
-  overflow-wrap: anywhere;
-}
-
-.hero-mini-victory {
-  border-bottom: 1px solid var(--line-soft);
-  grid-column: 1 / -1;
-  padding-bottom: 10px;
-}
-
-.hero-mini-step {
-  grid-column: 1;
-}
-
-.hero-mini-preview .hero-mini-project {
-  color: var(--project);
-  font-weight: 700;
-}
-
-.hero-preview-action {
-  align-items: center;
-  align-self: center;
-  background: var(--green-soft);
-  border: 1px solid #3f7658;
-  border-radius: 5px;
-  color: var(--green);
-  display: inline-flex;
-  font-size: 10px;
-  font-weight: 700;
-  gap: 5px;
-  grid-column: 2;
-  grid-row: 2;
-  justify-content: center;
-  min-height: 40px;
-  min-width: 116px;
-  padding: 0 12px;
-}
-
-.hero-preview-action:hover {
-  background: #214632;
-  border-color: var(--green);
-}
-
-.why-section,
-.features-section,
-.privacy-section,
-.tech-section,
-.final-cta {
-  padding-bottom: 68px;
-  padding-top: 66px;
-}
-
-.section-intro {
-  margin-bottom: 34px;
-}
-
-.reason-grid article {
-  min-height: 150px;
-  padding-bottom: 18px;
-}
-
-.reason-grid h3 {
-  margin-top: 30px;
-}
-
-.demo-section-shell {
-  padding-bottom: 76px;
-  padding-top: 54px;
-}
-
-.demo-intro {
-  margin-bottom: 22px;
-}
-
-.demo-disclosure {
-  display: block;
-  max-width: 310px;
-}
-
-.demo-disclosure span {
-  color: var(--text);
-  font-weight: 650;
-}
-
-.demo-disclosure p {
-  line-height: 1.5;
-  margin-top: 5px;
 }
 
 .do-now-copy > .do-now-reason {
@@ -402,32 +254,7 @@
   width: 62px;
 }
 
-.feature-list article {
-  padding-bottom: 18px;
-  padding-top: 18px;
-}
-
-.privacy-copy {
-  gap: 13px;
-}
-
-.tech-section > div {
-  margin-bottom: 16px;
-  margin-top: 16px;
-}
-
-.final-cta > div:first-child {
-  display: block;
-}
-
-.final-cta > div:last-child {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-footer > div {
+:where(.today-picker-footer, .demo-import-footer) > div {
   display: flex;
   gap: 20px;
 }
@@ -443,64 +270,11 @@ footer > div {
   }
 }
 
-@media (max-width: 860px) {
-  .hero {
-    gap: 36px;
-    padding-bottom: 54px;
-    padding-top: 44px;
-  }
-
-  .hero-proof {
-    width: 100%;
-  }
-
-  .why-section,
-  .features-section,
-  .privacy-section,
-  .tech-section,
-  .final-cta {
-    padding-bottom: 56px;
-    padding-top: 54px;
-  }
-}
-
 @media (max-width: 600px) {
   #why,
   #demo,
   #privacy {
     scroll-margin-top: 66px;
-  }
-
-  .hero {
-    gap: 30px;
-    padding-bottom: 44px;
-    padding-top: 36px;
-  }
-
-  .hero h1 {
-    font-size: 38px;
-  }
-
-  .hero-lead {
-    font-size: 24px;
-  }
-
-  .hero-description {
-    font-size: 15px;
-    line-height: 1.65;
-  }
-
-  .hero-proof > .hero-mini-preview {
-    margin-left: 0;
-  }
-
-  .demo-section-shell {
-    padding-bottom: 56px;
-    padding-top: 42px;
-  }
-
-  .demo-disclosure {
-    max-width: none;
   }
 
   .launch-simulation ul {
@@ -512,13 +286,7 @@ footer > div {
     padding: 18px;
   }
 
-  .final-cta > div:last-child {
-    align-items: stretch;
-    flex-direction: column;
-    width: 100%;
-  }
-
-  footer > div {
+  :where(.today-picker-footer, .demo-import-footer) > div {
     gap: 14px;
   }
 }

@@ -1,3 +1,13 @@
+import {
+  DemoSection,
+  FeaturesSection,
+  FinalCta,
+  Hero,
+  PrivacySection,
+  SiteFooter,
+  SiteHeader,
+  WhySection,
+} from "./landing/Landing";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CompletionDialog,
@@ -6,7 +16,6 @@ import {
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { DemoDictionary } from "./components/DemoDictionary";
 import { DemoFrame } from "./components/DemoFrame";
-import { UiIcon } from "./components/UiIcon";
 import { createDemoSeed } from "./demo/seed";
 import { demoReducer } from "./demo/reducer";
 import {
@@ -400,11 +409,13 @@ function App() {
     });
   };
 
-  const focusDoNowShortStart = () => {
+  const focusDoNowStart = (kind: "short" | "normal") => {
     demoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     window.requestAnimationFrame(() => {
       demoRef.current
-        ?.querySelector<HTMLButtonElement>("[data-demo-do-now-short]")
+        ?.querySelector<HTMLButtonElement>(
+          kind === "short" ? "[data-demo-do-now-short]" : "[data-demo-do-now-normal]",
+        )
         ?.focus();
     });
   };
@@ -425,147 +436,17 @@ function App() {
       <a className="skip-link" href="#content">
         本文へ移動
       </a>
-      <header className="site-header">
-        <a
-          className="site-brand"
-          href="#top"
-          aria-label="Life Launcher トップへ"
-        >
-          <span className="brand-mark" aria-hidden="true">
-            L
-          </span>
-          <span>Life Launcher</span>
-        </a>
-        <nav aria-label="メインナビゲーション">
-          <a href="#why">できること</a>
-          <a href="#demo">Web Demo</a>
-          <a href="#privacy">安全性</a>
-        </nav>
-      </header>
+      <SiteHeader />
 
       <main id="content">
-        <section className="hero" id="top">
-          <div className="hero-copy">
-            <p className="eyebrow">WINDOWS DESKTOP APP</p>
-            <h1>Life Launcher</h1>
-            <p className="hero-lead">
-              「何をしよう？」を
-              <br />
-              「今これをやる」に変える。
-            </p>
-            <p className="hero-description">
-              迷っているときに「今やる一手」を1つ示し、必要なものを開いて、開始まで連れていく個人向け実行支援アプリです。
-            </p>
-            <div className="hero-actions">
-              <a
-                className="button button-gold button-large hero-primary"
-                href="#demo"
-              >
-                <UiIcon name="play" size={16} /> ブラウザで試す
-              </a>
-              <a
-                className="button button-quiet button-large"
-                href="https://github.com/Takuyakou/life-launcher/releases/latest"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Windows版をダウンロード <UiIcon name="external" size={15} />
-              </a>
-              <a
-                className="text-link"
-                href="https://github.com/Takuyakou/life-launcher"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                GitHub <UiIcon name="external" size={14} />
-              </a>
-            </div>
-          </div>
-          <div className="hero-proof" aria-label="Life Launcherの流れ">
-            <div>
-              <span>01</span>
-              <strong>決める</strong>
-              <small>今日の勝利条件を1つ</small>
-            </div>
-            <div>
-              <span>02</span>
-              <strong>選ぶ</strong>
-              <small>今やる一手を小さく</small>
-            </div>
-            <div>
-              <span>03</span>
-              <strong>始める</strong>
-              <small>必要なものを開いて5分から</small>
-            </div>
-            <div
-              className="hero-mini-preview"
-              aria-label="Life Launcher画面のプレビュー"
-            >
-              <div className="hero-mini-victory">
-                <span>今日の勝利条件</span>
-                <strong>後回しを1つ終わらせる</strong>
-              </div>
-              <div className="hero-mini-step project-amber">
-                <span className="hero-mini-project">プロジェクト: 読書</span>
-                <strong>数分だけ読む</strong>
-              </div>
-              <button
-                className="button button-good hero-preview-action"
-                onClick={focusDoNowShortStart}
-                type="button"
-              >
-                <UiIcon name="play" size={13} /> 5分で始める
-              </button>
-            </div>
-          </div>
-        </section>
+        <Hero
+          onStartNormal={() => focusDoNowStart("normal")}
+          onStartShort={() => focusDoNowStart("short")}
+        />
 
-        <section className="why-section" id="why">
-          <div className="section-intro">
-            <p className="eyebrow">WHY LIFE LAUNCHER?</p>
-            <h2>管理するためではなく、始めるために。</h2>
-          </div>
-          <div className="reason-grid">
-            <article>
-              <span>1</span>
-              <h3>今日を絞る</h3>
-              <p>
-                登録した次の一手とやりたいことから、今日取り組む3件までを選びます。
-              </p>
-            </article>
-            <article>
-              <span>2</span>
-              <h3>一手を小さくする</h3>
-              <p>「次の一手」があるプロジェクトから、今やることを1件だけ示します。</p>
-            </article>
-            <article>
-              <span>3</span>
-              <h3>開始までつなぐ</h3>
-              <p>
-                Windows版では登録したアプリや手順書を開き、タイマーを始めます。
-              </p>
-            </article>
-          </div>
-        </section>
+        <WhySection />
 
-        <section
-          className="demo-section-shell"
-          id="demo"
-          ref={demoRef}
-        >
-          <div className="demo-intro">
-            <div>
-              <p className="eyebrow">INTERACTIVE DEMO</p>
-              <h2>ブラウザで、開始までの流れを試す。</h2>
-            </div>
-            <div className="demo-disclosure">
-              <span>サンプルデータだけで安全に試せます</span>
-              <p>Windows固有機能は、Web上の演出として再現します。</p>
-            </div>
-          </div>
-          <p className="mobile-recommendation">
-            PCで開くとデモをより操作しやすく確認できます。
-          </p>
+        <DemoSection sectionRef={demoRef}>
           <DemoFrame
             dispatch={dispatch}
             onAddTodayCandidate={addTodayCandidate}
@@ -589,136 +470,14 @@ function App() {
             onStopTimer={stopTimer}
             state={state}
           />
-          <p className="demo-privacy">
-            デモの入力内容はサーバーへ送信しません。このブラウザ内にだけ保存されます。
-          </p>
-        </section>
+        </DemoSection>
 
-        <section className="features-section">
-          <div className="section-intro">
-            <p className="eyebrow">FEATURES</p>
-            <h2>考える場所と、動く場所をつなぐ。</h2>
-          </div>
-          <div className="feature-list">
-            <article>
-              <h3>今やる一手</h3>
-              <p>
-                「次の一手」を設定したプロジェクトから1件を表示し、理由も確認できます。
-              </p>
-            </article>
-            <article>
-              <h3>今日やるものを選ぶ / 今日の3件</h3>
-              <p>
-                「今日やるものを選ぶ」画面で「次の一手」と「やりたいこと」から最大3件を選び、タイマーから実行します。
-              </p>
-            </article>
-            <article>
-              <h3>Quick Launcher / 辞書</h3>
-              <p>
-                Windows版ではアプリ・ファイル・フォルダ・URLを登録し、開始と同時にまとめて開けます。
-              </p>
-            </article>
-            <article>
-              <h3>タイマー / 今日の実行</h3>
-              <p>
-                始めた内容をタイマーで実行し、終了時に記録します。Web
-                Demoでは分単位のサンプル記録を残します。
-              </p>
-            </article>
-            <article>
-              <h3>手順書</h3>
-              <p>
-                ローカルのMarkdown・Text・HTMLを、作業開始時に別ウィンドウで参照できます。
-              </p>
-            </article>
-            <article>
-              <h3>辞書</h3>
-              <p>
-                Windows版では、Ctrl+Kからラベル・分類・キーワードで検索して呼び出せます。
-              </p>
-            </article>
-          </div>
-        </section>
-
-        <section className="privacy-section" id="privacy">
-          <div>
-            <p className="eyebrow">PRIVACY / SECURITY</p>
-            <h2>Local-first.</h2>
-          </div>
-          <div className="privacy-copy">
-            <p>Windows版のユーザーデータは端末内に保存します。</p>
-            <p>
-              公開前にコードだけでなく、Git履歴・画像・fixtureも監査しました。
-            </p>
-            <p>
-              Windows版ではfavicon取得のSSRF対策と、Tauriのウィンドウ別最小権限化を行っています。
-            </p>
-            <p>
-              Web
-              Demoは外部API・アカウント・追跡用analyticsを使わず、入力はlocalStorageだけに保存します。
-            </p>
-          </div>
-        </section>
-
-        <section className="tech-section">
-          <p className="eyebrow">TECH STACK</p>
-          <div>
-            <span>React</span>
-            <span>TypeScript</span>
-            <span>Vite</span>
-            <span>Rust</span>
-            <span>Tauri 2</span>
-          </div>
-          <p>
-            Web
-            Demoは静的SPAです。リリース版はWindows向けTauriデスクトップアプリです。
-          </p>
-        </section>
-
-        <section className="final-cta">
-          <div>
-            <p className="eyebrow">READY?</p>
-            <h2>次の一手を、今ここで始める。</h2>
-          </div>
-          <div>
-            <a
-              className="button button-gold button-large"
-              href="#demo"
-            >
-              <UiIcon name="play" size={16} /> ブラウザで試す
-            </a>
-            <a
-              className="button button-quiet button-large"
-              href="https://github.com/Takuyakou/life-launcher/releases/latest"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Windows版をダウンロード <UiIcon name="external" size={15} />
-            </a>
-          </div>
-        </section>
+        <FeaturesSection />
+        <PrivacySection />
+        <FinalCta />
       </main>
 
-      <footer>
-        <span>© 2026 Takuyakou</span>
-        <div>
-          <a
-            href="https://github.com/Takuyakou/life-launcher"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            GitHub
-          </a>
-          <a
-            href="https://github.com/Takuyakou/life-launcher/releases/latest"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Windows版
-          </a>
-        </div>
-        <span>Usage terms are available in the GitHub repository.</span>
-      </footer>
+      <SiteFooter />
 
       <DemoDictionary
         open={dictionaryOpen}

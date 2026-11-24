@@ -124,11 +124,12 @@ test("timer start shows launch simulation and stop appends Today Activity once",
   await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
   await expect(page.locator(".demo-timer .timer-status")).toHaveText("実行中");
   await expect(page.getByText("環境を準備", { exact: true })).toBeVisible();
-  await expect(page.getByText("読書メモを開く", { exact: true })).toBeVisible();
+  const demo = page.locator("#demo");
+  await expect(demo.getByText("読書メモを開く", { exact: true })).toBeVisible();
   await expect(
-    page.getByText("参考ページを開く", { exact: true }),
+    demo.getByText("参考ページを開く", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("タイマーを開始", { exact: true })).toHaveCount(
+  await expect(demo.getByText("タイマーを開始", { exact: true })).toHaveCount(
     1,
   );
   await page
@@ -200,7 +201,7 @@ test("sections open and reset restores every v2 seed field", async ({
 }) => {
   await page.locator(".wishlist-section .section-toggle").click();
   await expect(
-    page.getByText("気になっていた本を読む", { exact: true }),
+    page.locator("#demo").getByText("気になっていた本を読む", { exact: true }),
   ).toHaveCount(1);
   await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   await page

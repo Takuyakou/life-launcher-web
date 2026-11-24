@@ -28,7 +28,7 @@ for (const viewport of [
       if (selector) {
         await page.locator(selector).evaluate((node) => {
           const header =
-            document.querySelector(".site-header")?.getBoundingClientRect()
+            document.querySelector(".lp-header")?.getBoundingClientRect()
               .height ?? 0;
           window.scrollTo({
             top: window.scrollY + node.getBoundingClientRect().top - header - 8,

@@ -48,6 +48,7 @@ export function TimerActions({
             type="button"
             className="button button-normal"
             aria-label={`${label}を${normalMinutes}分で開始`}
+            data-demo-do-now-normal={primary || undefined}
             onClick={() => onStart(normalMinutes)}
           >
             <UiIcon name="play" size={14} />

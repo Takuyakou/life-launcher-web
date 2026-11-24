@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 test("landing CTAs point to the approved destinations", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "Life Launcher" })).toBeVisible();
   const releases = page.locator('a[href*="github.com/Takuyakou/life-launcher/releases"]');
-  await expect(releases).toHaveCount(3);
+  await expect(releases).toHaveCount(4);
   for (const release of await releases.all()) {
     await expect(release).toHaveAttribute(
       "href",
@@ -33,7 +33,7 @@ test("browser demo CTA scrolls without focusing its outer section", async ({ pag
 
 test("large demo sections do not become browser focus targets", async ({ page }) => {
   const demo = page.locator("#demo");
-  await page.getByRole("heading", { name: "ブラウザで、開始までの流れを試す。" }).click();
+  await page.getByRole("heading", { name: "開始までの流れを試す。" }).click();
   await expect(demo).not.toBeFocused();
 
   const today = page.locator(".today-section");
@@ -44,7 +44,7 @@ test("large demo sections do not become browser focus targets", async ({ page })
 });
 
 test("Hero mini start moves to and focuses the matching short timer action", async ({ page }) => {
-  await page.locator(".hero-mini-preview .hero-preview-action").click();
+  await page.locator(".lp-hero-start").click();
   await expect(page.locator("[data-demo-do-now-short]")).toBeFocused();
   await expect(page.locator("#demo")).toBeInViewport();
 });
