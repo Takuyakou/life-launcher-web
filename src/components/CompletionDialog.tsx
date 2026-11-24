@@ -225,7 +225,7 @@ export function CompletionDialog({
 
         <div className="dialog-actions">
           <button
-            className="button button-quiet"
+            className="button button-neutral"
             onClick={() => onExtend(extendMinutes)}
             ref={continueRef}
             type="button"

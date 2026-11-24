@@ -64,7 +64,7 @@ export function DemoTimer({
           <div className="timer-actions">
             {timer.status === "running" ? (
               <button
-                className="button button-quiet"
+                className="button button-good"
                 onClick={onPause}
                 type="button"
               >

@@ -273,7 +273,7 @@ export function TodayPicker({ state, onClose, onSave }: TodayPickerProps) {
         ) : (
           <button
             aria-label={`${candidate.label}を今日の3件に追加`}
-            className="button button-gold today-picker-add"
+            className="button button-gold-soft today-picker-add"
             disabled={full}
             onClick={() => addCandidate(candidate)}
             type="button"
@@ -409,7 +409,7 @@ export function TodayPicker({ state, onClose, onSave }: TodayPickerProps) {
                     value={quickText}
                   />
                   <button
-                    className="button button-quiet today-picker-quick-add-button"
+                    className="button button-good today-picker-quick-add-button"
                     type="submit"
                   >
                     ＋ 追加
