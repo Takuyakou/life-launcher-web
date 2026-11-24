@@ -5,7 +5,7 @@
 - **[Live Demo をブラウザで試す](https://life-launcher-web.takuyakou.workers.dev/)**
 - [Windows 版をダウンロード](https://github.com/Takuyakou/life-launcher/releases/latest) ・ [Life Launcher 本体リポジトリ](https://github.com/Takuyakou/life-launcher)
 
-<img src="docs/screenshots/web-demo-landing.png" alt="Life Launcher Web Demo のトップ画面と体験エリア" width="960">
+<img src="docs/screenshots/web-demo-landing.png" alt="Life Launcher Web Demo のトップ画面" width="960">
 
 ---
 
