@@ -45,24 +45,42 @@ test("the last section shows the Windows card and the text link to the demo", as
 });
 
 for (const width of [1920, 1440, 1366]) {
-  // W19: 見出しは2行、札は右端で、下端を本文(文字のリンク)とそろえる。
-  test(`the card sits on the right and ends with the copy at ${width}`, async ({ page }) => {
+  // W20: 札の左端がすぐ上の安全性の一覧の左端とそろう(右端はそろえない。幅は 460px)。下端は本文(文字のリンク)とそろう。見出しは2行。
+  test(`the card lines up with the privacy list above and ends with the copy at ${width}`, async ({
+    page,
+  }) => {
     await open(page, width);
-    const inner = await rect(page, ".lp-final-inner");
-    const pad = await page
-      .locator(".lp-final-inner")
-      .evaluate((node) => parseFloat(getComputedStyle(node).paddingRight));
+    const list = await rect(page, ".lp-privacy-list");
     const card = await rect(page, ".lp-get");
     const copy = await rect(page, ".lp-final-copy");
-    expect(Math.abs(card.right - (inner.right - pad))).toBeLessThanOrEqual(1);
-    expect(Math.abs(card.bottom - copy.bottom)).toBeLessThanOrEqual(1);
-    expect(card.left).toBeGreaterThan(copy.right);
+    const heading = await rect(page, ".lp-final .lp-h2");
+    const privacyHead = await rect(page, ".lp-privacy-head");
+    expect(Math.abs(card.left - list.left)).toBeLessThanOrEqual(1);
     expect(Math.round(card.width)).toBe(460);
+    expect(Math.abs(heading.left - privacyHead.left)).toBeLessThanOrEqual(1);
+    expect(Math.abs(card.bottom - copy.bottom)).toBeLessThanOrEqual(1);
     const lines = await page.locator(".lp-final .lp-h2").evaluate((node) => {
       const style = getComputedStyle(node);
       return Math.round(node.getBoundingClientRect().height / parseFloat(style.lineHeight));
     });
     expect(lines).toBe(2);
+  });
+}
+
+// W20: 2列になる幅では、書体や幅に関係なく「次の一手を、」の後で折り返す。
+for (const width of [1920, 1440, 1366, 1200, 1100, 1032]) {
+  test(`the heading breaks after 次の一手を、 at ${width}`, async ({ page }) => {
+    await open(page, width);
+    const title = page.locator(".lp-final .lp-h2");
+    await expect(title.locator("span")).toHaveText(["次の一手を、", "今ここで始める。"]);
+    const lines = await title.locator("span").evaluateAll((nodes) =>
+      nodes.map((node) => node.getClientRects().length),
+    );
+    expect(lines).toEqual([1, 1]);
+    const tops = await title.locator("span").evaluateAll((nodes) =>
+      nodes.map((node) => Math.round(node.getBoundingClientRect().top)),
+    );
+    expect(tops[1]).toBeGreaterThan(tops[0]);
   });
 }
 
@@ -74,6 +92,9 @@ for (const width of [1000, 390]) {
     const copy = await rect(page, ".lp-final-copy");
     expect(card.top).toBeGreaterThan(copy.bottom);
     expect(card.right).toBeLessThanOrEqual(inner.right);
+    // 1列のときも、札の左端は見出しの左端とそろう。
+    const heading = await rect(page, ".lp-final .lp-h2");
+    expect(Math.abs(card.left - heading.left)).toBeLessThanOrEqual(1);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth - innerWidth),
     ).toBe(0);
