@@ -27,9 +27,9 @@ test("Do Now puts the unfinished Today 3 NextStep first and reacts to Today 3 ch
 }) => {
   await expect(doNow(page).locator("h2")).toHaveText("数分だけ読む");
   await expect(doNow(page)).toContainText("今日の3件に入っている一手です");
-  await expect(doNow(page)).toContainText(
-    "Web Demoでは、今日の3件に入っている一手を先に、ほかは登録順で表示",
-  );
+  // Windows 版と同じく、候補があるときは説明文を出さない。
+  await expect(doNow(page)).not.toContainText("Web Demoでは");
+  await expect(doNow(page)).not.toContainText("迷ったときに");
 
   await removeFromToday(page, "本を読む");
   await removeFromToday(page, "ストレッチをする");
