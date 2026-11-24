@@ -63,7 +63,7 @@ export function TimerActions({
         <>
           <button
             type="button"
-            className={`button ${status === "paused" ? "button-good" : "button-quiet"}`}
+            className="button button-good"
             aria-label={`${label}を${status === "paused" ? "再開" : "一時停止"}`}
             onClick={status === "paused" ? onResume : onPause}
           >

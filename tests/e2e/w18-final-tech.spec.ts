@@ -45,14 +45,24 @@ test("the last section shows the Windows card and the text link to the demo", as
 });
 
 for (const width of [1920, 1440, 1366]) {
-  test(`the card sits under the copy, left-aligned, 460px wide at ${width}`, async ({ page }) => {
+  // W19: 見出しは2行、札は右端で、下端を本文(文字のリンク)とそろえる。
+  test(`the card sits on the right and ends with the copy at ${width}`, async ({ page }) => {
     await open(page, width);
+    const inner = await rect(page, ".lp-final-inner");
+    const pad = await page
+      .locator(".lp-final-inner")
+      .evaluate((node) => parseFloat(getComputedStyle(node).paddingRight));
     const card = await rect(page, ".lp-get");
     const copy = await rect(page, ".lp-final-copy");
-    const heading = await rect(page, ".lp-final .lp-h2");
-    expect(Math.abs(card.left - heading.left)).toBeLessThanOrEqual(1);
-    expect(Math.round(card.top - copy.bottom)).toBe(40);
+    expect(Math.abs(card.right - (inner.right - pad))).toBeLessThanOrEqual(1);
+    expect(Math.abs(card.bottom - copy.bottom)).toBeLessThanOrEqual(1);
+    expect(card.left).toBeGreaterThan(copy.right);
     expect(Math.round(card.width)).toBe(460);
+    const lines = await page.locator(".lp-final .lp-h2").evaluate((node) => {
+      const style = getComputedStyle(node);
+      return Math.round(node.getBoundingClientRect().height / parseFloat(style.lineHeight));
+    });
+    expect(lines).toBe(2);
   });
 }
 
@@ -77,7 +87,10 @@ test("the card fills the width on a phone", async ({ page }) => {
     .locator(".lp-final-inner")
     .evaluate((node) => parseFloat(getComputedStyle(node).paddingLeft));
   const card = await rect(page, ".lp-get");
+  const copy = await rect(page, ".lp-final-copy");
   expect(Math.round(card.width)).toBe(Math.round(inner.width - pad * 2));
+  // 縦並びの間は 24px だけ(本文の下に空きを作らない)。
+  expect(Math.round(card.top - copy.bottom)).toBe(24);
 });
 
 test("the download button copies the start-button hover; the text link turns gold", async ({

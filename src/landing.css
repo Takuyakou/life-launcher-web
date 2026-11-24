@@ -833,12 +833,14 @@
   overflow: hidden;
 }
 
-/* W18: 見出しと文字のリンクの下に、Windows 版の札を左そろえで置く(モックの案B)。 */
+/* W19: 見出しと文字のリンクを左、Windows 版の札を右に置き、下端をそろえる。
+   見出しは「次の一手を、/今ここで始める。」の2行で折り返す(字の大きさは他の段と同じ)。 */
 .lp-final-inner {
-  align-items: flex-start;
+  align-items: flex-end;
   display: flex;
-  flex-direction: column;
-  gap: 40px;
+  flex-wrap: wrap;
+  gap: 32px 48px;
+  justify-content: space-between;
   position: relative;
 }
 
@@ -860,8 +862,10 @@
 
 .lp-final-copy {
   display: flex;
+  flex: 1 1 420px;
   flex-direction: column;
   gap: 16px;
+  max-width: 560px;
   position: relative;
 }
 
@@ -886,6 +890,7 @@
 
 .lp-get {
   background: var(--surface);
+  flex: 0 0 auto;
   border: 1px solid var(--line-soft);
   border-radius: 14px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
@@ -896,9 +901,10 @@
   width: 100%;
 }
 
+/* 太さは 700。800 にすると Windows では英字(Segoe UI)だけが極太になり、日本語(Yu Gothic UI は 700 まで)と混ざる。 */
 .lp-get-title {
   font-size: 21px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.4;
   margin: 0;
 }
@@ -921,7 +927,7 @@
   border-radius: 10px;
   flex-wrap: wrap;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   gap: 0;
   margin-top: 20px;
   min-height: 54px;
@@ -1226,6 +1232,12 @@
     align-items: stretch;
     flex-direction: column;
     gap: 24px;
+  }
+
+  /* 縦並びでは flex の基準幅が高さに効いてしまうので、外す。 */
+  .lp-final-copy {
+    flex: none;
+    max-width: none;
   }
 
   .lp-get {

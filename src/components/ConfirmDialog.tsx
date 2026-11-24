@@ -92,8 +92,10 @@ export function ConfirmDialog({
           >
             {confirmLabel}
           </button>
+          {/* 壊す操作の確認(決定が赤)では、戻る側を灰色にする(Windows 版と同じ)。
+              決定が緑のときは、キャンセルを赤にする(編集のダイアログと同じ)。 */}
           <button
-            className="button button-danger"
+            className={`button ${confirmTone === "danger" ? "button-neutral" : "button-danger"}`}
             onClick={onCancel}
             ref={cancelRef}
             type="button"

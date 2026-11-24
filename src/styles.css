@@ -226,6 +226,18 @@ input:focus-visible,
   background: transparent;
 }
 
+/* W19: Windows 版の灰色のボタン(戻る・次の3件を選ぶ)。 */
+.button-neutral {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--muted-strong);
+}
+
+.button-neutral:hover:not(:disabled) {
+  border-color: var(--muted);
+  color: var(--text);
+}
+
 .text-link,
 .text-button {
   align-items: center;
@@ -1074,8 +1086,29 @@ input[type="checkbox"] {
   margin: 0 0 20px;
 }
 
+/* W19: 小さなダイアログのボタンは Windows 版と同じく、左に決定・右にキャンセルで横いっぱいを等分する。 */
 .dialog-actions {
-  justify-content: flex-end;
+  display: grid;
+  gap: 8px;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+}
+
+/* W19: Windows 版の金の薄い地のボタン(今日やるものを選ぶ・＋ 今日へ)。塗りつぶしの金は使わない。 */
+.button-gold-soft {
+  background: rgba(231, 185, 77, 0.1);
+  border-color: rgba(231, 185, 77, 0.58);
+  color: var(--accent-strong);
+}
+
+.button-gold-soft:hover:not(:disabled) {
+  background: rgba(231, 185, 77, 0.18);
+  border-color: var(--gold);
+}
+
+.button-gold-soft:active:not(:disabled) {
+  background: rgba(231, 185, 77, 0.08);
+  border-color: rgba(231, 185, 77, 0.7);
 }
 
 .dictionary-dialog {

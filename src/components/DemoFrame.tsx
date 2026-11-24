@@ -584,7 +584,7 @@ export function DemoFrame({
                 <div className="today-slot">
                   <button
                     type="button"
-                    className="button button-gold today-picker-trigger"
+                    className="button button-gold-soft today-picker-trigger"
                     onClick={() => openTodayPicker()}
                     ref={todayPickerTriggerRef}
                   >
@@ -596,7 +596,7 @@ export function DemoFrame({
             {allThreeCompleted && (
               <button
                 type="button"
-                className="button button-good sync-next-batch"
+                className="button button-neutral sync-next-batch"
                 disabled={state.timer.status !== "idle"}
                 onClick={() => openTodayPicker(true)}
               >

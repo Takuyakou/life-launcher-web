@@ -101,11 +101,12 @@ test("section bar hover brightens only expandable bars", async ({ page }) => {
   await expect(heading).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
 });
 
-test("button colours follow roles: add is neutral, picker entrance and picker add are gold, save green, cancel red", async ({
+test("button colours follow roles: add is neutral, picker entrance and picker add are soft gold, save green, cancel red", async ({
   page,
 }) => {
   const transparent = "rgba(0, 0, 0, 0)";
-  const gold = "rgb(231, 185, 77)";
+  // W19: 金は Windows 版と同じ薄い地(塗りつぶしではない)。
+  const gold = "rgba(231, 185, 77, 0.1)";
   await expect(page.locator(".next-section .source-add").first()).toHaveCSS(
     "background-color",
     transparent,
