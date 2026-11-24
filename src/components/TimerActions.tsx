@@ -34,7 +34,7 @@ export function TimerActions({
         <>
           <button
             type="button"
-            className="button button-good"
+            className="button button-good start-button"
             aria-label={`${label}を${shortMinutes}分で開始`}
             data-demo-do-now-short={primary || undefined}
             onClick={() => onStart(shortMinutes)}
@@ -46,7 +46,7 @@ export function TimerActions({
           </button>
           <button
             type="button"
-            className="button button-normal"
+            className="button button-normal start-button"
             aria-label={`${label}を${normalMinutes}分で開始`}
             data-demo-do-now-normal={primary || undefined}
             onClick={() => onStart(normalMinutes)}

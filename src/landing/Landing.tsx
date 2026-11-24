@@ -56,20 +56,6 @@ function TryButton({ className = "" }: { className?: string }) {
   );
 }
 
-function GitHubLink() {
-  return (
-    <a
-      className="text-link lp-github"
-      href={REPO_URL}
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      GitHub
-      <UiIcon name="external" size={14} />
-    </a>
-  );
-}
-
 export function SiteHeader() {
   return (
     <header className="lp-header">
@@ -148,7 +134,6 @@ export function Hero({
           <div className="lp-actions">
             <TryButton className="lp-hero-primary" />
             <DownloadButton />
-            <GitHubLink />
           </div>
         </div>
 
@@ -183,7 +168,7 @@ export function Hero({
             </p>
             <div className="lp-hero-card-actions">
               <button
-                className="button button-good lp-hero-start"
+                className="button button-good start-button lp-hero-start"
                 onClick={onStartShort}
                 type="button"
               >
@@ -191,10 +176,11 @@ export function Hero({
                 5分で始める
               </button>
               <button
-                className="button button-normal lp-hero-start-normal"
+                className="button button-normal start-button lp-hero-start-normal"
                 onClick={onStartNormal}
                 type="button"
               >
+                <UiIcon name="play" size={17} />
                 通常25分
               </button>
             </div>

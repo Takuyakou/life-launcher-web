@@ -8,7 +8,8 @@ type DemoTimerProps = {
   onStop: () => void;
   onDemoComplete: () => void;
   onDemoAdvance: () => void;
-  canAdvance: boolean;
+  /** 短時間タイマーの分数。進められないときは null で、ボタンを出さない。 */
+  advanceMinutes: number | null;
 };
 
 const formatSeconds = (seconds: number) => {
@@ -26,7 +27,7 @@ export function DemoTimer({
   onStop,
   onDemoComplete,
   onDemoAdvance,
-  canAdvance,
+  advanceMinutes,
 }: DemoTimerProps) {
   const active = timer.status !== "idle";
 
@@ -86,14 +87,15 @@ export function DemoTimer({
               <UiIcon name="stop" size={15} /> 終了
             </button>
           </div>
-          <button
-            className="demo-complete-button"
-            onClick={onDemoAdvance}
-            disabled={!canAdvance}
-            type="button"
-          >
-            短時間分まで進める <span>DEMO</span>
-          </button>
+          {advanceMinutes !== null && (
+            <button
+              className="demo-complete-button"
+              onClick={onDemoAdvance}
+              type="button"
+            >
+              {advanceMinutes}分経過まで進める <span>DEMO</span>
+            </button>
+          )}
           <button
             className="demo-complete-button"
             onClick={onDemoComplete}

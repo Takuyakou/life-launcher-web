@@ -102,14 +102,6 @@
   border-color: #6b665a;
 }
 
-.lp-github.text-link {
-  color: var(--muted-strong);
-  font-size: 15px;
-  gap: 6px;
-  margin-left: 8px;
-  min-height: 44px;
-}
-
 /* Header */
 .lp-header {
   background: rgba(22, 21, 18, 0.96);
@@ -169,8 +161,10 @@
   transition: color 120ms ease;
 }
 
-.lp-nav-link:hover {
-  color: var(--text);
+/* ヘッダーの文字のリンクは、乗せると明るい金になる(Windows版の上の帯の「記録」「手順書」と同じ色)。 */
+.lp-nav-link:hover,
+.lp-nav-link:focus-visible {
+  color: var(--accent-strong);
 }
 
 .lp-header-download.button {
@@ -255,6 +249,15 @@
   justify-content: flex-end;
   max-width: 560px;
   min-width: 0;
+}
+
+/* 2列で並ぶ幅(1064px 以上)だけ、右の段を 22px 下げる。左の段は動かさない。
+   上端・下端が左とそろう位置と、W16 の位置の中間(利用者決定 2026-11-24)。 */
+@media (min-width: 1064px) {
+  .lp-hero-visual {
+    position: relative;
+    top: 22px;
+  }
 }
 
 .lp-hero-candidates {
@@ -406,6 +409,15 @@
   font-size: 17px;
   font-weight: 800;
   gap: 10px;
+}
+
+/* 通常25分は、5分で始めると同じ字の大きさと再生の印にする(少しだけ大きく見える)。 */
+.lp-hero-start-normal.button {
+  flex: 0 0 auto;
+  font-size: 17px;
+  font-weight: 800;
+  gap: 10px;
+  padding: 0 28px;
 }
 
 /* Sections */
@@ -973,11 +985,6 @@
     min-height: 56px;
   }
 
-  .lp-github.text-link {
-    justify-content: center;
-    margin-left: 0;
-  }
-
   .lp-hero-candidates {
     gap: 8px;
   }
@@ -1168,4 +1175,20 @@
   .lp-footer-links a {
     transition: none;
   }
+}
+
+/* 通知はデモ画面の内側の右端にそろえる。ページの右端に出すと、デモ画面からはみ出して見える。 */
+.toast-region {
+  right: calc(max(0px, (100% - var(--lp-max)) / 2) + var(--lp-pad) + 24px);
+  width: min(380px, calc(100% - 2 * var(--lp-pad) - 48px));
+}
+
+/* ダイアログを開いている間は、通知を上端の中央に出す(Windows 版と同じ)。
+   右下のままだと、狭い画面でダイアログの下のボタンに重なる。 */
+body:has([aria-modal="true"]) .toast-region {
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  top: 12px;
+  transform: translateX(-50%);
 }
