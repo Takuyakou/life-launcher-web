@@ -15,7 +15,7 @@ it("shipped copy no longer promises manual Today completion or a free-input Buil
 it("published README references a real synthetic PNG and documents current demo limits", () => {
   const readme = readFileSync("README.md", "utf8");
   expect(readme).toContain("docs/screenshots/web-demo-landing.png");
-  expect(readme).toContain("Life Launcher v1.6.3");
+  expect(readme).not.toMatch(/Life Launcher v\d+\.\d+/);
   expect(readme).not.toContain("今日を組み立てる");
   expect(readme).toContain("次はここから");
   expect(readme).toContain("まとめて取り込む");
