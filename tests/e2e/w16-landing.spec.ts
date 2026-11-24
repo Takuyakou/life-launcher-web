@@ -150,7 +150,10 @@ test("landing copy uses the approved wording", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 2, name: "管理するためではなく、始めるために。" })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "開始までの流れを試す。" })).toBeVisible();
   await expect(page.locator(".lp-demo-lead")).toHaveText("サンプルデータだけで安全に試せます。");
-  await expect(page.getByRole("heading", { level: 2, name: "次の一手を、今ここで始める。" })).toBeVisible();
+  // W20: 見出しは2つのかたまり(行)に分けたので、名前の間に空白が入ることがある。
+  await expect(
+    page.getByRole("heading", { level: 2, name: /^次の一手を、\s?今ここで始める。$/ }),
+  ).toBeVisible();
   await expect(page.locator(".lp-eyebrow")).toHaveText([
     "WINDOWS DESKTOP APP",
     "WHY LIFE LAUNCHER?",
