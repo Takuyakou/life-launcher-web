@@ -24,14 +24,16 @@ test("the hero has no GitHub link; the header keeps it", async ({ page }) => {
 });
 
 for (const width of [1920, 1440, 1366]) {
-  test(`the right column sits 22px below the left edges at ${width}`, async ({ page }) => {
+  // 右の段の高さは、候補の札の折り返し(書体で変わる)で変わる。そのため、
+  // 決まった関係は「カードの下端がボタンの下端より 22px 下」の方だけ。上端は、小見出しより 22px 以上下にあることだけ確かめる。
+  test(`the right column ends 22px below the left buttons at ${width}`, async ({ page }) => {
     await open(page, width);
     const eyebrow = await box(page, ".lp-hero .lp-eyebrow");
     const actions = await box(page, ".lp-hero-copy > .lp-actions");
     const chips = await box(page, ".lp-hero-candidates");
     const card = await box(page, ".lp-hero-card");
-    expect(chips.top - eyebrow.top).toBe(22);
     expect(card.bottom - actions.bottom).toBe(22);
+    expect(chips.top - eyebrow.top).toBeGreaterThanOrEqual(22);
   });
 }
 
