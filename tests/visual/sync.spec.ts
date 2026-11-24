@@ -72,7 +72,7 @@ for (const viewport of [
           path: path.join(output, "readme-demo.png"),
           animations: "disabled",
           // Exclude landing-page overlays from this demo-only documentation crop.
-          style: ".site-header, .skip-link { visibility: hidden !important; }",
+          style: ".lp-header, .skip-link { visibility: hidden !important; }",
         });
     }
     await page.getByRole("button", { name: "本を読むを5分で開始" }).click();

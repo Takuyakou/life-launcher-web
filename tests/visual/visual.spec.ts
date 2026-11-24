@@ -35,9 +35,9 @@ test("captures expanded desktop states and layout metrics", async ({
     return {
       viewport: { width: innerWidth, height: innerHeight },
       scrollHeight: document.documentElement.scrollHeight,
-      header: box(".site-header"),
-      hero: box(".hero"),
-      primaryCta: box(".hero-primary"),
+      header: box(".lp-header"),
+      hero: box(".lp-hero"),
+      primaryCta: box(".lp-hero-primary"),
       demo: box("#demo"),
     };
   });
