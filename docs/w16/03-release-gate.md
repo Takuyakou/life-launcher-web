@@ -38,7 +38,7 @@ READY FOR PRODUCTION APPROVAL
 
 - E2E: `tests/e2e/w16-landing.spec.ts`(16 件)。ヘッダーの行き先、最初の画面の開始ボタンとデモのボタンの対応、2 行のコピーが 1 行ずつで収まること(5 幅)、全部の段の左右の端が 1px 以内でそろうこと(3 幅)、3 つの理由の絵の高さがそろうこと、決めた文言、最後の節が 2 つのボタンだけであることと薄い 05:00 が節の中にあること、ボタンとリンクはホバーで変わり見出しは変わらないこと、書体をこのサイトから配ること、スマホの並びとヘッダー。
 - Visual: `tests/visual/w16-landing-visual.spec.ts`(6 件)。1920 / 1440 / 1366 / 1000 / 390 でのはみ出し 0 と全体の撮影、本文のコントラスト比 4.5 以上。
-- 今あるテストを変えたのは、次の 4 ファイルだけです。トップページの絵に同じ言葉が出るようになったため `demo.spec.ts` の該当の確かめをデモの中(`#demo`)に絞り、`landing.spec.ts` は Windows版へのリンクの数を 3 → 4 に、`public-copy.spec.ts` は最初の画面のカードを新しい名前と文言に、`visual.spec.ts`・`sync.spec.ts`・`web11-baseline.spec.ts` はヘッダーと最初の画面の名前(`.lp-header`・`.lp-hero`・`.lp-hero-primary`)に合わせました。
+- 今あるテストを変えたのは、次の 6 ファイルだけです。トップページの絵に同じ言葉が出るようになったため `demo.spec.ts` の該当の確かめをデモの中(`#demo`)に絞り、`landing.spec.ts` は Windows版へのリンクの数を 3 → 4 に、`public-copy.spec.ts` は最初の画面のカードを新しい名前と文言に、`visual.spec.ts`・`sync.spec.ts`・`web11-baseline.spec.ts` はヘッダーと最初の画面の名前(`.lp-header`・`.lp-hero`・`.lp-hero-primary`)に合わせました。
 
 ## ホバーの決まり
 
