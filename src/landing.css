@@ -782,11 +782,25 @@
   margin: 0;
 }
 
-.lp-privacy-tech {
-  color: var(--text-muted-readable);
+/* W18: 技術の文を、丸い札に替えた。 */
+.lp-tech-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+}
+
+.lp-tech-chip {
+  background: var(--surface-soft);
+  border: 1px solid #3a372f;
+  border-radius: 999px;
+  color: var(--muted-strong);
   font-size: 14px;
-  margin: 0;
-  word-break: auto-phrase;
+  font-weight: 600;
+  line-height: 1.5;
+  padding: 6px 15px;
 }
 
 .lp-privacy-list {
@@ -819,12 +833,12 @@
   overflow: hidden;
 }
 
+/* W18: 見出しと文字のリンクの下に、Windows 版の札を左そろえで置く(モックの案B)。 */
 .lp-final-inner {
-  align-items: flex-end;
+  align-items: flex-start;
   display: flex;
-  flex-wrap: wrap;
-  gap: 32px 48px;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 40px;
   position: relative;
 }
 
@@ -851,8 +865,73 @@
   position: relative;
 }
 
-.lp-final-actions {
+/* W18: 2つのボタンをやめ、デモへは見出しの下の文字のリンク、Windows 版は右の札にした。 */
+.lp-final-try {
+  align-items: center;
+  align-self: flex-start;
+  color: var(--muted-strong);
+  display: inline-flex;
+  font-size: 16px;
+  font-weight: 700;
+  gap: 8px;
+  min-height: 44px;
+  text-decoration: none;
+  transition: color 130ms ease;
+}
+
+.lp-final-try:hover,
+.lp-final-try:focus-visible {
+  color: var(--accent-strong);
+}
+
+.lp-get {
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  box-sizing: border-box;
+  max-width: 460px;
+  padding: 26px 26px 22px;
   position: relative;
+  width: 100%;
+}
+
+.lp-get-title {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.lp-get-meta,
+.lp-get-note {
+  color: var(--text-muted-readable);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 4px 0 0;
+  word-break: auto-phrase;
+}
+
+.lp-get-note {
+  margin-top: 14px;
+}
+
+/* 狭い幅では「（GitHub Releases）」だけを次の行へ送り、どちらも真ん中にそろえる。 */
+.lp-get-button.button {
+  border-radius: 10px;
+  flex-wrap: wrap;
+  font-size: 16px;
+  font-weight: 800;
+  gap: 0;
+  margin-top: 20px;
+  min-height: 54px;
+  padding: 8px 20px;
+  text-align: center;
+  width: 100%;
+}
+
+.lp-get-button span {
+  white-space: nowrap;
 }
 
 /* Footer */
@@ -1147,6 +1226,11 @@
     align-items: stretch;
     flex-direction: column;
     gap: 24px;
+  }
+
+  .lp-get {
+    max-width: none;
+    padding: 22px 20px 18px;
   }
 
   .lp-final-ghost {

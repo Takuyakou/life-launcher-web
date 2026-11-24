@@ -178,20 +178,10 @@ test("landing copy uses the approved wording", async ({ page }) => {
   expect(text).not.toContain("Usage terms");
 });
 
-test("the last section has the two CTAs only and the faint 05:00 stays inside it", async ({
-  page,
-}) => {
+test("the last section keeps the faint 05:00 inside it", async ({ page }) => {
+  // 最後の段のリンクと札は W18(tests/e2e/w18-final-tech.spec.ts)で確かめる。
   for (const width of [1440, 390]) {
     await open(page, width, 844);
-    const final = page.locator(".lp-final");
-    await expect(final.getByRole("link")).toHaveCount(2);
-    await expect(final.getByRole("link", { name: "ブラウザで試す" })).toHaveAttribute("href", "#demo");
-    await expect(final.getByRole("link", { name: /Windows版をダウンロード/ })).toHaveAttribute(
-      "href",
-      RELEASES,
-    );
-    await expect(final.getByRole("link", { name: /GitHub/ })).toHaveCount(0);
-
     const ghost = page.locator(".lp-final-ghost");
     await expect(ghost).toHaveAttribute("aria-hidden", "true");
     await expect(ghost).toHaveText("05:00");
