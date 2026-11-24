@@ -258,8 +258,9 @@ test("import: copy warning, sample preview, commit and 5 second undo", async ({
   await expect(dialog.getByText("✓ 読み取りました")).toBeVisible();
   await expect(dialog).toContainText("プロジェクト 2・次の一手 1・やりたいこと 4");
   await expect(dialog).toContainText(
-    "Web Demo では反映されない項目（きっかけ・タイマー分数設定は Windows 版で反映されます）",
+    "きっかけとタイマーの分数は、Web Demo では取り込みません。Windows 版では反映されます。",
   );
+  await expect(dialog).not.toContainText("projects[");
 
   await dialog
     .getByRole("checkbox", {

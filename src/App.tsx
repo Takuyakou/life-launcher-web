@@ -235,11 +235,6 @@ function App() {
       })
     )
       return;
-    setToast({
-      id: Date.now(),
-      message: `${label}のタイマーを開始しました`,
-      tone: "success",
-    });
   };
 
   const stopTimer = () => {
@@ -456,14 +451,7 @@ function App() {
             onNativeOnly={showNativeToast}
             onOpenDictionary={() => setDictionaryOpen(true)}
             onOpenReset={() => setResetOpen(true)}
-            onPauseTimer={() => {
-              dispatch({ type: "PAUSE_TIMER" });
-              setToast({
-                id: Date.now(),
-                message: "タイマーを一時停止しました",
-                tone: "info",
-              });
-            }}
+            onPauseTimer={() => dispatch({ type: "PAUSE_TIMER" })}
             onResumeTimer={() => dispatch({ type: "RESUME_TIMER" })}
             onSaveTodayPickerDraft={saveTodayPickerDraft}
             onStartTimer={startTimer}

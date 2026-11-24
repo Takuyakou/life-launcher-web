@@ -230,7 +230,7 @@ test("buttons and links respond to hover; headings do not", async ({ page }) => 
   const nav = '.lp-nav-link[href="#why"]';
   await expect(page.locator(nav)).toHaveCSS("color", "rgb(198, 190, 176)");
   await page.hover(nav);
-  await expect(page.locator(nav)).toHaveCSS("color", "rgb(244, 240, 232)");
+  await expect(page.locator(nav)).toHaveCSS("color", "rgb(255, 206, 91)");
 
   for (const selector of [".lp-hero-lead", ".lp-features-title"]) {
     const before = await page.locator(`${selector} span`).evaluateAll((nodes) =>

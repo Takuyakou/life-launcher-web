@@ -284,12 +284,14 @@ export function DemoFrame({
             onDemoAdvance={() =>
               dispatch({ type: "ADVANCE_TO_EARLY_THRESHOLD" })
             }
-            canAdvance={
-              Boolean(earlyTarget(state)) &&
+            advanceMinutes={
+              earlyTarget(state) &&
               earlyThresholdSeconds(earlyTarget(state)?.shortMinutes) <
                 state.timer.durationSeconds &&
               state.timer.elapsedSeconds <
                 earlyThresholdSeconds(earlyTarget(state)?.shortMinutes)
+                ? earlyThresholdSeconds(earlyTarget(state)?.shortMinutes) / 60
+                : null
             }
             onDemoComplete={onDemoComplete}
             onPause={onPauseTimer}
@@ -408,12 +410,6 @@ export function DemoFrame({
               <p className="do-now-reason">
                 {doNowCandidate?.reason ??
                   "プロジェクトに次の一手を設定すると候補になります"}
-              </p>
-              <p className="do-now-description">
-                迷ったときに、今の状況から始めやすい「次にやること」を1つだけ提示します。
-              </p>
-              <p className="demo-rule-note">
-                Web Demoでは、今日の3件に入っている一手を先に、ほかは登録順で表示
               </p>
               {doNowStatus !== "idle" && (
                 <span role="status" className="sync-running">
