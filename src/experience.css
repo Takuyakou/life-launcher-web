@@ -22,94 +22,9 @@
   scroll-margin-top: 78px;
 }
 
-.do-now-copy > .do-now-reason {
-  color: var(--muted-strong);
-  font-size: 11px;
-  margin-top: 6px;
-}
-
-.launch-simulation {
-  background: var(--surface-soft);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--blue);
-  border-radius: var(--radius);
-  margin-top: 10px;
-  padding: 10px 12px;
-}
-
-.launch-simulation > div {
-  align-items: baseline;
-  display: flex;
-  gap: 8px;
-}
-
-.launch-simulation > div strong {
-  font-size: 12px;
-}
-
-.launch-simulation > div span,
-.launch-simulation > p {
-  color: var(--muted);
-  font-size: 9px;
-}
-
-.launch-simulation ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  list-style: none;
-  margin: 8px 0 6px;
-  padding: 0;
-}
-
-.launch-simulation li {
-  align-items: center;
-  animation: launch-action-in 220ms ease-out both;
-  background: var(--surface-strong);
-  border: 1px solid var(--line-soft);
-  border-radius: 4px;
-  color: var(--muted-strong);
-  display: inline-flex;
-  font-size: 10px;
-  gap: 4px;
-  padding: 5px 7px;
-}
-
-.launch-simulation li .ui-icon {
-  color: var(--green);
-}
-
-.launch-simulation > p {
-  margin: 0;
-}
-
 .button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
-}
-
-.demo-complete-button {
-  background: transparent;
-  border: 0;
-  color: var(--muted-strong);
-  cursor: pointer;
-  font-size: 10px;
-  margin-top: 9px;
-  padding: 5px 0;
-  text-align: left;
-}
-
-.demo-complete-button:hover {
-  color: var(--text);
-}
-
-.demo-complete-button span {
-  border: 1px solid var(--line);
-  border-radius: 3px;
-  color: var(--gold);
-  font-size: 8px;
-  margin-left: 4px;
-  padding: 2px 4px;
 }
 
 .completion-dialog {
@@ -252,27 +167,11 @@
   gap: 20px;
 }
 
-@keyframes launch-action-in {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @media (max-width: 600px) {
   #why,
   #demo,
   #privacy {
     scroll-margin-top: 66px;
-  }
-
-  .launch-simulation ul {
-    align-items: stretch;
-    flex-direction: column;
   }
 
   .completion-dialog {
@@ -281,84 +180,5 @@
 
   :where(.today-picker-footer, .demo-import-footer) > div {
     gap: 14px;
-  }
-}
-
-/* 開始ボタン(5分・通常25分)の動き。Windows 版 v1.6.3 の開始ボタン
-   (doNowStartPrimary / doNowStartSecondary / todayStartButton)から写した。
-   乗せると地と枠が明るくなり、1px 浮き、下に線が真ん中から伸びる。押すと少し縮む。 */
-.button.start-button {
-  overflow: hidden;
-  position: relative;
-  transition:
-    background-color 130ms ease,
-    border-color 130ms ease,
-    transform 130ms ease,
-    box-shadow 130ms ease;
-}
-
-.button.start-button::after {
-  background: currentColor;
-  bottom: 0;
-  content: "";
-  height: 2px;
-  left: 12px;
-  position: absolute;
-  right: 12px;
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform 150ms ease;
-}
-
-.button.start-button:hover:not(:disabled)::after,
-.button.start-button:focus-visible::after {
-  transform: scaleX(1);
-}
-
-.button.start-button:hover:not(:disabled),
-.button.start-button:focus-visible {
-  box-shadow:
-    0 7px 16px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  transform: translateY(-1px);
-}
-
-.button.start-button:active:not(:disabled) {
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
-  transform: translateY(0) scale(0.985);
-}
-
-.button-good.start-button:hover:not(:disabled),
-.button-good.start-button:focus-visible {
-  background: #304235;
-  border-color: rgba(117, 196, 143, 0.7);
-}
-
-.button-good.start-button:active:not(:disabled) {
-  background: #223128;
-  border-color: rgba(117, 196, 143, 0.58);
-}
-
-.button-normal.start-button:hover:not(:disabled),
-.button-normal.start-button:focus-visible {
-  background: #303b4a;
-  border-color: rgba(169, 208, 255, 0.7);
-}
-
-.button-normal.start-button:active:not(:disabled) {
-  background: #202b38;
-  border-color: rgba(169, 208, 255, 0.58);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .button.start-button,
-  .button.start-button::after {
-    transition: none;
-  }
-
-  .button.start-button:hover:not(:disabled),
-  .button.start-button:focus-visible,
-  .button.start-button:active:not(:disabled) {
-    transform: none;
   }
 }

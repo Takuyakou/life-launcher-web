@@ -222,6 +222,13 @@ const normalizeState = (
     wishlist,
     sessions: value.sessions as DemoState["sessions"],
     timer: createIdleTimer(),
+    // 無い保存データは、そのまま無しで読み込む(画面は 25 分として動く)。
+    ...(typeof value.timerMinutes === "number" &&
+    Number.isFinite(value.timerMinutes) &&
+    value.timerMinutes >= 1 &&
+    value.timerMinutes <= 240
+      ? { timerMinutes: Math.round(value.timerMinutes) }
+      : {}),
     sections: {
       nextStep:
         typeof value.sections.nextStep === "boolean"

@@ -1,4 +1,5 @@
-/* W16: landing page (header, hero, sections, footer). The demo app itself keeps its own styles. */
+/* W21 紹介ページ。見本 landing-mock.html の構成・文言・色・動きをそのまま実装する。
+   数値と色は見本と Windows 版 v1.6.4 のトークンに合わせている。 */
 
 @font-face {
   font-display: swap;
@@ -16,838 +17,1272 @@
   src: url("./assets/fonts/bricolage-grotesque-latin-800-normal.woff2") format("woff2");
 }
 
-:root {
-  --lp-max: 1200px;
-  --lp-pad: clamp(20px, 4vw, 40px);
-  --lp-section-y: 104px;
-  --lp-font-display: "Bricolage Grotesque", "Segoe UI", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
-  --lp-quiet: #8f897d;
-  --lp-chip-text: #9a9488;
-  --lp-ghost: #2a2412;
-  --lp-gold-line: #8a7430;
-  --lp-gold-edge: #a88c35;
-  --lp-green-line: #2f6b4c;
-  --lp-neutral-line: #5a5548;
+.lp-page {
+  --lp-wrap: 1200px;
+  --lp-font-ui: "Inter Variable", "Noto Sans JP Variable", "Yu Gothic UI", "Hiragino Sans",
+    "Meiryo", system-ui, sans-serif;
+  --lp-font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --lp-font-display: "Bricolage Grotesque", "Inter Variable", sans-serif;
+  background: #161512;
+  color: #f4f0e8;
+  font-family: var(--lp-font-ui);
+  font-size: 16px;
+  line-height: 1.8;
+  overflow-x: clip;
 }
 
-.lp-container {
+:where(.lp-page) a {
+  color: #f4f0e8;
+}
+
+:where(.lp-page) a:hover {
+  color: #ffce5b;
+}
+
+.lp-page :focus-visible,
+.dl-app :focus-visible {
+  outline: 2px solid #ffce5b;
+  outline-offset: 2px;
+}
+
+.lp-wrap {
   box-sizing: border-box;
   margin: 0 auto;
-  max-width: var(--lp-max);
-  padding-inline: var(--lp-pad);
-  width: 100%;
+  max-width: var(--lp-wrap);
+  padding-inline: clamp(20px, 3.4vw, 40px);
 }
 
-.lp-eyebrow {
-  color: var(--gold);
-  font-family: var(--lp-font-display);
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  line-height: 1.4;
-  margin: 0;
+.lp-mono {
+  font-family: var(--lp-font-mono);
 }
 
-.lp-h2 {
-  font-family: var(--lp-font-display);
-  font-size: clamp(28px, 3.4vw, 48px);
-  font-weight: 800;
-  line-height: 1.3;
-  margin: 0;
-  word-break: auto-phrase;
+.lp-sr-only {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 
-.lp-body {
-  color: var(--muted-strong);
-  font-size: 16px;
-  line-height: 1.75;
-  margin: 0;
-  word-break: auto-phrase;
+.lp-note,
+.lp-zone-text,
+.lp-step-text,
+.lp-fig-note {
+  text-wrap: pretty;
 }
 
-.lp-num {
-  color: var(--gold);
-  font-family: var(--lp-font-display);
-}
+/* ---------- header ---------- */
 
-.lp-check {
-  color: var(--green);
-  display: inline-flex;
-}
-
-/* Shared CTA sizing. Hover and press come from .button / .button-gold / .text-link. */
-.lp-actions {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.lp-cta.button {
-  border-radius: 12px;
-  font-size: 16px;
-  gap: 10px;
-  min-height: 58px;
-  padding: 0 24px;
-}
-
-.lp-cta.button-gold {
-  font-size: 17px;
-  font-weight: 800;
-  padding: 0 28px;
-}
-
-.lp-cta-secondary.button {
-  background: var(--surface);
-  border-color: #6b665a;
-}
-
-/* Header */
 .lp-header {
-  background: rgba(22, 21, 18, 0.96);
-  border-bottom: 1px solid var(--line-soft);
-  position: sticky;
-  top: 0;
-  z-index: 30;
+  border-bottom: 1px solid #353126;
 }
 
 .lp-header-inner {
   align-items: center;
   display: flex;
-  gap: 24px;
+  flex-wrap: wrap;
+  gap: 8px 24px;
   justify-content: space-between;
-  min-height: 72px;
+  min-height: 68px;
 }
 
 .lp-brand {
   align-items: center;
-  color: var(--text);
   display: flex;
-  font-family: var(--lp-font-display);
-  font-size: 18px;
-  font-weight: 700;
   gap: 12px;
   text-decoration: none;
 }
 
-.lp-brand-mark {
+.lp-mark {
   align-items: center;
-  background: var(--gold);
+  background: #e7b94d;
   border-radius: 7px;
   color: #19160d;
   display: inline-flex;
-  font-family: var(--lp-font-display);
-  font-size: 17px;
-  font-weight: 800;
+  flex: none;
+  font: 800 17px/1 var(--lp-font-display);
   height: 30px;
   justify-content: center;
   width: 30px;
 }
 
+.lp-brand-name {
+  font-family: var(--lp-font-display);
+  font-size: 18px;
+  font-weight: 700;
+}
+
 .lp-nav {
   align-items: center;
   display: flex;
-  gap: 8px;
-}
-
-.lp-nav-link {
-  align-items: center;
-  color: var(--muted-strong);
-  display: flex;
-  font-size: 15px;
-  min-height: 44px;
-  padding: 0 14px;
-  text-decoration: none;
-  transition: color 120ms ease;
-}
-
-/* ヘッダーの文字のリンクは、乗せると明るい金になる(Windows版の上の帯の「記録」「手順書」と同じ色)。 */
-.lp-nav-link:hover,
-.lp-nav-link:focus-visible {
-  color: var(--accent-strong);
-}
-
-.lp-header-download.button {
-  border-color: var(--lp-neutral-line);
-  border-radius: 10px;
-  font-size: 15px;
-  gap: 8px;
-  margin-left: 8px;
-  min-height: 44px;
-  padding: 0 18px;
-}
-
-/* Hero */
-.lp-hero {
-  padding-block: 88px var(--lp-section-y);
-}
-
-.lp-hero-grid {
-  align-items: stretch;
-  display: flex;
   flex-wrap: wrap;
-  gap: 56px 64px;
+  font-size: 14px;
+  font-weight: 600;
+  gap: 6px 24px;
+}
+
+.lp-nav a {
+  text-decoration: none;
+  transition: color 0.12s ease;
+}
+
+.lp-hdl {
+  align-items: center;
+  background: #211f1a;
+  border: 1px solid #5a5548;
+  border-radius: 10px;
+  box-sizing: border-box;
+  display: inline-flex;
+  font-size: 15px;
+  font-weight: 700;
+  gap: 8px;
+  min-height: 44px;
+  overflow: hidden;
+  padding: 0 18px;
+  position: relative;
+  text-decoration: none;
+  transition:
+    background-color 130ms ease,
+    border-color 130ms ease,
+    box-shadow 130ms ease,
+    transform 130ms ease;
+}
+
+.lp-hdl:hover {
+  background: #312f28;
+  border-color: #8a8474;
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.22);
+  color: #f4f0e8;
+  transform: translateY(-1px);
+}
+
+.lp-hdl:active {
+  transform: scale(0.985);
+}
+
+/* ---------- hero ---------- */
+
+#top .lp-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+  padding-block: 72px 96px;
 }
 
 .lp-hero-copy {
   display: flex;
-  flex: 1 1 460px;
   flex-direction: column;
-  gap: 28px;
-  justify-content: space-between;
-  min-width: 0;
+  gap: 24px;
 }
 
-.lp-hero-titles {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.lp-hero-title {
-  font-family: var(--lp-font-display);
-  font-size: clamp(46px, 5.6vw, 80px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
+.lp-eyebrow {
+  color: #e7b94d;
+  font-size: 13px;
+  font-weight: 600;
   margin: 0;
 }
 
-.lp-hero-lead {
-  font-size: clamp(25px, 2.8vw, 40px);
+.lp-h1 {
+  font-size: clamp(22px, 6.2vw, 48px);
   font-weight: 700;
+  letter-spacing: -0.01em;
   line-height: 1.4;
-  margin: 6px 0 0;
-}
-
-.lp-hero-lead-quiet,
-.lp-hero-lead-line {
-  display: block;
-  white-space: nowrap;
-}
-
-.lp-hero-lead-quiet {
-  color: var(--lp-quiet);
-}
-
-.lp-hero-lead-accent {
-  color: var(--gold);
-}
-
-.lp-hero-description {
-  color: var(--muted-strong);
-  font-size: 18px;
-  line-height: 1.9;
-  margin: 0;
-  word-break: auto-phrase;
-}
-
-.lp-hero-visual {
-  display: flex;
-  flex: 1 1 460px;
-  flex-direction: column;
-  justify-content: flex-end;
-  max-width: 560px;
-  min-width: 0;
-}
-
-/* 2列で並ぶ幅(1064px 以上)だけ、右の段を 22px 下げる。左の段は動かさない。
-   上端・下端が左とそろう位置と、W16 の位置の中間(利用者決定 2026-11-24)。 */
-@media (min-width: 1064px) {
-  .lp-hero-visual {
-    position: relative;
-    top: 22px;
-  }
-}
-
-.lp-hero-candidates {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.lp-hero-chip {
-  align-items: center;
-  background: var(--surface-soft);
-  border: 1px solid var(--line-soft);
-  border-radius: 10px;
-  color: var(--lp-chip-text);
-  display: flex;
-  font-size: 14px;
-  gap: 8px;
-  padding: 9px 14px;
-}
-
-.lp-hero-chip-dot {
-  background: var(--lp-neutral-line);
-  border-radius: 50%;
-  height: 7px;
-  width: 7px;
-}
-
-.lp-hero-chip[data-tone="violet"] .lp-hero-chip-dot {
-  background: #6f5f96;
-}
-
-.lp-hero-chip[data-tone="green"] .lp-hero-chip-dot {
-  background: #478a69;
-}
-
-.lp-hero-chip[data-tone="amber"] .lp-hero-chip-dot {
-  background: #97733a;
-}
-
-.lp-hero-connector {
-  align-items: center;
-  color: var(--gold);
-  display: flex;
-  font-size: 14px;
-  font-weight: 700;
-  gap: 14px;
-  margin: 0;
-  padding: 10px 0 10px 28px;
-}
-
-.lp-hero-connector-line {
-  background: var(--lp-gold-line);
-  height: 34px;
-  width: 1px;
-}
-
-.lp-hero-card {
-  background: var(--surface);
-  border: 1px solid var(--lp-gold-edge);
-  border-radius: 18px;
-  box-shadow:
-    0 28px 70px rgba(0, 0, 0, 0.5),
-    0 0 110px rgba(231, 185, 77, 0.09);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 28px;
-}
-
-.lp-hero-card-head {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  justify-content: space-between;
-}
-
-.lp-hero-card-kicker {
-  align-items: center;
-  color: var(--gold);
-  display: flex;
-  font-size: 14px;
-  font-weight: 700;
-  gap: 10px;
-}
-
-.lp-hero-card-project {
-  align-items: center;
-  color: var(--muted-strong);
-  display: flex;
-  font-weight: 400;
-  gap: 7px;
-}
-
-.lp-hero-card-dot {
-  background: var(--project);
-  border-radius: 50%;
-  height: 8px;
-  width: 8px;
-}
-
-.lp-hero-card-reason {
-  color: var(--text-muted-readable);
-  font-size: 13px;
-}
-
-.lp-hero-card-title {
-  font-size: clamp(26px, 2.6vw, 36px);
-  font-weight: 800;
-  line-height: 1.3;
-}
-
-.lp-hero-card-resume {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  font-size: 15px;
-  gap: 10px;
   margin: 0;
 }
 
-.lp-hero-card-resume-label {
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  color: var(--muted-strong);
-  font-size: 13px;
-  padding: 0 8px;
+.lp-h1 > span {
+  display: inline-block;
 }
 
-.lp-hero-card-actions {
+.lp-hl {
+  background-image: linear-gradient(#ffce5b, #ffce5b);
+  background-position: 50% 100%;
+  background-repeat: no-repeat;
+  background-size: 0 3px;
+  color: #e7b94d;
+  transition:
+    color 0.2s ease,
+    background-size 0.25s ease;
+}
+
+.lp-h1:hover .lp-hl,
+.lp-fin:hover .lp-hl {
+  background-size: 100% 3px;
+  color: #ffce5b;
+}
+
+.lp-lead {
+  color: #a39c8e;
+  margin: 0;
+  max-width: 760px;
+}
+
+.lp-lead--tight {
+  margin-top: -4px;
+}
+
+.lp-ctas {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 12px;
+  margin-top: 12px;
 }
 
-.lp-hero-card-actions .button {
+.lp-cta {
+  align-items: center;
+  background: #211f1a;
+  border: 1px solid #6b665a;
   border-radius: 12px;
+  box-sizing: border-box;
+  color: #f4f0e8;
+  display: inline-flex;
   font-size: 16px;
+  font-weight: 700;
+  gap: 10px;
   min-height: 58px;
-  padding: 0 22px;
+  overflow: hidden;
+  padding: 0 24px;
+  position: relative;
+  text-decoration: none;
+  transition:
+    background-color 130ms ease,
+    border-color 130ms ease,
+    box-shadow 130ms ease,
+    transform 130ms ease;
 }
 
-.lp-hero-start.button {
-  flex: 1 1 200px;
-  font-size: 17px;
-  font-weight: 800;
-  gap: 10px;
+.lp-cta:hover {
+  background: #312f28;
+  border-color: #8a8474;
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.22);
+  color: #f4f0e8;
+  transform: translateY(-1px);
 }
 
-/* 通常25分は、5分で始めると同じ字の大きさと再生の印にする(少しだけ大きく見える)。 */
-.lp-hero-start-normal.button {
-  flex: 0 0 auto;
+.lp-cta:active {
+  transform: scale(0.985);
+}
+
+.lp-cta--primary {
+  background: #e7b94d;
+  border-color: #e7b94d;
+  color: #17140b;
   font-size: 17px;
-  font-weight: 800;
-  gap: 10px;
   padding: 0 28px;
 }
 
-/* Sections */
-.lp-section {
-  border-top: 1px solid var(--line-soft);
-  padding-block: var(--lp-section-y);
+.lp-cta--primary:hover {
+  background: #ffce5b;
+  border-color: #ffce5b;
+  color: #17140b;
 }
 
-.lp-why-title,
-.lp-features-title {
-  margin: 16px 0 56px;
+/* アプリの開始ボタンと同じ動き。4つのボタン(最初の画面2つ・ヘッダー・最後の札)で共通。
+   下の線は、枠の下端いっぱいに左右 12px を残して、真ん中から伸びる。 */
+.lp-cta::after,
+.lp-hdl::after,
+.lp-getbtn::after {
+  background: currentColor;
+  bottom: 0;
+  content: "";
+  height: 2px;
+  left: 12px;
+  position: absolute;
+  right: 12px;
+  transform: scaleX(0);
+  transition: transform 150ms ease;
 }
 
-.lp-why-grid {
-  display: grid;
-  gap: 40px 28px;
-  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+.lp-cta:hover::after,
+.lp-cta:focus-visible::after,
+.lp-hdl:hover::after,
+.lp-hdl:focus-visible::after,
+.lp-getbtn:hover::after,
+.lp-getbtn:focus-visible::after {
+  transform: scaleX(1);
 }
 
-.lp-why-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* ---------- pieces ---------- */
+
+.lp-plate {
+  background-color: #11110f;
+  background-image: linear-gradient(#1d1b17 1px, transparent 1px),
+    linear-gradient(90deg, #1d1b17 1px, transparent 1px);
+  background-size: 28px 28px;
+  border: 1px solid #353126;
+  border-radius: 12px;
 }
 
-.lp-why-art {
-  background: var(--surface-soft);
-  border-radius: 16px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  height: 204px;
-  justify-content: center;
-  margin-bottom: 12px;
-  padding: 20px;
-}
-
-.lp-why-row {
-  align-items: center;
-  background: var(--surface);
-  border: 1px solid var(--line-soft);
-  border-radius: 8px;
-  color: var(--muted-strong);
-  display: flex;
-  font-size: 14px;
-  gap: 10px;
-  min-height: 38px;
-  padding: 0 12px;
-}
-
-.lp-why-row.is-current {
-  border-color: var(--line);
-  color: var(--text);
-  font-weight: 700;
-}
-
-.lp-why-row.is-empty {
-  background: transparent;
-  border: 1px dashed var(--lp-neutral-line);
-  color: var(--text-muted-readable);
-}
-
-.lp-why-dot {
-  background: #e8ad55;
+.lp-num {
+  background: #e7b94d;
   border-radius: 50%;
+  color: #17140b;
+  flex: none;
+  font: 600 13px/26px var(--lp-font-mono);
+  height: 26px;
+  text-align: center;
+  width: 26px;
+}
+
+.lp-k {
+  background: #211f1a;
+  border: 1px solid #353126;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.lp-e {
+  border: 1.5px dashed #5a5548;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #a39c8e;
+}
+
+.lp-dot {
+  border-radius: 50%;
+  display: inline-block;
+  flex: none;
   height: 8px;
-  margin: 0 3px;
   width: 8px;
 }
 
-.lp-why-slot {
-  font-family: var(--lp-font-display);
-  font-weight: 700;
-  text-align: center;
-  width: 14px;
+.lp-dot--violet {
+  background: #ad91ee;
 }
 
-.lp-why-pick {
-  background: var(--surface);
-  border: 1px solid var(--lp-gold-edge);
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 12px 14px;
+.lp-dot--amber {
+  background: #e7b94d;
 }
 
-.lp-why-pick-kicker {
-  color: var(--gold);
-  font-size: 13px;
-  font-weight: 700;
+.lp-dot--green {
+  background: #6fcf97;
 }
 
-.lp-why-pick-title {
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.lp-why-faded {
+.lp-go {
   align-items: center;
-  color: var(--lp-quiet);
-  display: flex;
-  font-size: 13px;
-  min-height: 26px;
+  background: #183326;
+  border: 1px solid #3f7658;
+  border-radius: 6px;
+  color: #6fcf97;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 6px;
+  justify-content: center;
+  min-height: 36px;
   padding: 0 14px;
 }
 
-.lp-why-art-launch {
-  align-items: center;
-  flex-direction: row;
-  gap: 16px;
-  justify-content: space-between;
-}
+/* ---------- hero figure ---------- */
 
-.lp-why-launch-list {
-  display: flex;
-  flex-direction: column;
-  font-size: 14px;
-  gap: 10px;
-}
-
-.lp-why-launch-list > span {
-  align-items: center;
-  display: flex;
-  gap: 10px;
-}
-
-.lp-why-clock {
-  color: var(--gold);
-  font-family: var(--lp-font-display);
-  font-size: 46px;
-  font-variant-numeric: tabular-nums;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.lp-why-heading {
-  align-items: baseline;
-  display: flex;
-  font-size: 22px;
-  font-weight: 800;
-  gap: 12px;
-  line-height: 1.4;
-  margin: 0;
-}
-
-/* Demo */
-.lp-demo {
-  background: var(--bg-deep);
-  border-top: 1px solid var(--line-soft);
-  padding-block: var(--lp-section-y);
-}
-
-.lp-demo-intro {
-  align-items: flex-end;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px 48px;
-  justify-content: space-between;
-  margin-bottom: 40px;
-}
-
-.lp-demo-titles {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.lp-demo-lead {
-  color: var(--muted-strong);
-  font-size: 15px;
-  margin: 0 0 8px;
-}
-
-.lp-demo-steps {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
-  list-style: none;
-  margin: 0 0 24px;
-  padding: 0;
-}
-
-.lp-demo-step {
-  align-items: center;
-  background: var(--bg);
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  box-sizing: border-box;
-  display: flex;
-  gap: 14px;
-  min-height: 72px;
-  padding: 12px 18px;
-}
-
-.lp-demo-step.is-first {
-  background: var(--surface);
-  border-color: var(--lp-gold-edge);
-}
-
-.lp-demo-step-num {
-  align-items: center;
-  border: 1px solid var(--lp-neutral-line);
-  border-radius: 50%;
-  box-sizing: border-box;
-  color: var(--muted-strong);
-  display: flex;
-  flex: 0 0 auto;
-  font-family: var(--lp-font-display);
-  font-size: 16px;
-  font-weight: 800;
-  height: 32px;
-  justify-content: center;
-  width: 32px;
-}
-
-.lp-demo-step.is-first .lp-demo-step-num {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: #19160d;
-}
-
-.lp-demo-step-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.45;
-}
-
-.lp-demo-step-title {
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.lp-demo-step-note {
-  color: var(--text-muted-readable);
-  font-size: 13px;
-}
-
-.lp-demo-step.is-first .lp-demo-step-note {
-  color: var(--muted-strong);
-}
-
-.lp-demo-mobile-note {
-  display: none;
-}
-
-.lp-demo-window {
-  border-radius: 14px;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
-}
-
-.lp-demo-privacy {
-  color: var(--text-muted-readable);
-  font-size: 14px;
-  margin: 24px 0 0;
-}
-
-/* Features */
-.lp-features-think {
-  color: var(--gold);
-}
-
-.lp-features-act {
-  color: var(--green);
-}
-
-.lp-feature-grid {
-  display: grid;
-  gap: 56px 72px;
-  grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr));
-}
-
-.lp-feature-col {
-  display: flex;
-  flex-direction: column;
-}
-
-.lp-feature-col-label {
-  align-items: center;
-  border-bottom: 1px solid var(--lp-gold-line);
-  color: var(--gold);
-  display: flex;
-  font-size: 15px;
-  font-weight: 700;
-  gap: 10px;
-  margin: 0;
-  padding-bottom: 14px;
-}
-
-.lp-feature-col-dot {
-  background: currentColor;
-  border-radius: 50%;
-  height: 8px;
-  width: 8px;
-}
-
-.lp-feature-col[data-tone="act"] .lp-feature-col-label {
-  border-bottom-color: var(--lp-green-line);
-  color: var(--green);
-}
-
-.lp-feature {
-  border-bottom: 1px solid var(--line-soft);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 24px 0;
-}
-
-.lp-feature:last-child {
-  border-bottom: 0;
-}
-
-.lp-feature-head {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  justify-content: space-between;
-}
-
-.lp-feature-title {
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 1.4;
-  margin: 0;
-}
-
-.lp-feature-tag {
-  border: 1px solid var(--lp-neutral-line);
-  border-radius: 999px;
-  color: var(--muted-strong);
-  font-size: 13px;
-  padding: 0 12px;
-}
-
-.lp-feature-tag[data-tag="demo"] {
-  border-color: var(--lp-green-line);
-  color: var(--green);
-}
-
-/* Privacy */
-.lp-privacy-grid {
-  display: grid;
-  gap: 40px 72px;
-  grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr));
-}
-
-.lp-privacy-head {
+.lp-f1 {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  /* 枠は文字の列より外へ出し、中の札と番号を列にそろえる。 */
+  margin: 0 calc(-1 * clamp(16px, 2.4vw, 28px));
+  padding: clamp(16px, 2.4vw, 28px);
 }
 
-.lp-privacy-title {
-  font-family: var(--lp-font-display);
-  font-size: clamp(44px, 5.6vw, 84px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
-  margin: 0;
+.lp-fig-grid {
+  align-items: start;
+  display: grid;
+  gap: 24px 36px;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
 }
 
-/* W18: 技術の文を、丸い札に替えた。 */
-.lp-tech-chips {
+.lp-fig-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lp-fig-head {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.lp-fig-title {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.lp-fig-note {
+  color: #a39c8e;
+  font-size: 13px;
+}
+
+.lp-fig-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+}
+
+.lp-fig-meta {
+  align-items: center;
+  color: #a39c8e;
+  display: flex;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.lp-fig-text {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.lp-fig-done {
+  align-items: center;
+  color: #6fcf97;
+  display: flex;
+  font-size: 15px;
+  font-weight: 600;
+  gap: 8px;
+  min-height: 58px;
+  padding: 10px 14px;
+}
+
+.lp-fig-done span {
+  color: #a39c8e;
+  text-decoration: line-through;
+}
+
+.lp-fig-stack {
+  display: grid;
+}
+
+.lp-fig-stack > * {
+  grid-area: 1 / 1;
+}
+
+.lp-fig-slot {
+  align-items: center;
+  display: flex;
+  font-size: 13px;
+  justify-content: center;
+  min-height: 58px;
+}
+
+.lp-fig-timer-slot {
+  align-items: center;
+  display: flex;
+  font-size: 13px;
+  justify-content: center;
+  min-height: 196px;
+}
+
+.lp-fig-running {
+  border-color: #6b665a;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+.lp-fig-running-head {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  list-style: none;
-  margin: 4px 0 0;
-  padding: 0;
+  justify-content: space-between;
 }
 
-.lp-tech-chip {
-  background: var(--surface-soft);
-  border: 1px solid #3a372f;
-  border-radius: 999px;
-  color: var(--muted-strong);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
-  padding: 6px 15px;
-}
-
-.lp-privacy-list {
+.lp-fig-running-title {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+}
+
+.lp-fig-strong {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.lp-fig-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lp-fig-chip {
+  background: #2b2922;
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.lp-fig-bar-row {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.lp-fig-bar {
+  background: #2b2922;
+  border-radius: 3px;
+  display: block;
+  flex: 1 1 auto;
+  height: 6px;
+  overflow: hidden;
+}
+
+.lp-a7 {
+  background: #e7b94d;
+  display: block;
+  height: 6px;
+}
+
+.lp-fig-minutes {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lp-a8 {
+  align-items: center;
+  color: #6fcf97;
+  display: flex;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 6px;
+}
+
+.lp-f1 .lp-a1 {
+  animation: lp-a1 14s infinite;
+}
+
+.lp-f1 .lp-a2 {
+  animation: lp-a2 14s infinite;
+}
+
+.lp-f1 .lp-a3 {
+  animation: lp-a3 14s infinite;
+}
+
+.lp-f1 .lp-a4 {
+  animation: lp-a4 14s infinite;
+}
+
+.lp-f1 .lp-a5 {
+  animation: lp-a5 14s infinite;
+}
+
+.lp-f1 .lp-a6 {
+  animation: lp-a6 14s infinite;
+}
+
+.lp-f1 .lp-a7 {
+  animation: lp-a7 14s infinite;
+  transform-origin: left;
+}
+
+.lp-f1 .lp-a8 {
+  animation: lp-a8 14s infinite;
+}
+
+.lp-f1:hover * {
+  animation-play-state: paused;
+}
+
+@keyframes lp-a1 {
+  0%,
+  4% {
+    box-shadow: 0 0 0 0 #e7b94d;
+  }
+
+  8%,
+  20% {
+    box-shadow: 0 0 0 3px #e7b94d;
+  }
+
+  25%,
+  100% {
+    box-shadow: 0 0 0 0 #e7b94d;
+  }
+}
+
+@keyframes lp-a2 {
+  0%,
+  20% {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+
+  26%,
+  93% {
+    opacity: 1;
+    transform: none;
+  }
+
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes lp-a3 {
+  0%,
+  34% {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+
+  40%,
+  93% {
+    opacity: 1;
+    transform: none;
+  }
+
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes lp-a4 {
+  0%,
+  47% {
+    background: #183326;
+    transform: none;
+  }
+
+  49.5% {
+    background: #214632;
+    transform: scale(0.92);
+  }
+
+  52%,
+  100% {
+    background: #183326;
+    transform: none;
+  }
+}
+
+@keyframes lp-a5 {
+  0%,
+  52% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.86);
+  }
+
+  56%,
+  93% {
+    opacity: 1;
+    transform: none;
+  }
+
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes lp-a6 {
+  0%,
+  57% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.86);
+  }
+
+  61%,
+  93% {
+    opacity: 1;
+    transform: none;
+  }
+
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes lp-a7 {
+  0%,
+  54% {
+    transform: scaleX(0);
+  }
+
+  82%,
+  93% {
+    transform: scaleX(1);
+  }
+
+  98%,
+  100% {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes lp-a8 {
+  0%,
+  82% {
+    opacity: 0;
+  }
+
+  86%,
+  93% {
+    opacity: 1;
+  }
+
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- shared section ---------- */
+
+.lp-band {
+  background: #1b1a17;
+  border-bottom: 1px solid #353126;
+  border-top: 1px solid #353126;
+}
+
+.lp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-width: 0;
+  padding-block: 88px;
+}
+
+#flow .lp-section {
+  gap: 40px;
+}
+
+.lp-section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lp-h2 {
+  font-size: clamp(24px, 5vw, 34px);
+  font-weight: 700;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.lp-h2 > span {
+  display: inline-block;
+}
+
+/* ---------- the four steps ---------- */
+
+.lp-steps {
+  display: grid;
+  gap: 32px 28px;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.lp-privacy-list li {
-  border-bottom: 1px solid var(--line-soft);
-  font-size: 17px;
-  line-height: 1.75;
-  padding: 20px 0;
-  word-break: auto-phrase;
+.lp-step {
+  border-top: 3px solid #4a4639;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 18px;
+  transition: border-top-color 0.15s ease;
 }
 
-.lp-privacy-list li:first-child {
-  padding-top: 0;
+.lp-step:hover {
+  border-top-color: #e7b94d;
 }
 
-.lp-privacy-list li:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
+.lp-step-num {
+  color: #e7b94d;
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1;
 }
 
-/* Final CTA */
-.lp-final {
+.lp-vig {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+  height: 150px;
+  justify-content: center;
+  line-height: 1.5;
+  /* 枠は文字の列より外へ出し、中の札を列にそろえる。 */
+  margin-inline: -12px;
+  overflow: hidden;
+  padding: 12px;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.lp-step:hover .lp-vig {
+  border-color: #e7b94d;
+  transform: translateY(-2px);
+}
+
+.lp-vig-card {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 9px;
+}
+
+.lp-vig-meta {
+  align-items: center;
+  color: #a39c8e;
+  display: flex;
+  font-size: 11px;
+  gap: 5px;
+}
+
+.lp-vig-text {
+  color: #f4f0e8;
+  font-weight: 600;
+}
+
+.lp-vig-text--strong {
+  font-weight: 600;
+}
+
+.lp-step-title {
+  font-size: 19px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.lp-step-text {
+  color: #a39c8e;
+}
+
+.lp-hv {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.lp-hu {
+  transition: opacity 0.2s ease;
+}
+
+.lp-step:hover .lp-hv {
+  opacity: 1;
+  transform: none;
+}
+
+.lp-step:hover .lp-hu {
+  opacity: 0;
+}
+
+.lp-vig-add {
+  font-size: 12px;
+  padding: 5px 9px;
+  text-align: center;
+}
+
+.lp-vig-label {
+  color: #a39c8e;
+  font-family: var(--lp-font-mono);
+  font-size: 11px;
+}
+
+.lp-vig-count {
+  color: #e7b94d;
+  display: inline-grid;
+}
+
+.lp-vig-count > * {
+  grid-area: 1 / 1;
+}
+
+.lp-hv--flat {
+  transform: none;
+}
+
+.lp-vig-grid {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lp-vig-tile {
+  display: flex;
+  flex-direction: column;
+  height: 64px;
+  justify-content: space-between;
+  padding: 7px;
+}
+
+.lp-vig-tile--amber {
+  border-top: 2px solid #e7b94d;
+}
+
+.lp-vig-tile--green {
+  border-top: 2px solid #6fcf97;
+}
+
+.lp-vig-tile--violet {
+  border-top: 2px solid #ad91ee;
+}
+
+.lp-vig-tile-label {
+  color: #a39c8e;
+  font-size: 11px;
+}
+
+.lp-vig-tile-text {
+  color: #f4f0e8;
+  font-weight: 600;
+}
+
+.lp-vig-empty {
+  align-items: center;
+  display: flex;
+  height: 64px;
+  justify-content: center;
+}
+
+.lp-vig-note {
+  color: #a39c8e;
+  font-size: 11px;
+}
+
+.lp-vig-go {
+  align-self: flex-start;
+  font-size: 12px;
+  min-height: 30px;
+  padding: 0 12px;
+}
+
+.lp-vig-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.lp-vig-chips > span {
+  background: #2b2922;
+  color: #c6beb0;
+  padding: 3px 8px;
+}
+
+.lp-vig-clock {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.lp-vig-bar {
+  background: #2b2922;
+  border-radius: 2px;
+  display: block;
+  flex: 1 1 auto;
+  height: 4px;
+}
+
+.lp-bar {
+  background: #e7b94d;
+  border-radius: 2px;
+  display: block;
+  height: 4px;
+  width: 18%;
+}
+
+.lp-vig-time {
+  color: #e7b94d;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.lp-vig-quote {
+  background: #161512;
+  color: #f4f0e8;
+  padding: 6px 9px;
+}
+
+.lp-ty {
+  display: inline-block;
+}
+
+.lp-vig-choices {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lp-vig-choice {
+  background: #211f1a;
+  border: 1px solid #4a4639;
+  border-radius: 6px;
+  color: #c6beb0;
+  padding: 3px 0;
+  text-align: center;
+}
+
+.lp-vig-choice--danger {
+  background: #3b211d;
+  border-color: #7a3a33;
+  color: #f39088;
+}
+
+.lp-step:hover .lp-p1 {
+  animation: lp-pr 0.45s 1;
+}
+
+.lp-step:hover .lp-p2 {
+  animation: lp-pr 0.45s 1.3s 1;
+}
+
+.lp-step:hover .lp-q1 {
+  animation: lp-pp 0.35s 0.3s both;
+}
+
+.lp-step:hover .lp-q2 {
+  animation: lp-pp 0.35s 0.55s both;
+}
+
+.lp-step:hover .lp-bar {
+  animation: lp-bw 3s 0.5s linear both;
+}
+
+.lp-step:hover .lp-ty {
+  animation: lp-ty 1.1s steps(9) both;
+}
+
+@keyframes lp-pr {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  40% {
+    transform: scale(0.9);
+  }
+}
+
+@keyframes lp-pp {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.86);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes lp-bw {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes lp-ty {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* ---------- demo section ---------- */
+
+.lp-fig2 {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 0;
+}
+
+/* デモは枠や台紙で囲まず、窓だけを置いて下に影を付ける。窓の幅は文字の列いっぱい。 */
+.lp-stage {
+  border-radius: 14px;
+  box-shadow:
+    0 18px 40px -12px rgba(0, 0, 0, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.28);
+  position: relative;
+  width: 100%;
+}
+
+.lp-zone {
+  border-radius: 10px;
+  pointer-events: none;
+  position: absolute;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.lp-zone[data-active="true"] {
+  background: rgba(231, 185, 77, 0.08);
+  box-shadow: 0 0 0 3px #e7b94d;
+}
+
+.lp-zone-num {
+  background: #e7b94d;
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px #161512;
+  color: #17140b;
+  cursor: default;
+  font: 600 13px/26px var(--lp-font-mono);
+  height: 26px;
+  left: -11px;
+  padding: 0;
+  pointer-events: auto;
+  position: absolute;
+  text-align: center;
+  top: -11px;
+  width: 26px;
+  z-index: 1;
+}
+
+.lp-zone-list {
+  display: grid;
+  gap: 8px 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lp-zone-item {
+  align-items: flex-start;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  /* 番号は文字の列にそろえ、乗せた時の背景は列の外へはみ出させる。 */
+  margin-inline: -14px;
+  padding: 12px 14px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.lp-zone-item:hover,
+.lp-zone-item[data-active="true"] {
+  background: #211f1a;
+  border-color: #e7b94d;
+}
+
+.lp-zone-copy {
+  display: flex;
+  flex-direction: column;
+}
+
+.lp-zone-title {
+  font-weight: 700;
+}
+
+.lp-zone-text {
+  color: #a39c8e;
+  font-size: 14px;
+}
+
+/* ---------- scope table ---------- */
+
+.lp-table-scroll {
+  contain: paint;
+  /* 表の枠は文字の列より外へ出し、1列目の文を列にそろえる(セルの左余白 16px)。 */
+  margin-inline: -16px;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.lp-table {
+  background: #211f1a;
+  border: 1px solid #4a4639;
+  border-collapse: collapse;
+  font-size: 15px;
+  min-width: 520px;
+  width: 100%;
+}
+
+.lp-table th,
+.lp-table td {
+  border-top: 1px solid #2b2922;
+  padding: 13px 16px;
+}
+
+.lp-table thead th {
+  border-bottom: 1px solid #4a4639;
+  border-top: 0;
+  color: #a39c8e;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.lp-table thead th:not(:first-child) {
+  border-left: 1px solid #353126;
+  text-align: center;
+  width: 22%;
+}
+
+.lp-table tbody th {
+  font-weight: 600;
+  text-align: left;
+}
+
+.lp-table tbody td {
+  border-left: 1px solid #353126;
+  text-align: center;
+}
+
+.lp-table tbody tr {
+  transition: background-color 0.13s ease;
+}
+
+.lp-table tbody tr:hover {
+  background: #2b2922;
+}
+
+.lp-cell-yes {
+  align-items: center;
+  color: #6fcf97;
+  display: inline-flex;
+}
+
+.lp-cell-no {
+  color: #6b665a;
+}
+
+.lp-note {
+  color: #a39c8e;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ---------- final ---------- */
+
+#get {
   overflow: hidden;
 }
 
-/* W20: すぐ上の安全性の段と同じ2列の格子にして、札の左端を安全性の一覧の左端とそろえる。
-   見出しと文字のリンクは左の列、札は右の列の左端から幅 460px。下端をそろえる。
-   見出しは「次の一手を、/今ここで始める。」の2行で折り返す(字の大きさは他の段と同じ)。 */
-.lp-final-inner {
+.lp-final {
   align-items: end;
   display: grid;
   gap: 40px 72px;
   grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr));
+  padding-block: 104px;
   position: relative;
 }
 
-.lp-final-ghost {
-  color: var(--lp-ghost);
+.lp-ghost {
+  color: #2a2412;
   font-family: var(--lp-font-display);
-  font-size: clamp(140px, 18vw, 260px);
+  font-size: clamp(120px, 18vw, 260px);
   font-variant-numeric: tabular-nums;
   font-weight: 800;
   left: 50%;
@@ -867,41 +1302,37 @@
   position: relative;
 }
 
-/* 見出しは「次の一手を、」と「今ここで始める。」の2つのかたまりで、折り返すならその間だけで折り返す。 */
-.lp-final-title > span {
+.lp-fin {
+  font-size: clamp(28px, 3.4vw, 48px);
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.lp-fin > span {
   display: inline-block;
 }
 
-/* 2列のときは、必ず2行にする。列の幅に任せると、書体(Windows は句読点が詰まる)と画面の幅で
-   1行に収まることがあるため、かたまりを1行ずつ置く。 */
-@media (min-width: 1032px) {
-  .lp-final-title > span {
-    display: block;
-  }
-}
-
-/* W18: 2つのボタンをやめ、デモへは見出しの下の文字のリンク、Windows 版は右の札にした。 */
-.lp-final-try {
+.lp-try {
   align-items: center;
   align-self: flex-start;
-  color: var(--muted-strong);
+  color: #c6beb0;
   display: inline-flex;
   font-size: 16px;
   font-weight: 700;
   gap: 8px;
   min-height: 44px;
   text-decoration: none;
-  transition: color 130ms ease;
+  transition: color 0.13s ease;
 }
 
-.lp-final-try:hover,
-.lp-final-try:focus-visible {
-  color: var(--accent-strong);
+.lp-try:hover {
+  color: #ffce5b;
 }
 
 .lp-get {
-  background: var(--surface);
-  border: 1px solid var(--line-soft);
+  background: #211f1a;
+  border: 1px solid #353126;
   border-radius: 14px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
   box-sizing: border-box;
@@ -911,382 +1342,158 @@
   width: 100%;
 }
 
-/* 太さは 700。800 にすると Windows では英字(Segoe UI)だけが極太になり、日本語(Yu Gothic UI は 700 まで)と混ざる。 */
-.lp-get-title {
+.lp-get h3 {
   font-size: 21px;
   font-weight: 700;
   line-height: 1.4;
   margin: 0;
 }
 
-.lp-get-meta,
-.lp-get-note {
-  color: var(--text-muted-readable);
+.lp-get-meta {
+  color: #a39c8e;
   font-size: 13px;
   line-height: 1.6;
   margin: 4px 0 0;
-  word-break: auto-phrase;
 }
 
-.lp-get-note {
-  margin-top: 14px;
-}
-
-/* 狭い幅では「（GitHub Releases）」だけを次の行へ送り、どちらも真ん中にそろえる。 */
-.lp-get-button.button {
+.lp-getbtn {
+  align-items: center;
+  background: #e7b94d;
+  border: 1px solid #e7b94d;
   border-radius: 10px;
+  box-sizing: border-box;
+  color: #17140b;
+  display: flex;
   flex-wrap: wrap;
   font-size: 16px;
   font-weight: 700;
-  gap: 0;
+  justify-content: center;
   margin-top: 20px;
   min-height: 54px;
+  overflow: hidden;
   padding: 8px 20px;
+  position: relative;
   text-align: center;
-  width: 100%;
+  text-decoration: none;
+  transition:
+    background-color 130ms ease,
+    border-color 130ms ease,
+    box-shadow 130ms ease,
+    transform 130ms ease;
 }
 
-.lp-get-button span {
+.lp-getbtn span {
   white-space: nowrap;
 }
 
-/* Footer */
+.lp-getbtn:hover {
+  background: #ffce5b;
+  border-color: #ffce5b;
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.22);
+  color: #17140b;
+  transform: translateY(-1px);
+}
+
+.lp-getbtn:active {
+  transform: scale(0.985);
+}
+
+.lp-get-note {
+  color: #a39c8e;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 14px 0 0;
+}
+
+/* ---------- footer ---------- */
+
 .lp-footer {
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid #353126;
 }
 
 .lp-footer-inner {
-  align-items: center;
-  color: var(--text-muted-readable);
+  color: #a39c8e;
   display: flex;
   flex-wrap: wrap;
   font-size: 14px;
-  gap: 12px 32px;
+  gap: 10px 32px;
   justify-content: space-between;
-  padding-block: 28px;
+  padding-block: 24px;
 }
 
 .lp-footer-links {
-  align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 28px;
+  gap: 10px 24px;
 }
 
 .lp-footer-links a {
-  align-items: center;
-  color: var(--muted-strong);
-  display: flex;
-  min-height: 44px;
-  transition: color 120ms ease;
+  color: #f4f0e8;
+  text-decoration: none;
 }
 
 .lp-footer-links a:hover {
-  color: var(--text);
+  color: #ffce5b;
 }
 
-/* Narrow screens */
-@media (max-width: 860px) {
-  .lp-nav-link {
-    display: none;
-  }
-
-  .lp-header-download.button {
-    margin-left: 0;
-  }
-}
+/* ---------- narrow screens ---------- */
 
 @media (max-width: 600px) {
-  :root {
-    --lp-section-y: 56px;
-  }
-
-  .lp-header-inner {
-    min-height: 60px;
-  }
-
-  .lp-brand {
-    font-size: 17px;
-    gap: 10px;
-  }
-
-  .lp-brand-mark {
-    font-size: 16px;
-    height: 28px;
-    width: 28px;
-  }
-
-  .lp-hero {
-    padding-block: 36px 56px;
-  }
-
-  .lp-hero-grid {
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  /* On phones the card sits between the description and the buttons, as in the mock. */
-  .lp-hero-copy {
-    display: contents;
-  }
-
-  .lp-hero-titles {
-    order: 1;
-  }
-
-  .lp-hero-description {
-    order: 2;
-  }
-
-  .lp-hero-visual {
-    flex: 0 0 auto;
-    max-width: none;
-    order: 3;
-  }
-
-  .lp-hero-copy > .lp-actions {
-    order: 4;
-  }
-
-  .lp-hero-titles {
-    gap: 12px;
-  }
-
-  .lp-hero-title {
-    font-size: 50px;
-  }
-
-  .lp-hero-lead {
-    font-size: 26px;
-    margin: 0;
-  }
-
-  .lp-hero-description {
-    font-size: 16px;
-  }
-
-  .lp-actions {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-  }
-
-  .lp-cta.button {
-    min-height: 52px;
-  }
-
-  .lp-cta.button-gold {
-    min-height: 56px;
-  }
-
-  .lp-hero-candidates {
-    gap: 8px;
-  }
-
-  .lp-hero-chip {
-    border-radius: 9px;
-    font-size: 13px;
-    padding: 6px 12px;
-  }
-
-  .lp-hero-connector {
-    font-size: 13px;
-    gap: 12px;
-    padding: 8px 0 8px 20px;
-  }
-
-  .lp-hero-connector-line {
-    height: 28px;
-  }
-
-  .lp-hero-card {
-    border-radius: 16px;
-    gap: 12px;
-    padding: 20px;
-  }
-
-  .lp-hero-card-reason {
-    display: none;
-  }
-
-  .lp-hero-card-title {
-    font-size: 26px;
-  }
-
-  .lp-hero-card-actions .button {
-    min-height: 56px;
-  }
-
-  .lp-hero-start-normal.button {
-    display: none;
-  }
-
-  .lp-h2 {
-    font-size: 28px;
-    line-height: 1.35;
-  }
-
-  .lp-why-title,
-  .lp-features-title {
-    margin: 12px 0 24px;
-  }
-
-  .lp-why-grid {
-    gap: 32px;
-  }
-
-  .lp-why-heading {
-    font-size: 19px;
-  }
-
-  .lp-body {
-    font-size: 15px;
-  }
-
-  .lp-demo .lp-container {
-    padding-inline: 12px;
-  }
-
-  .lp-demo-intro {
-    gap: 16px;
-    margin-bottom: 16px;
-    padding-inline: 8px;
-  }
-
-  .lp-demo-steps {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    overflow-x: auto;
-    padding-inline: 8px;
-  }
-
-  .lp-demo-step {
-    border-radius: 999px;
-    flex: 0 0 auto;
-    gap: 8px;
-    min-height: 44px;
-    padding: 0 14px 0 8px;
-  }
-
-  .lp-demo-step-num {
-    font-size: 14px;
-    height: 26px;
-    width: 26px;
-  }
-
-  .lp-demo-step-title {
-    font-size: 14px;
-  }
-
-  .lp-demo-step-note {
-    display: none;
-  }
-
-  .lp-demo-mobile-note {
-    color: var(--muted-strong);
-    display: block;
-    font-size: 14px;
-    margin: 0 0 16px;
-    padding-inline: 8px;
-  }
-
-  .lp-demo-window {
-    box-shadow: none;
-  }
-
-  .lp-demo-privacy {
-    font-size: 13px;
-    margin-top: 16px;
-    padding-inline: 8px;
-  }
-
-  .lp-feature-grid {
-    gap: 32px;
-  }
-
-  .lp-feature-col-label {
-    font-size: 14px;
-    padding-bottom: 10px;
-  }
-
-  .lp-feature {
-    gap: 4px;
-    padding: 16px 0;
-  }
-
-  .lp-feature-title {
-    font-size: 17px;
-  }
-
-  .lp-feature-tag {
-    font-size: 12px;
-    padding: 0 10px;
-  }
-
-  .lp-privacy-grid {
-    gap: 20px;
-  }
-
-  .lp-privacy-title {
-    font-size: 48px;
-  }
-
-  .lp-privacy-list li {
-    font-size: 15px;
-    padding: 14px 0;
-  }
-
-  .lp-final-inner {
-    gap: 24px;
+  .lp-ghost {
+    font-size: 120px;
+    left: auto;
+    right: -8px;
+    top: 88px;
+    transform: none;
   }
 
   .lp-get {
     max-width: none;
     padding: 22px 20px 18px;
   }
+}
 
-  .lp-final-ghost {
-    font-size: 120px;
-    left: auto;
-    right: -8px;
-    top: -16px;
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-f1 * {
+    animation: none !important;
+  }
+
+  .lp-cta,
+  .lp-getbtn,
+  .lp-hdl,
+  .lp-fig2 *,
+  .lp-hv,
+  .lp-hu,
+  .lp-vig,
+  .lp-step {
+    transition: none;
+  }
+
+  .lp-cta::after,
+  .lp-hdl::after,
+  .lp-getbtn::after {
+    transition: none;
+  }
+
+  .lp-step:hover * {
+    animation: none !important;
+  }
+
+  .lp-cta:hover,
+  .lp-cta:active,
+  .lp-getbtn:hover,
+  .lp-getbtn:active,
+  .lp-hdl:hover,
+  .lp-hdl:active,
+  .lp-step:hover .lp-vig {
+    box-shadow: none;
     transform: none;
   }
 
-  .lp-footer-inner {
-    align-items: flex-start;
-    flex-direction: column;
-    font-size: 13px;
-    gap: 4px;
-    padding-block: 20px;
+  .lp-hv {
+    opacity: 1;
+    transform: none;
   }
-
-  .lp-footer-links {
-    gap: 4px 24px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lp-nav-link,
-  .lp-footer-links a {
-    transition: none;
-  }
-}
-
-/* 通知はデモ画面の内側の右端にそろえる。ページの右端に出すと、デモ画面からはみ出して見える。 */
-.toast-region {
-  right: calc(max(0px, (100% - var(--lp-max)) / 2) + var(--lp-pad) + 24px);
-  width: min(380px, calc(100% - 2 * var(--lp-pad) - 48px));
-}
-
-/* ダイアログを開いている間は、通知を上端の中央に出す(Windows 版と同じ)。
-   右下のままだと、狭い画面でダイアログの下のボタンに重なる。 */
-body:has([aria-modal="true"]) .toast-region {
-  bottom: auto;
-  left: 50%;
-  right: auto;
-  top: 12px;
-  transform: translateX(-50%);
 }

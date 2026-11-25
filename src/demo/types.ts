@@ -58,6 +58,8 @@ export type DemoSession = {
 
 export type DemoTimerState = {
   status: TimerStatus;
+  /** countdown = 5分/25分のタイマー。measure = 時間を決めずに数える計測。省略時は countdown。 */
+  mode?: "countdown" | "measure";
   todayItemId?: string;
   label: string;
   projectId: string;
@@ -83,6 +85,8 @@ export type DemoState = {
   wishlist: DemoWishlistItem[];
   sessions: DemoSession[];
   timer: DemoTimerState;
+  /** 左の列のタイマーに入れる分数。無いときは 25 と同じに動く。 */
+  timerMinutes?: number;
   sections: DemoSectionState;
 };
 
@@ -145,6 +149,8 @@ export type DemoAction =
   | { type: "UPDATE_PROJECT_NEXT_STEP"; projectId: string; nextStep: string }
   | {
       type: "START_TIMER";
+      /** 省略すると 5分/25分のタイマー。measure は時間を決めずに数える。 */
+      mode?: "countdown" | "measure";
       todayItemId?: string;
       now?: Date;
       label: string;
@@ -152,6 +158,7 @@ export type DemoAction =
       projectName: string;
       durationSeconds: number;
     }
+  | { type: "SET_TIMER_MINUTES"; minutes: number }
   | { type: "TICK_TIMER" }
   | { type: "ADVANCE_TO_EARLY_THRESHOLD" }
   | { type: "REQUEST_STOP_TIMER"; now: Date }

@@ -3,13 +3,15 @@ import { expect, it } from "vitest";
 
 it("shipped copy no longer promises manual Today completion or a free-input Builder", () => {
   const app = readFileSync("src/App.tsx", "utf8");
-  const frame = readFileSync("src/components/DemoFrame.tsx", "utf8");
+  const demo = readFileSync("src/components/DemoWindow.tsx", "utf8");
+  const landing = readFileSync("src/landing/Landing.tsx", "utf8");
   const reducer = readFileSync("src/demo/reducer.ts", "utf8");
   expect(app).not.toContain("チェック状態");
-  expect(frame).not.toContain("Inbox");
-  expect(frame).not.toContain("<select");
+  expect(demo).not.toContain("Inbox");
+  expect(demo).not.toContain("<select");
   expect(reducer).not.toContain("TOGGLE_TODAY_ITEM");
-  expect(frame).toContain("Demoでは起動動作を演出しています。");
+  expect(landing).toContain("サンプルデータだけで安全に試せます。");
+  expect(landing).toContain("デモはWindows版をすべて移したものではありません。");
 });
 
 it("published README references a real synthetic PNG and documents current demo limits", () => {

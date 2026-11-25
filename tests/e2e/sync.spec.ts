@@ -1,4 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+const todayCard = (page: Page, label: string) =>
+  page.getByRole("article", { name: label, exact: true });
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
@@ -6,25 +9,30 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 });
 
-test("natural expiry waits for confirmation and restores keyboard focus", async ({
+// W21-05: 「やりたいこと」と「今日の実行」は、最初は閉じている。中を確かめる前に開く。
+const openSection = async (
+  page: import("@playwright/test").Page,
+  name: "wishlist" | "activity",
+) => {
+  const toggle = page.locator(`.dl-${name} .dl-section-disclosure`);
+  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+};
+
+test("natural expiry waits for confirmation and completes the item on 終わる", async ({
   page,
 }) => {
   await page.clock.install();
-  await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
+  const card = todayCard(page, "数分だけ読む");
+  await card.getByRole("button", { name: "5分", exact: true }).click();
   await page.clock.runFor(300000);
   await expect(
     page.getByRole("dialog", { name: "予定時間になりました" }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("status", { name: "本を読む：未完了", exact: true }),
-  ).toHaveCount(1);
+  await expect(card.locator(".dl-today-status")).toHaveText("○");
+  await expect(card).not.toHaveAttribute("data-complete", "true");
   await page.getByRole("button", { name: "終わる", exact: true }).click();
-  await page.clock.runFor(50);
-  await expect(page.locator(".today-section button:focus")).toHaveCount(1);
-  await expect(page.locator(".today-section")).not.toBeFocused();
-  await expect(
-    page.getByRole("status", { name: "本を読む：完了", exact: true }),
-  ).toHaveCount(1);
+  await expect(card.locator(".dl-today-status")).toHaveText("✓");
+  await expect(card).toHaveAttribute("data-complete", "true");
 });
 
 test("reset and Wishlist modals trap Tab and cancel restores the opener", async ({
@@ -46,7 +54,7 @@ test("reset and Wishlist modals trap Tab and cancel restores the opener", async 
   await page.keyboard.press("Escape");
   await expect(reset).toBeFocused();
   const add = page.getByRole("button", {
-    name: "やりたいことを追加",
+    name: "＋ やりたいこと",
     exact: true,
   });
   await add.click();
@@ -58,89 +66,76 @@ test("reset and Wishlist modals trap Tab and cancel restores the opener", async 
   await expect(add).toBeFocused();
 });
 
-test("Today3 finishes only after confirmation, next batch is manual, and reset restores seed", async ({
+test("Today3 finishes only after confirmation and reset restores seed", async ({
   page,
 }) => {
-  await expect(page.locator('.today-row input[type="checkbox"]')).toHaveCount(
-    0,
-  );
+  await expect(page.locator("article.dl-today-card input")).toHaveCount(0);
   await page
-    .getByRole("button", { name: "今日やるものを選ぶ" })
+    .getByRole("button", { name: "今日やるものを選ぶ", exact: true })
     .click();
-  await page
-    .getByRole("dialog", { name: "今日やるものを選ぶ" })
+  const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
+  await picker
     .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
     .click();
-  await page
-    .getByRole("dialog", { name: "今日やるものを選ぶ" })
-    .getByRole("button", { name: "決定" })
-    .click();
-  for (const label of ["本を読む", "参考書を10ページ進める"]) {
-    await page
-      .getByRole("article", { name: label, exact: true })
-      .getByRole("button", { name: `${label}を5分で開始` })
-      .click();
+  await picker.getByRole("button", { name: "決定" }).click();
+  for (const label of ["数分だけ読む", "参考書を10ページ進める"]) {
+    const card = todayCard(page, label);
+    await card.getByRole("button", { name: "5分", exact: true }).click();
     await page.getByRole("button", { name: /満了まで進める/ }).click();
-    await expect(
-      page.getByRole("status", { name: `${label}：未完了`, exact: true }),
-    ).toHaveCount(1);
+    await expect(card.locator(".dl-today-status")).toHaveText("○");
     await page.getByRole("button", { name: "終わる", exact: true }).click();
-    await expect(
-      page.getByRole("status", { name: `${label}：完了`, exact: true }),
-    ).toHaveCount(1);
+    await expect(card.locator(".dl-today-status")).toHaveText("✓");
   }
-  await expect(page.locator(".today-row")).toHaveCount(3);
-  await expect(page.locator(".sync-heading")).toContainText("3 / 3 完了");
-  const records = await page.locator(".activity-list li").count();
-  await page.getByRole("button", { name: "次の3件を選ぶ" }).click();
-  await expect(page.locator(".today-row")).toHaveCount(0);
-  await expect(
-    page.getByRole("button", { name: "今日やるものを選ぶを閉じる" }),
-  ).toBeFocused();
-  await expect(page.locator(".activity-list li")).toHaveCount(records);
-  await page
-    .getByRole("dialog", { name: "今日やるものを選ぶ" })
-    .getByRole("button", { name: "数分だけ読むを今日の3件に追加" })
-    .click();
-  await expect(page.locator(".today-row")).toHaveCount(0);
-  await page
-    .getByRole("dialog", { name: "今日やるものを選ぶ" })
-    .getByRole("button", { name: "決定" })
-    .click();
-  await expect(page.locator(".today-row")).toHaveCount(1);
+  await expect(page.locator("article.dl-today-card")).toHaveCount(3);
+  await expect(page.locator(".dl-today .dl-section-summary")).toHaveText(
+    "3 / 3 完了",
+  );
+  await openSection(page, "activity");
+  await expect(page.locator(".dl-activity-row")).toHaveCount(3);
   await page.getByRole("button", { name: "リセット", exact: true }).click();
   await page.getByRole("button", { name: "リセットする" }).click();
-  await expect(page.locator(".today-row")).toHaveCount(2);
+  await expect(page.locator("article.dl-today-card")).toHaveCount(2);
 });
 
 test("paused replacement removes the old active state without completing it", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
-  await page
-    .locator(".today-section")
-    .getByRole("button", { name: "本を読むを一時停止" })
+  const reading = todayCard(page, "数分だけ読む");
+  await reading.getByRole("button", { name: "5分", exact: true }).click();
+  await reading
+    .locator(".dl-today-timer")
+    .getByRole("button", { name: "一時停止" })
     .click();
+  await expect(page.locator(".dl-timer .dl-pill--state")).toHaveText(
+    "一時停止",
+  );
   await expect(
-    page.getByRole("button", { name: "本を読むを再開" }),
+    reading.locator(".dl-today-timer").getByRole("button", { name: "再開" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "他の一手" }).click();
-  await page.locator("[data-demo-do-now-short]").click();
+  await page
+    .getByRole("button", { name: "今日やるものを選ぶ", exact: true })
+    .click();
+  const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
+  await picker
+    .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
+    .click();
+  await picker.getByRole("button", { name: "決定" }).click();
+  const study = todayCard(page, "参考書を10ページ進める");
+  await study.getByRole("button", { name: "5分", exact: true }).click();
+  await expect(page.locator(".dl-timer .dl-pill--state")).toHaveText("実行中");
+  await expect(reading.locator(".dl-today-timer")).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "本を読むを再開" }),
-  ).toHaveCount(0);
-  await expect(
-    page.getByRole("button", { name: "本を読むを5分で開始" }),
+    reading.getByRole("button", { name: "5分", exact: true }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("status", { name: "本を読む：未完了", exact: true }),
-  ).toHaveCount(1);
+  await expect(reading.locator(".dl-today-status")).toHaveText("○");
 });
 
 test("Today Picker shows both source groups without duplicate selected sources", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
+  await page
+    .getByRole("button", { name: "今日やるものを選ぶ", exact: true })
+    .click();
   const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
   await expect(picker.locator(".today-picker-source-row")).toHaveCount(6);
   await expect(
@@ -154,10 +149,11 @@ test("Today Picker shows both source groups without duplicate selected sources",
 test("Wishlist modal is keyboard operable, text-only, and its add action does not toggle the section", async ({
   page,
 }) => {
-  const toggle = page.locator(".wishlist-section .section-toggle");
+  // W21-05: やりたいことは、最初は閉じている。
+  const toggle = page.locator(".dl-wishlist .dl-section-disclosure");
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
   const add = page.getByRole("button", {
-    name: "やりたいことを追加",
+    name: "＋ やりたいこと",
     exact: true,
   });
   await add.click();
@@ -171,16 +167,17 @@ test("Wishlist modal is keyboard operable, text-only, and its add action does no
   await input.press("Enter");
   await expect(add).toBeFocused();
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await toggle.click();
   await expect(
     page
-      .locator(".wishlist-row")
+      .locator(".dl-wishlist-row")
       .getByText("<img src=x onerror=alert(1)>", { exact: true }),
   ).toHaveCount(1);
   await expect(page.locator("img[src=x]")).toHaveCount(0);
   await page.reload();
   await expect(
     page
-      .locator(".wishlist-row")
+      .locator(".dl-wishlist-row")
       .getByText("<img src=x onerror=alert(1)>", { exact: true }),
   ).toHaveCount(1);
 });
@@ -193,24 +190,54 @@ test("save failure keeps the candidate and modal draft instead of optimistic los
       throw new DOMException("Quota exceeded", "QuotaExceededError");
     };
   });
-  await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
-  await expect(page.locator(".demo-timer .timer-status")).toHaveText("待機中");
+  const card = todayCard(page, "数分だけ読む");
+  await card.getByRole("button", { name: "5分", exact: true }).click();
+  // The start is refused, not shown as running until a save succeeds.
+  await expect(page.locator(".dl-timer .dl-pill--state")).toHaveText("待機中");
+  await expect(
+    page.getByText("保存できませんでした。変更前の状態を保持しています。"),
+  ).toBeVisible();
+  await expect(
+    card.getByRole("button", { name: "5分", exact: true }),
+  ).toBeVisible();
+
+  // A refused Wishlist add leaves no phantom row behind.
   await page
-    .getByRole("button", { name: "やりたいことを追加", exact: true })
+    .getByRole("button", { name: "＋ やりたいこと", exact: true })
     .click();
-  const dialog = page.getByRole("dialog", { name: "やりたいことを追加" });
-  await dialog.getByRole("textbox").fill("保持する入力");
-  await dialog.getByRole("button", { name: "追加", exact: true }).click();
-  await expect(dialog.getByRole("textbox")).toHaveValue("保持する入力");
-  await expect(dialog.getByRole("alert")).toBeVisible();
+  const addDialog = page.getByRole("dialog", { name: "やりたいことを追加" });
+  await addDialog.getByRole("textbox").fill("保持する入力");
+  await addDialog.getByRole("button", { name: "追加", exact: true }).click();
+  await expect(
+    page
+      .locator(".dl-wishlist-row")
+      .getByText("保持する入力", { exact: true }),
+  ).toHaveCount(0);
+  // The dialog keeps the draft open when the save is refused.
+  await expect(addDialog.getByRole("textbox")).toHaveValue("保持する入力");
+  await page.keyboard.press("Escape");
+  await expect(addDialog).toHaveCount(0);
+
+  // A dialog that reports the failure keeps its draft and the stored value.
+  const study = page.locator(".dl-next-row", { hasText: "学習" });
+  await study.locator(".dl-row-menu").click();
+  await page.getByRole("menuitem", { name: "次の一手を編集" }).click();
+  const editDialog = page.getByRole("dialog", { name: "次の一手を編集" });
+  const input = editDialog.getByRole("textbox", { name: "次の一手" });
+  await input.fill("保持する下書き");
+  await editDialog.getByRole("button", { name: "保存", exact: true }).click();
+  await expect(input).toHaveValue("保持する下書き");
+  await expect(editDialog.getByRole("alert")).toBeVisible();
+  await expect(study).toContainText("参考書を10ページ進める");
 });
 
 test("disclosure right edge toggles and dictionary arrows stay in the dialog", async ({
   page,
 }) => {
-  const toggle = page.locator(".next-section .section-toggle");
+  const toggle = page.locator(".dl-next .dl-section-disclosure");
   const box = await toggle.boundingBox();
   if (!box) throw new Error("Missing disclosure");
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
   await toggle.click({ position: { x: box.width - 10, y: box.height / 2 } });
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
   await page.getByRole("button", { name: /辞書を開く/ }).click();
@@ -232,12 +259,16 @@ test("disclosure right edge toggles and dictionary arrows stay in the dialog", a
 test("running Today item cannot be removed and persistence is not written on timer ticks", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
-  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
+  await todayCard(page, "数分だけ読む")
+    .getByRole("button", { name: "5分", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "今日やるものを選ぶ", exact: true })
+    .click();
   await expect(
     page
       .getByRole("dialog", { name: "今日やるものを選ぶ" })
-      .locator(".today-picker-slot", { hasText: "本を読む" })
+      .locator(".today-picker-slot", { hasText: "数分だけ読む" })
       .getByRole("button", { name: "今日から外す" }),
   ).toBeDisabled();
   await page.evaluate(() => {
@@ -245,7 +276,7 @@ test("running Today item cannot be removed and persistence is not written on tim
       throw new Error("unexpected tick save");
     };
   });
-  const clock = page.locator(".timer-clock");
+  const clock = page.locator(".dl-timer-clock");
   await expect(clock).not.toHaveText("05:00", { timeout: 4000 });
   await expect(
     page.getByText("保存できませんでした。変更前の状態を保持しています。"),

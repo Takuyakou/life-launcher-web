@@ -210,10 +210,12 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
     }
     case "START_TIMER": {
       if (state.timer.status === "early") return state;
+      const mode = action.mode ?? "countdown";
       if (
-        !Number.isFinite(action.durationSeconds) ||
-        action.durationSeconds < 60 ||
-        action.durationSeconds > 7200
+        mode === "countdown" &&
+        (!Number.isFinite(action.durationSeconds) ||
+          action.durationSeconds < 60 ||
+          action.durationSeconds > 7200)
       )
         return state;
       if (
@@ -234,15 +236,23 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         ...previous,
         timer: {
           status: "running",
+          mode,
           todayItemId: action.todayItemId,
           label: action.label,
           projectId: action.projectId,
           projectName: action.projectName,
-          durationSeconds: action.durationSeconds,
-          remainingSeconds: action.durationSeconds,
+          durationSeconds:
+            mode === "measure" ? 0 : action.durationSeconds,
+          remainingSeconds: mode === "measure" ? 0 : action.durationSeconds,
           elapsedSeconds: 0,
         },
       };
+    }
+    case "SET_TIMER_MINUTES": {
+      if (!Number.isFinite(action.minutes)) return state;
+      const minutes = Math.min(240, Math.max(1, Math.round(action.minutes)));
+      if (minutes === (state.timerMinutes ?? 25)) return state;
+      return { ...state, timerMinutes: minutes };
     }
     case "ADVANCE_TO_EARLY_THRESHOLD": {
       if (state.timer.status !== "running" && state.timer.status !== "paused")
@@ -284,6 +294,14 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
       });
     case "TICK_TIMER":
       if (state.timer.status !== "running") return state;
+      if (state.timer.mode === "measure")
+        return {
+          ...state,
+          timer: {
+            ...state.timer,
+            elapsedSeconds: state.timer.elapsedSeconds + 1,
+          },
+        };
       return {
         ...state,
         timer: {

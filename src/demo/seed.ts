@@ -58,6 +58,8 @@ export const createIdleTimer = (): DemoTimerState => ({
   elapsedSeconds: 0,
 });
 
+export const DEFAULT_TIMER_MINUTES = 25;
+
 export function createDemoSeed(now: Date): DemoState {
   const initialEndedAt = new Date(now.getTime() - 90 * 60 * 1000).toISOString();
 
@@ -81,7 +83,8 @@ export function createDemoSeed(now: Date): DemoState {
       {
         id: "today-reading",
         sourceId: "nextstep:reading",
-        label: "本を読む",
+        // 次の一手から入れた項目なので、次の一手と同じ名前にする。
+        label: "数分だけ読む",
         projectId: "reading",
         completed: false,
         shortMinutes: 5,
@@ -129,10 +132,12 @@ export function createDemoSeed(now: Date): DemoState {
       },
     ],
     timer: createIdleTimer(),
+    timerMinutes: DEFAULT_TIMER_MINUTES,
+    // やりたいことと今日の実行は、最初は閉じておく(見出しに件数を出す)。
     sections: {
       nextStep: true,
       wishlist: false,
-      activity: true,
+      activity: false,
     },
   };
 }

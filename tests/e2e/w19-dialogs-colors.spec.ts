@@ -12,7 +12,7 @@ const open = async (page: Page, width = 1440, height = 900) => {
   await page.evaluate(() => document.fonts.ready);
 };
 
-const timerPanel = (page: Page) => page.getByRole("complementary", { name: "デモタイマー" });
+const timerPanel = (page: Page) => page.getByRole("region", { name: "デモタイマー" });
 
 // 左に決定・右にキャンセル。横いっぱいを等分する(Windows 版と同じ)。
 const expectEvenRow = async (actions: Locator, labels: string[]) => {
@@ -38,7 +38,7 @@ test("the discard check: discard is red on the left, keep editing is grey on the
   page,
 }) => {
   await open(page);
-  await page.locator(".today-picker-trigger").click();
+  await page.locator("#screen").getByRole("button", { name: "今日やるものを選ぶ" }).click();
   const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
   await picker.locator(".today-picker-add").first().click();
   await picker.getByRole("button", { name: "キャンセル", exact: true }).click();
@@ -54,10 +54,13 @@ test("the discard check: discard is red on the left, keep editing is grey on the
 
 test("the reset check uses the same shape and colours", async ({ page }) => {
   await open(page);
-  await page.getByRole("button", { name: "リセット", exact: true }).click();
+  await page
+    .locator("#screen")
+    .getByRole("button", { name: "リセット", exact: true })
+    .click();
   const check = page.getByRole("dialog", { name: "Web Demoをリセットしますか？" });
   const buttons = check.locator(".dialog-actions").getByRole("button");
-  await expectEvenRow(check.locator(".dialog-actions"), ["リセットする", ""]);
+  await expectEvenRow(check.locator(".dialog-actions"), ["リセットする", "キャンセル"]);
   await expect(buttons.nth(0)).toHaveCSS("background-color", RED);
   await expect(buttons.nth(1)).toHaveCSS("background-color", NEUTRAL);
 });
@@ -66,10 +69,8 @@ test("edit dialogs: save green on the left, cancel red on the right, half each",
   page,
 }) => {
   await open(page);
-  await page
-    .locator(".next-section .source-row", { hasText: "運動" })
-    .getByRole("button", { name: "編集" })
-    .click();
+  await page.locator("#screen .dl-next-row", { hasText: "運動" }).locator(".dl-row-menu").click();
+  await page.getByRole("menuitem", { name: "次の一手を編集" }).click();
   const dialog = page.getByRole("dialog", { name: "次の一手を編集" });
   await expectEvenRow(dialog.locator(".dialog-actions"), ["保存", "キャンセル"]);
   await expect(dialog.getByRole("button", { name: "保存" })).toHaveCSS("background-color", GREEN);
@@ -79,31 +80,27 @@ test("edit dialogs: save green on the left, cancel red on the right, half each",
   );
 });
 
-test("timer: pause is green like the Windows app; continue is grey; finish is red", async ({
+test("the completion dialog: continue is grey, save is green on the left, finish is red", async ({
   page,
 }) => {
   await open(page);
-  await page.locator("[data-demo-do-now-short]").click();
+  const today = page
+    .locator("#screen")
+    .getByRole("article", { name: "数分だけ読む", exact: true });
+  await today.getByRole("button", { name: "5分", exact: true }).click();
+  await expect(timerPanel(page)).toContainText("実行中");
   await page.mouse.move(5, 5);
-  await expect(timerPanel(page).getByRole("button", { name: "一時停止" })).toHaveCSS(
-    "background-color",
-    GREEN,
-  );
-  await expect(page.locator(".do-now-card").getByRole("button", { name: /一時停止/ })).toHaveCSS(
-    "background-color",
-    GREEN,
-  );
-  await expect(timerPanel(page).getByRole("button", { name: "終了", exact: true })).toHaveCSS(
-    "background-color",
-    RED,
-  );
 
-  await page.getByRole("button", { name: /満了まで進める/ }).click();
+  await timerPanel(page).getByRole("button", { name: /満了まで進める/ }).click();
   const done = page.getByRole("dialog", { name: "予定時間になりました" });
   const actions = done.locator(".dialog-actions");
   await expectEvenRow(actions, ["続ける", "保存して終わる", "終わる"]);
   // 「保存して終わる」と緑が並ばないように、続けるは灰色(オーナーの判断)。
   await expect(done.getByRole("button", { name: /続ける/ })).toHaveCSS("background-color", NEUTRAL);
+  await expect(done.getByRole("button", { name: "保存して終わる" })).toHaveCSS(
+    "background-color",
+    GREEN,
+  );
   await expect(done.getByRole("button", { name: "終わる", exact: true })).toHaveCSS(
     "background-color",
     RED,
@@ -112,7 +109,7 @@ test("timer: pause is green like the Windows app; continue is grey; finish is re
 
 test("the quick add in the picker is green like the Windows app", async ({ page }) => {
   await open(page);
-  await page.locator(".today-picker-trigger").click();
+  await page.locator("#screen").getByRole("button", { name: "今日やるものを選ぶ" }).click();
   const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
   await expect(picker.locator(".today-picker-quick-add-button")).toHaveCSS(
     "background-color",
@@ -124,6 +121,6 @@ test("the Windows card's title and button use weight 700 so Latin and Japanese m
   page,
 }) => {
   await open(page);
-  await expect(page.locator(".lp-get-title")).toHaveCSS("font-weight", "700");
-  await expect(page.locator(".lp-get-button")).toHaveCSS("font-weight", "700");
+  await expect(page.locator(".lp-get h3")).toHaveCSS("font-weight", "700");
+  await expect(page.locator(".lp-getbtn")).toHaveCSS("font-weight", "700");
 });

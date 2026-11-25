@@ -24,6 +24,7 @@ for (const viewport of [
       if (selector)
         await page
           .locator(selector)
+          .first()
           .evaluate((node) =>
             window.scrollTo({
               top: window.scrollY + node.getBoundingClientRect().top - 70,
@@ -33,7 +34,7 @@ for (const viewport of [
       const layout = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - innerWidth,
         columns: getComputedStyle(
-          document.querySelector(".today-list")!,
+          document.querySelector(".dl-today-grid")!,
         ).gridTemplateColumns.split(" ").length,
       }));
       expect(layout.overflow).toBe(0);
@@ -43,91 +44,102 @@ for (const viewport of [
         animations: "disabled",
       });
     };
+
     await capture("landing");
-    await capture("default", ".demo-window");
-    await capture("two", ".today-section");
-    await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
+    await capture("default", ".dl-app");
+    await capture("today", ".dl-today");
+
+    const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
+    await page.locator(".dl-today-add").click();
     await capture("picker-two", ".today-picker");
-    await page
-      .getByRole("dialog", { name: "今日やるものを選ぶ" })
+    await picker
       .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
       .click();
-    await page
-      .getByRole("dialog", { name: "今日やるものを選ぶ" })
-      .getByRole("button", { name: "決定" })
-      .click();
-    await capture("three", ".today-section");
+    await picker.getByRole("button", { name: "決定" }).click();
+    await capture("three", ".dl-today");
     const columns = await page
-      .locator(".today-list")
+      .locator(".dl-today-grid")
       .evaluate(
         (node) => getComputedStyle(node).gridTemplateColumns.split(" ").length,
       );
     expect(columns).toBe(viewport.width === 390 ? 1 : 3);
+
     if (viewport.width === 1440) {
       await expect(page.locator(".toast")).toHaveCount(0, { timeout: 5000 });
       await page.mouse.move(0, 0);
-      await page
-        .locator(".demo-window")
-        .screenshot({
-          path: path.join(output, "readme-demo.png"),
-          animations: "disabled",
-          // Exclude landing-page overlays from this demo-only documentation crop.
-          style: ".lp-header, .skip-link { visibility: hidden !important; }",
-        });
+      await page.locator(".dl-app").screenshot({
+        path: path.join(output, "readme-demo.png"),
+        animations: "disabled",
+        // Exclude landing-page overlays from this demo-only documentation crop.
+        style: ".lp-header, .skip-link { visibility: hidden !important; }",
+      });
     }
-    await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
-    await capture("timer", ".today-section");
+
+    const reading = page.getByRole("article", { name: "数分だけ読む", exact: true });
+    await reading.getByRole("button", { name: "5分", exact: true }).click();
+    await capture("timer", ".dl-today");
     await page.getByRole("button", { name: /満了まで進める/ }).click();
-    await capture("completion");
-    await page.getByRole("button", { name: "終わる", exact: true }).click();
+    await capture("completion", ".completion-dialog");
     await page
-      .getByRole("article", { name: "参考書を10ページ進める", exact: true })
-      .getByRole("button", { name: "参考書を10ページ進めるを5分で開始" })
+      .locator(".completion-dialog")
+      .getByRole("button", { name: "終わる", exact: true })
       .click();
+
+    const study = page.getByRole("article", {
+      name: "参考書を10ページ進める",
+      exact: true,
+    });
+    await study.getByRole("button", { name: "5分", exact: true }).click();
     await page.getByRole("button", { name: /満了まで進める/ }).click();
-    await page.getByRole("button", { name: "終わる", exact: true }).click();
-    await capture("completed", ".today-section");
-    await page.getByRole("button", { name: "次の3件を選ぶ" }).click();
-    await expect(page.locator(".today-row")).toHaveCount(0);
-    await capture("picker-zero", ".today-picker");
     await page
-      .getByRole("dialog", { name: "今日やるものを選ぶ" })
-      .getByRole("button", { name: "数分だけ読むを今日の3件に追加" })
+      .locator(".completion-dialog")
+      .getByRole("button", { name: "終わる", exact: true })
       .click();
-    await page
-      .getByRole("dialog", { name: "今日やるものを選ぶ" })
-      .getByRole("button", { name: "決定" })
-      .click();
-    await capture("one", ".today-section");
-    for (const section of [
-      "next-section",
-      "wishlist-section",
-      "activity-section",
-    ])
-      await page.locator(`.${section} .section-toggle`).click();
-    await capture("sections", ".next-section");
-    await page
-      .getByRole("button", { name: "やりたいことを追加", exact: true })
-      .click();
-    await page
-      .getByRole("dialog")
-      .getByRole("textbox")
-      .fill("後回しにしていたことを整理して次に進むための小さな準備".repeat(3));
-    await capture("add-modal");
-    await page
-      .getByRole("dialog")
-      .getByRole("button", { name: "追加", exact: true })
-      .click();
-    await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
-    await capture("long-candidate", ".today-picker");
+    await capture("completed", ".dl-today");
+
+    await page.locator(".dl-dictionary-button").click();
+    await capture("dictionary", ".dictionary-dialog");
     await page.keyboard.press("Escape");
-    await page.getByRole("button", { name: /辞書を開く/ }).click();
-    await capture("dictionary");
+    await expect(page.locator(".dictionary-dialog")).toHaveCount(0);
+
+    // W21 のデモは 760px 以下で節の操作列(まとめて取り込む)を畳むので、
+    // その幅では広い画面で開いてから戻し、ダイアログ自体の収まりを見る。
+    if (viewport.width <= 760) {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.locator(".dl-ghost-button").click();
+      await page.setViewportSize(viewport);
+    } else {
+      await page.locator(".dl-ghost-button").click();
+    }
+    await expect(
+      page.getByRole("dialog", { name: "まとめて取り込む" }),
+    ).toBeVisible();
+    await capture("import-modal", ".demo-import-dialog");
     await page.keyboard.press("Escape");
-    await page.getByRole("button", { name: "リセット", exact: true }).click();
-    await capture("reset-modal");
+    await expect(page.locator(".demo-import-dialog")).toHaveCount(0);
+
+    // 3件そろうと「今日やるものを選ぶ」は消えるので、1件外してから開き直す。
+    const remove = page.getByRole("menuitem", { name: "今日の3件から外す" });
+    await reading
+      .getByRole("button", { name: "操作メニュー" })
+      .click();
+    // メニューは position: fixed で 390px では画面の外へ伸びるので、
+    // 撮る幅によらずフォーカスと Enter で選ぶ。
+    await remove.focus();
+    await page.keyboard.press("Enter");
+    await expect(reading).toHaveCount(0);
+    await expect(page.locator("article.dl-today-card")).toHaveCount(2);
+    await capture("two-after-removal", ".dl-today");
+    await page.locator(".dl-today-add").click();
+    await capture("picker-after-removal", ".today-picker");
+    await page.keyboard.press("Escape");
+
+    await capture("sections", ".dl-next");
+    await page.locator(".dl-pill-button").click();
+    await capture("reset-modal", ".confirm-dialog");
     await page.getByRole("button", { name: "リセットする" }).click();
-    await expect(page.locator(".today-row")).toHaveCount(2);
+    await expect(page.locator("article.dl-today-card")).toHaveCount(2);
+    await expect(reading).toHaveCount(1);
     expect(errors).toEqual([]);
     await writeFile(
       path.join(output, `${viewport.width}-metrics.json`),
@@ -139,18 +151,15 @@ for (const viewport of [
 test("medium Today3 uses two stable columns", async ({ page }) => {
   await page.setViewportSize({ width: 1000, height: 900 });
   await page.goto("/");
-  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
-  await page
-    .getByRole("dialog", { name: "今日やるものを選ぶ" })
+  const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
+  await page.locator(".dl-today-add").click();
+  await picker
     .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
     .click();
-  await page
-    .getByRole("dialog", { name: "今日やるものを選ぶ" })
-    .getByRole("button", { name: "決定" })
-    .click();
+  await picker.getByRole("button", { name: "決定" }).click();
   expect(
     await page
-      .locator(".today-list")
+      .locator(".dl-today-grid")
       .evaluate(
         (node) => getComputedStyle(node).gridTemplateColumns.split(" ").length,
       ),

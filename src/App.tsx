@@ -1,12 +1,11 @@
 import {
-  DemoSection,
-  FeaturesSection,
-  FinalCta,
+  DemoScreenSection,
+  FinalSection,
+  FlowSection,
   Hero,
-  PrivacySection,
+  ScopeSection,
   SiteFooter,
   SiteHeader,
-  WhySection,
 } from "./landing/Landing";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -15,7 +14,7 @@ import {
 } from "./components/CompletionDialog";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { DemoDictionary } from "./components/DemoDictionary";
-import { DemoFrame } from "./components/DemoFrame";
+import { DemoWindow } from "./components/DemoWindow";
 import { createDemoSeed } from "./demo/seed";
 import { demoReducer } from "./demo/reducer";
 import {
@@ -222,10 +221,12 @@ function App() {
     projectName: string,
     durationSeconds: number,
     todayItemId?: string,
+    mode?: "countdown" | "measure",
   ) => {
     if (
       !dispatch({
         type: "START_TIMER",
+        mode,
         todayItemId,
         now: new Date(),
         label,
@@ -414,9 +415,10 @@ function App() {
         ?.focus();
     });
   };
+  void focusDoNowStart;
 
   return (
-    <>
+    <div className="lp-page">
       <ConfirmDialog
         open={state.timer.status === "early"}
         title="今日の分は完了にしますか？"
@@ -434,35 +436,32 @@ function App() {
       <SiteHeader />
 
       <main id="content">
-        <Hero
-          onStartNormal={() => focusDoNowStart("normal")}
-          onStartShort={() => focusDoNowStart("short")}
-        />
+        <Hero />
+        <FlowSection />
 
-        <WhySection />
+        <DemoScreenSection>
+          <section aria-label="Life Launcher Web Demo" ref={demoRef}>
+            <DemoWindow
+              dispatch={dispatch}
+              onAddTodayCandidate={addTodayCandidate}
+              onRemoveTodayItem={removeTodayItem}
+              onCommitImport={commitImport}
+              onDemoComplete={completeTimerDemo}
+              onNativeOnly={showNativeToast}
+              onOpenDictionary={() => setDictionaryOpen(true)}
+              onOpenReset={() => setResetOpen(true)}
+              onPauseTimer={() => dispatch({ type: "PAUSE_TIMER" })}
+              onResumeTimer={() => dispatch({ type: "RESUME_TIMER" })}
+              onSaveTodayPickerDraft={saveTodayPickerDraft}
+              onStartTimer={startTimer}
+              onStopTimer={stopTimer}
+              state={state}
+            />
+          </section>
+        </DemoScreenSection>
 
-        <DemoSection sectionRef={demoRef}>
-          <DemoFrame
-            dispatch={dispatch}
-            onAddTodayCandidate={addTodayCandidate}
-            onRemoveTodayItem={removeTodayItem}
-            onCommitImport={commitImport}
-            onDemoComplete={completeTimerDemo}
-            onNativeOnly={showNativeToast}
-            onOpenDictionary={() => setDictionaryOpen(true)}
-            onOpenReset={() => setResetOpen(true)}
-            onPauseTimer={() => dispatch({ type: "PAUSE_TIMER" })}
-            onResumeTimer={() => dispatch({ type: "RESUME_TIMER" })}
-            onSaveTodayPickerDraft={saveTodayPickerDraft}
-            onStartTimer={startTimer}
-            onStopTimer={stopTimer}
-            state={state}
-          />
-        </DemoSection>
-
-        <FeaturesSection />
-        <PrivacySection />
-        <FinalCta />
+        <ScopeSection />
+        <FinalSection />
       </main>
 
       <SiteFooter />
@@ -536,7 +535,7 @@ function App() {
           </div>
         ) : null}
       </div>
-    </>
+    </div>
   );
 }
 
