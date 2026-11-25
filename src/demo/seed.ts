@@ -58,6 +58,8 @@ export const createIdleTimer = (): DemoTimerState => ({
   elapsedSeconds: 0,
 });
 
+export const DEFAULT_TIMER_MINUTES = 25;
+
 export function createDemoSeed(now: Date): DemoState {
   const initialEndedAt = new Date(now.getTime() - 90 * 60 * 1000).toISOString();
 
@@ -129,9 +131,10 @@ export function createDemoSeed(now: Date): DemoState {
       },
     ],
     timer: createIdleTimer(),
+    timerMinutes: DEFAULT_TIMER_MINUTES,
     sections: {
       nextStep: true,
-      wishlist: false,
+      wishlist: true,
       activity: true,
     },
   };

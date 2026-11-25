@@ -69,7 +69,7 @@ export function CompletionDialog({
           previous.focus();
         else
           document
-            .querySelector<HTMLElement>(".today-section button:not([disabled])")
+            .querySelector<HTMLElement>(".dl-today-card button:not([disabled])")
             ?.focus({ preventScroll: true });
       });
     };

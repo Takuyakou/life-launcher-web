@@ -25,9 +25,13 @@ export function earlyTarget(state: DemoState) {
 
 export function earlyEligible(state: DemoState) {
   const item = earlyTarget(state);
-  return item &&
-    state.timer.elapsedSeconds >= earlyThresholdSeconds(item.shortMinutes) &&
-    state.timer.elapsedSeconds < state.timer.durationSeconds
+  if (!item) return undefined;
+  // 計測(時間を決めない)では満了が無いので、経過がしきい値を超えていれば聞く。
+  const withinWindow =
+    state.timer.mode === "measure" ||
+    state.timer.elapsedSeconds < state.timer.durationSeconds;
+  return state.timer.elapsedSeconds >= earlyThresholdSeconds(item.shortMinutes) &&
+    withinWindow
     ? item
     : undefined;
 }
