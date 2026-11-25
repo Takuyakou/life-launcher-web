@@ -2,6 +2,15 @@ import { expect, test, type Page } from "@playwright/test";
 
 const completion = (page: Page) =>
   page.getByRole("dialog", { name: "予定時間になりました" });
+const card = (page: Page, label: string) =>
+  page.getByRole("article", { name: label, exact: true });
+// W21: 今日の3件の開始ボタンは「5分」「25分」の名前になった。
+const startCard = async (page: Page, label: string, minutes = "5分") =>
+  card(page, label).getByRole("button", { name: minutes, exact: true }).click();
+const removeFromToday = async (page: Page, label: string) => {
+  await card(page, label).locator(".dl-row-menu").click();
+  await page.locator(".dl-menu-item", { hasText: "今日の3件から外す" }).click();
+};
 const openPicker = async (page: Page) => {
   await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   return page.getByRole("dialog", { name: "今日やるものを選ぶ" });
@@ -10,8 +19,10 @@ const openImport = async (page: Page) => {
   await page.getByRole("button", { name: /まとめて取り込む/ }).click();
   return page.getByRole("dialog", { name: "まとめて取り込む" });
 };
+const finishDemo = (page: Page) =>
+  page.getByRole("button", { name: /満了まで進める/ }).click();
 const finishAndExtend = async (page: Page) => {
-  await page.getByRole("button", { name: /満了まで進める/ }).click();
+  await finishDemo(page);
   const dialog = completion(page);
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("button", { name: "続ける(+15分)" })).toBeVisible();
@@ -25,22 +36,18 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await page.locator("#demo").scrollIntoViewIfNeeded();
+  await page.locator("#screen").scrollIntoViewIfNeeded();
 });
 
 test("満了 1: a NextStep outside Today 3 saves 次はここから after extending", async ({
   page,
 }) => {
-  for (const label of ["本を読む", "ストレッチをする"]) {
-    await page
-      .getByRole("article", { name: label, exact: true })
-      .getByRole("button", { name: "今日の3件から外す" })
-      .click();
-  }
+  await removeFromToday(page, "本を読む");
+  await removeFromToday(page, "ストレッチをする");
   await page.locator("[data-demo-do-now-short]").click();
   await finishAndExtend(page);
 
-  await page.getByRole("button", { name: /満了まで進める/ }).click();
+  await finishDemo(page);
   const dialog = completion(page);
   await expect(dialog).toContainText("予定 15分");
   await dialog
@@ -48,31 +55,23 @@ test("満了 1: a NextStep outside Today 3 saves 次はここから after extend
     .fill("p.90から");
   await dialog.getByRole("button", { name: "終わる", exact: true }).click();
   await expect(page.getByText("次はここからを保存しました")).toBeVisible();
-  await expect(page.locator(".do-now-card")).toContainText(
-    "次はここから: p.90から",
-  );
-  await expect(page.locator(".next-section")).toContainText(
-    "次はここから: p.90から",
-  );
+  // W21: 次はここからは「今やる一手」のカードだけに出る(次の一手の行からは外れた)。
+  await expect(page.locator(".dl-donow-resume-label")).toHaveText("次はここから");
+  await expect(page.locator(".dl-donow-resume-text")).toHaveText("p.90から");
 });
 
 test("満了 2: a Today 3 NextStep can save 次の次の一手", async ({ page }) => {
-  await page
-    .getByRole("article", { name: "本を読む", exact: true })
-    .getByRole("button", { name: "本を読むを5分で開始" })
-    .click();
-  await page.getByRole("button", { name: /満了まで進める/ }).click();
+  await startCard(page, "本を読む");
+  await finishDemo(page);
   const dialog = completion(page);
   const input = dialog.getByRole("textbox", { name: "次の次の一手(任意)" });
   await expect(input).toHaveValue("数分だけ読む");
   await input.fill("2章を読み切る");
   await dialog.getByRole("button", { name: "保存して終わる" }).click();
+  await expect(card(page, "本を読む")).toHaveAttribute("data-complete", "true");
   await expect(
-    page.getByRole("status", { name: "本を読む：完了" }),
-  ).toBeVisible();
-  await expect(
-    page.locator(".next-section").getByText("2章を読み切る", { exact: true }),
-  ).toBeVisible();
+    page.locator(".dl-next-row", { hasText: "読書" }),
+  ).toContainText("2章を読み切る");
 });
 
 test("満了 3: a Wishlist item with a Project records with 終わる only", async ({
@@ -83,10 +82,8 @@ test("満了 3: a Wishlist item with a Project records with 終わる only", asy
     .getByRole("button", { name: "気になっていた本を読むを今日の3件に追加" })
     .click();
   await picker.getByRole("button", { name: "決定" }).click();
-  await page
-    .getByRole("button", { name: "気になっていた本を読むを5分で開始" })
-    .click();
-  await page.getByRole("button", { name: /満了まで進める/ }).click();
+  await startCard(page, "気になっていた本を読む");
+  await finishDemo(page);
   const dialog = completion(page);
   await expect(
     dialog.getByRole("textbox", { name: "次の次の一手(任意)" }),
@@ -96,9 +93,10 @@ test("満了 3: a Wishlist item with a Project records with 終わる only", asy
   ).toHaveCount(0);
   await expect(dialog.getByRole("button", { name: "続ける(+15分)" })).toBeVisible();
   await dialog.getByRole("button", { name: "終わる", exact: true }).click();
-  await expect(
-    page.getByRole("status", { name: "気になっていた本を読む：完了" }),
-  ).toBeVisible();
+  await expect(card(page, "気になっていた本を読む")).toHaveAttribute(
+    "data-complete",
+    "true",
+  );
 });
 
 test("満了 4: an unassigned Wishlist item records with 終わる only", async ({
@@ -109,16 +107,17 @@ test("満了 4: an unassigned Wishlist item records with 終わる only", async 
     .getByRole("button", { name: "近所をゆっくり歩くを今日の3件に追加" })
     .click();
   await picker.getByRole("button", { name: "決定" }).click();
-  await page.getByRole("button", { name: "近所をゆっくり歩くを5分で開始" }).click();
-  await page.getByRole("button", { name: /満了まで進める/ }).click();
+  await startCard(page, "近所をゆっくり歩く");
+  await finishDemo(page);
   const dialog = completion(page);
   await expect(
     dialog.getByRole("textbox", { name: "次の次の一手(任意)" }),
   ).toHaveCount(0);
   await dialog.getByRole("button", { name: "終わる", exact: true }).click();
-  await expect(
-    page.getByRole("status", { name: "近所をゆっくり歩く：完了" }),
-  ).toBeVisible();
+  await expect(card(page, "近所をゆっくり歩く")).toHaveAttribute(
+    "data-complete",
+    "true",
+  );
 });
 
 test("Today Picker filters by Project, adds in place, and orders the three slots", async ({
@@ -176,7 +175,7 @@ test("Today Picker filters by Project, adds in place, and orders the three slots
 
   await picker.getByRole("button", { name: "決定" }).click();
   await expect(picker).toHaveCount(0);
-  await expect(page.locator(".today-row")).toHaveCount(2);
+  await expect(page.locator(".dl-today-card")).toHaveCount(2);
 });
 
 test("Today Picker keeps the draft when a save fails, and a discard asks first", async ({
@@ -214,12 +213,9 @@ test("Today Picker keeps the draft when a save fails, and a discard asks first",
   );
   await picker.getByRole("button", { name: "決定" }).click();
   await expect(picker).toHaveCount(0);
-  await expect(page.locator(".today-row")).toHaveCount(3);
+  await expect(page.locator(".dl-today-card")).toHaveCount(3);
 
-  await page
-    .getByRole("article", { name: "本を読む", exact: true })
-    .getByRole("button", { name: "今日の3件から外す" })
-    .click();
+  await removeFromToday(page, "本を読む");
   const reopened = await openPicker(page);
   await reopened
     .getByRole("button", { name: "参考書を10ページ進めるを今日から外す" })
@@ -228,7 +224,7 @@ test("Today Picker keeps the draft when a save fails, and a discard asks first",
   await expect(discard).toBeVisible();
   await discard.getByRole("button", { name: "破棄する" }).click();
   await expect(reopened).toHaveCount(0);
-  await expect(page.locator(".today-row")).toHaveCount(2);
+  await expect(page.locator(".dl-today-card")).toHaveCount(2);
 });
 
 test("import: copy warning, sample preview, commit and 5 second undo", async ({
@@ -241,11 +237,8 @@ test("import: copy warning, sample preview, commit and 5 second undo", async ({
     });
   });
   await page.reload();
-  await page.locator("#demo").scrollIntoViewIfNeeded();
-  await page
-    .getByRole("article", { name: "本を読む", exact: true })
-    .getByRole("button", { name: "本を読むを5分で開始" })
-    .click();
+  await page.locator("#screen").scrollIntoViewIfNeeded();
+  await startCard(page, "本を読む");
 
   const dialog = await openImport(page);
   await expect(dialog).toContainText(
@@ -277,7 +270,7 @@ test("import: copy warning, sample preview, commit and 5 second undo", async ({
   await page.waitForTimeout(1500);
   await expect(toast).toBeVisible();
   await expect(
-    page.locator(".next-section").getByText("英語", { exact: true }),
+    page.locator(".dl-next").getByText("英語", { exact: true }),
   ).toBeVisible();
 
   await toast.hover();
@@ -287,7 +280,7 @@ test("import: copy warning, sample preview, commit and 5 second undo", async ({
   await toast.getByRole("button", { name: "元に戻す" }).click();
   await expect(page.getByText("取り込みを元に戻しました")).toBeVisible();
   await expect(
-    page.locator(".next-section").getByText("英語", { exact: true }),
+    page.locator(".dl-next").getByText("英語", { exact: true }),
   ).toHaveCount(0);
 });
 
@@ -315,18 +308,15 @@ test("import: a failed undo keeps the snapshot for a retry", async ({ page }) =>
   await toast.getByRole("button", { name: "元に戻す" }).click();
   await expect(page.getByText("取り込みを元に戻しました")).toBeVisible();
   await expect(
-    page.locator(".next-section").getByText("英語", { exact: true }),
+    page.locator(".dl-next").getByText("英語", { exact: true }),
   ).toHaveCount(0);
 });
 
 test("dialogs trap Tab, close on Escape and keep the IME Enter guard", async ({
   page,
 }) => {
-  await page
-    .getByRole("article", { name: "本を読む", exact: true })
-    .getByRole("button", { name: "本を読むを5分で開始" })
-    .click();
-  await page.getByRole("button", { name: /満了まで進める/ }).click();
+  await startCard(page, "本を読む");
+  await finishDemo(page);
   const dialog = completion(page);
   await expect(dialog).toBeVisible();
   for (let index = 0; index < 8; index += 1) {
@@ -361,7 +351,7 @@ test("dialogs trap Tab, close on Escape and keep the IME Enter guard", async ({
   await expect(importDialog).toHaveCount(0);
 
   await page.locator("[data-demo-do-now-short]").click();
-  await page.getByRole("button", { name: /満了まで進める/ }).click();
+  await finishDemo(page);
   const later = completion(page);
   const input = later.getByRole("textbox", { name: "次はここから(任意)" });
   await input.fill("変換中のEnterでは閉じない");

@@ -28,23 +28,69 @@ for (const viewport of viewports) {
     await page.goto("/");
     await page.evaluate(() => localStorage.clear());
     await page.reload();
-    await page.locator("#demo").scrollIntoViewIfNeeded();
+    await page.locator("#screen").scrollIntoViewIfNeeded();
 
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth - innerWidth,
       ),
     ).toBe(0);
-    await expect(page.locator(".do-now-resume-note")).toContainText(
-      "次はここから: 3章のp.84から",
+    await expect(page.locator(".dl-donow-resume-label")).toHaveText(
+      "次はここから",
     );
-    const importTrigger = page.getByRole("button", { name: /まとめて取り込む/ });
-    await expect(importTrigger).toBeVisible();
-    const triggerBox = await importTrigger.boundingBox();
-    expect(triggerBox!.x).toBeGreaterThanOrEqual(0);
-    expect(triggerBox!.x + triggerBox!.width).toBeLessThanOrEqual(viewport.width);
+    await expect(page.locator(".dl-donow-resume-text")).toHaveText(
+      "3章のp.84から",
+    );
 
-    await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
+    // W21 は 760px 以下で節の操作列(まとめて取り込む)を畳む。
+    const importTrigger = page.getByRole("button", { name: /まとめて取り込む/ });
+    if (viewport.width > 760) {
+      await expect(importTrigger).toBeVisible();
+      const triggerBox = await importTrigger.boundingBox();
+      expect(triggerBox!.x).toBeGreaterThanOrEqual(0);
+      expect(triggerBox!.x + triggerBox!.width).toBeLessThanOrEqual(
+        viewport.width,
+      );
+    } else {
+      await expect(importTrigger).toBeHidden();
+    }
+
+    // まとめて取り込む: 狭い画面では広い画面で開いてから戻し、ダイアログ自体の収まりを見る。
+    if (viewport.width <= 760) {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await importTrigger.click();
+      await page.setViewportSize(viewport);
+    } else {
+      await importTrigger.click();
+    }
+    const importDialog = page.getByRole("dialog", { name: "まとめて取り込む" });
+    await expect(importDialog).toBeVisible();
+    const importBox = await boxOf(page, ".demo-import-dialog");
+    expect(importBox.left).toBeGreaterThanOrEqual(0);
+    expect(importBox.right).toBeLessThanOrEqual(viewport.width);
+    expect(importBox.bottom).toBeLessThanOrEqual(viewport.height);
+    expect(
+      await page.evaluate(() => {
+        const node = document.querySelector<HTMLElement>(".demo-import-dialog")!;
+        return node.scrollWidth - node.clientWidth;
+      }),
+    ).toBe(0);
+    await importDialog
+      .getByRole("button", { name: "サンプルの AI 回答を貼ってみる" })
+      .click();
+    await expect(importDialog.getByText("✓ 読み取りました")).toBeVisible();
+    await expect(
+      importDialog.getByRole("button", { name: "取り込む(5件)" }),
+    ).toBeVisible();
+    const previewBox = await boxOf(page, ".demo-import-preview");
+    expect(previewBox.right).toBeLessThanOrEqual(viewport.width);
+    // 読み取り後の Escape は効かない(読むボタンが入れ替わりフォーカスが外れる)ので、閉じるボタンで閉じる。
+    await importDialog
+      .getByRole("button", { name: "まとめて取り込むを閉じる" })
+      .click();
+    await expect(importDialog).toHaveCount(0);
+
+    await page.locator(".dl-today-add").click();
     const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
     await expect(picker).toBeVisible();
     const pickerBox = await boxOf(page, ".today-picker");
@@ -70,10 +116,12 @@ for (const viewport of viewports) {
 
     await page
       .getByRole("article", { name: "本を読む", exact: true })
-      .getByRole("button", { name: "本を読むを5分で開始" })
+      .getByRole("button", { name: "5分", exact: true })
       .click();
     await page.getByRole("button", { name: /満了まで進める/ }).click();
-    const completion = page.getByRole("dialog", { name: "予定時間になりました" });
+    const completion = page.getByRole("dialog", {
+      name: "予定時間になりました",
+    });
     await expect(completion).toBeVisible();
     const completionBox = await boxOf(page, ".completion-dialog");
     expect(completionBox.left).toBeGreaterThanOrEqual(0);
@@ -90,28 +138,9 @@ for (const viewport of viewports) {
     }
     await completion.getByRole("button", { name: "終わる", exact: true }).click();
 
-    await importTrigger.click();
-    const importDialog = page.getByRole("dialog", { name: "まとめて取り込む" });
-    await expect(importDialog).toBeVisible();
-    const importBox = await boxOf(page, ".demo-import-dialog");
-    expect(importBox.left).toBeGreaterThanOrEqual(0);
-    expect(importBox.right).toBeLessThanOrEqual(viewport.width);
-    expect(importBox.bottom).toBeLessThanOrEqual(viewport.height);
-    expect(
-      await page.evaluate(() => {
-        const node = document.querySelector<HTMLElement>(".demo-import-dialog")!;
-        return node.scrollWidth - node.clientWidth;
-      }),
-    ).toBe(0);
-    await importDialog
-      .getByRole("button", { name: "サンプルの AI 回答を貼ってみる" })
-      .click();
-    await expect(importDialog.getByText("✓ 読み取りました")).toBeVisible();
     await expect(
-      importDialog.getByRole("button", { name: "取り込む(5件)" }),
-    ).toBeVisible();
-    const previewBox = await boxOf(page, ".demo-import-preview");
-    expect(previewBox.right).toBeLessThanOrEqual(viewport.width);
+      page.getByRole("article", { name: "本を読む", exact: true }),
+    ).toHaveCount(1);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth - innerWidth,

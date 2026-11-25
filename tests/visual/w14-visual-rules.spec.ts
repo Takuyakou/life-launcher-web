@@ -13,12 +13,13 @@ async function open(page: Page, viewport: (typeof widths)[number]) {
   await page.goto("/");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await page.locator("#demo").scrollIntoViewIfNeeded();
-  await page.locator(".wishlist-section .section-toggle").click();
+  await page.locator("#screen").scrollIntoViewIfNeeded();
+  // W21 のやりたいことは既定で開いている(旧 .section-toggle は廃止)。
+  await expect(page.locator(".dl-wishlist-body")).toBeVisible();
 }
 
 for (const viewport of widths) {
-  test(`section bars and the Today slot do not overflow or overlap at ${viewport.width}`, async ({
+  test(`section bars and the Today grid do not overflow or overlap at ${viewport.width}`, async ({
     page,
   }) => {
     await open(page, viewport);
@@ -29,34 +30,37 @@ for (const viewport of widths) {
     ).toBe(0);
     const overlaps = await page.evaluate(() => {
       const bad: string[] = [];
-      const bars = document.querySelectorAll<HTMLElement>(
-        ".sync-heading, .section-toggle",
-      );
+      const bars = document.querySelectorAll<HTMLElement>(".dl-section-bar");
       for (const bar of bars) {
         const box = bar.getBoundingClientRect();
         const parts = Array.from(
-          bar.querySelectorAll<HTMLElement>(".section-count, small"),
-        ).map((node) => node.getBoundingClientRect());
+          bar.querySelectorAll<HTMLElement>(
+            ".dl-section-count, .dl-section-summary, .dl-section-description",
+          ),
+        )
+          .map((node) => node.getBoundingClientRect())
+          .filter((rect) => rect.width > 0 && rect.height > 0);
         for (const part of parts)
           if (part.right > box.right + 0.5 || part.left < box.left - 0.5)
             bad.push(`outside:${bar.className}`);
-        const [count, small] = parts;
-        if (
-          count &&
-          small &&
-          count.bottom > small.top &&
-          count.top < small.bottom &&
-          count.right > small.left + 0.5
-        )
-          bad.push(`count-overlaps-description:${bar.className}`);
+        const [count, ...rest] = parts;
+        for (const other of rest)
+          if (
+            count &&
+            other &&
+            count.bottom > other.top &&
+            count.top < other.bottom &&
+            count.right > other.left + 0.5
+          )
+            bad.push(`count-overlaps-description:${bar.className}`);
       }
-      const slot = document.querySelector(".today-slot");
-      const list = document.querySelector(".today-list");
+      const slot = document.querySelector(".dl-today-add");
+      const list = document.querySelector(".dl-today-grid");
       if (slot && list) {
         const s = slot.getBoundingClientRect();
         const l = list.getBoundingClientRect();
         if (s.right > l.right + 0.5 || s.left < l.left - 0.5)
-          bad.push("slot-outside-list");
+          bad.push("slot-outside-grid");
       }
       return bad;
     });
@@ -74,17 +78,13 @@ test("keyboard focus rings and dialogs stay inside the screen at 390", async ({
     const info = await page.evaluate(() => {
       const node = document.activeElement as HTMLElement | null;
       if (!node || node === document.body) return null;
-      const host =
-        node.closest<HTMLElement>(".sync-disclosure-header") &&
-        node.matches(".section-toggle")
-          ? node.closest<HTMLElement>(".sync-disclosure-header")!
-          : node;
-      const rect = host.getBoundingClientRect();
+      const rect = node.getBoundingClientRect();
       return {
         label: node.getAttribute("aria-label") ?? node.textContent?.trim(),
         left: rect.left - 5,
         right: rect.right + 5,
-        visible: rect.width > 0 && getComputedStyle(node).visibility !== "hidden",
+        visible:
+          rect.width > 0 && getComputedStyle(node).visibility !== "hidden",
         width: innerWidth,
       };
     });
@@ -93,7 +93,7 @@ test("keyboard focus rings and dialogs stay inside the screen at 390", async ({
   }
   expect(outside).toEqual([]);
 
-  await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
+  await page.locator(".dl-today-add").click();
   const picker = page.locator(".today-picker");
   const box = await picker.boundingBox();
   expect(box!.x).toBeGreaterThanOrEqual(0);
@@ -102,7 +102,7 @@ test("keyboard focus rings and dialogs stay inside the screen at 390", async ({
   await page.keyboard.press("Escape");
 
   await page
-    .locator(".next-section .source-row", { hasText: "運動" })
+    .locator(".dl-next-row", { hasText: "運動" })
     .getByRole("button", { name: "編集" })
     .click();
   const dialog = page.getByRole("dialog", { name: "次の一手を編集" });

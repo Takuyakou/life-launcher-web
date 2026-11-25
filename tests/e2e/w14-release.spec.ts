@@ -9,7 +9,15 @@ const raw = JSON.stringify(
 
 const saved = (page: Page) =>
   page.evaluate((storageKey) => localStorage.getItem(storageKey), key);
-const doNow = (page: Page) => page.locator(".do-now-card");
+const doNow = (page: Page) => page.locator(".dl-donow-card");
+const doNowTitle = (page: Page) => doNow(page).locator(".dl-donow-title");
+const card = (page: Page, label: string) =>
+  page.getByRole("article", { name: label, exact: true });
+// W21: 編集と「今日の3件から外す」は行の … メニューに入った。
+const removeFromToday = async (page: Page, label: string) => {
+  await card(page, label).locator(".dl-row-menu").click();
+  await page.locator(".dl-menu-item", { hasText: "今日の3件から外す" }).click();
+};
 
 async function loadV13(page: Page) {
   await page.goto("/");
@@ -18,43 +26,52 @@ async function loadV13(page: Page) {
     [key, raw],
   );
   await page.reload();
-  await page.locator("#demo").scrollIntoViewIfNeeded();
+  await page.locator("#screen").scrollIntoViewIfNeeded();
 }
+
+// W21: Web フォントが Inter + Noto Sans JP の分割ファイルになったので、
+// 読み終わる前に reload すると、その reload 自身がフォント要求を中断させる。
+const settleFonts = async (page: Page) => {
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(() => document.fonts.ready.then(() => true));
+};
 
 test("v1.3 public data is read unchanged by this version", async ({ page }) => {
   await loadV13(page);
   expect(await saved(page)).toBe(raw);
-  await expect(page.locator(".victory-card")).toContainText("公開版の勝利条件");
+  await expect(page.locator(".dl-victory")).toContainText("公開版の勝利条件");
+  await expect(page.locator(".dl-victory-badge")).toBeVisible();
   await expect(
-    page.getByRole("checkbox", { name: "今日の勝利条件を完了" }),
+    page.getByRole("checkbox", { name: "勝利条件を達成" }),
   ).toBeChecked();
-  await expect(page.locator(".today-row")).toHaveCount(3);
-  await expect(
-    page.getByRole("status", { name: "ストレッチをする：完了" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("status", { name: "本を読む：完了" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("status", { name: "参考書を10ページ進める：未完了" }),
-  ).toBeVisible();
-  await expect(page.locator(".sync-heading")).toContainText("2 / 3 完了");
-  await expect(
-    page
-      .locator(".next-section")
-      .getByText("ストレッチを1分だけ", { exact: true }),
-  ).toBeVisible();
-  await expect(page.locator(".wishlist-section .section-toggle")).toHaveAttribute(
-    "aria-expanded",
+  await expect(page.locator(".dl-today-card")).toHaveCount(3);
+  // W21: 完了・未完了は role="status" ではなくカードの data-complete で示す。
+  await expect(card(page, "ストレッチをする")).toHaveAttribute(
+    "data-complete",
     "true",
   );
+  await expect(card(page, "本を読む")).toHaveAttribute("data-complete", "true");
+  await expect(card(page, "参考書を10ページ進める")).not.toHaveAttribute(
+    "data-complete",
+    "true",
+  );
+  await expect(page.locator(".dl-today .dl-section-count")).toHaveText("3件");
+  await expect(page.locator(".dl-today .dl-section-summary")).toHaveText(
+    "2 / 3 完了",
+  );
   await expect(
-    page.locator(".wishlist-row").getByText("公開版のやりたいこと"),
+    page.locator(".dl-next-row", { hasText: "運動" }),
+  ).toContainText("ストレッチを1分だけ");
+  await expect(
+    page.locator(".dl-wishlist .dl-section-disclosure"),
+  ).toHaveAttribute("aria-expanded", "true");
+  await expect(
+    page.locator(".dl-wishlist-row").getByText("公開版のやりたいこと"),
   ).toBeVisible();
-  await expect(page.locator(".activity-list li")).toHaveCount(2);
+  await expect(page.locator(".dl-activity-list li")).toHaveCount(2);
 
   await page.reload();
-  await expect(page.locator(".today-row")).toHaveCount(3);
+  await expect(page.locator(".dl-today-card")).toHaveCount(3);
   expect(await saved(page)).toBe(raw);
 });
 
@@ -62,16 +79,16 @@ test("a completed Today 3 item is not first in Do Now, and reordering never save
   page,
 }) => {
   await loadV13(page);
-  await expect(doNow(page).locator("h2")).toHaveText("参考書を10ページ進める");
+  await expect(doNowTitle(page)).toHaveText("参考書を10ページ進める");
   await expect(doNow(page)).toContainText("今日の3件に入っている一手です");
 
   await page.getByRole("button", { name: "他の一手" }).click();
-  await expect(doNow(page).locator("h2")).toHaveText("数分だけ読む");
+  await expect(doNowTitle(page)).toHaveText("数分だけ読む");
   await expect(doNow(page)).toContainText("読書に次の一手が設定されているため");
   expect(await saved(page)).toBe(raw);
   await page.getByRole("button", { name: "他の一手" }).click();
   await page.getByRole("button", { name: "他の一手" }).click();
-  await expect(doNow(page).locator("h2")).toHaveText("参考書を10ページ進める");
+  await expect(doNowTitle(page)).toHaveText("参考書を10ページ進める");
   expect(await saved(page)).toBe(raw);
 });
 
@@ -95,7 +112,7 @@ test("a failed save keeps the previous state when starting and completing from D
   await doNow(page).locator("[data-demo-do-now-short]").click();
   await expect(toast).toBeVisible();
   await expect(doNow(page).locator("[data-demo-do-now-short]")).toBeVisible();
-  await expect(doNow(page).getByRole("status")).toHaveCount(0);
+  await expect(page.locator(".dl-pill--state")).toHaveText("待機中");
 
   await failSaves(false);
   await doNow(page).locator("[data-demo-do-now-short]").click();
@@ -107,15 +124,18 @@ test("a failed save keeps the previous state when starting and completing from D
   await expect(
     page.getByRole("dialog", { name: "予定時間になりました" }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("status", { name: "参考書を10ページ進める：未完了" }),
-  ).toBeVisible();
+  await expect(page.locator(".dl-pill--state")).toHaveText("完了確認中");
+  await expect(card(page, "参考書を10ページ進める")).not.toHaveAttribute(
+    "data-complete",
+    "true",
+  );
 
   await failSaves(false);
   await page.getByRole("button", { name: "終わる", exact: true }).click();
-  await expect(
-    page.getByRole("status", { name: "参考書を10ページ進める：完了" }),
-  ).toBeVisible();
+  await expect(card(page, "参考書を10ページ進める")).toHaveAttribute(
+    "data-complete",
+    "true",
+  );
 });
 
 test("core journey runs without console errors, failed assets or network traffic", async ({
@@ -141,29 +161,27 @@ test("core journey runs without console errors, failed assets or network traffic
 
   await page.goto("/");
   await page.evaluate(() => localStorage.clear());
+  await settleFonts(page);
   await page.reload();
-  await page.locator("#demo").scrollIntoViewIfNeeded();
+  await page.locator("#screen").scrollIntoViewIfNeeded();
 
   // register: edit a NextStep and add a Wishlist item
   for (const label of ["本を読む", "ストレッチをする"])
-    await page
-      .getByRole("article", { name: label, exact: true })
-      .getByRole("button", { name: "今日の3件から外す" })
-      .click();
+    await removeFromToday(page, label);
   await page
-    .locator(".next-section .source-row", { hasText: "読書" })
+    .locator(".dl-next-row", { hasText: "読書" })
     .getByRole("button", { name: "編集" })
     .click();
   const nextDialog = page.getByRole("dialog", { name: "次の一手を編集" });
   await nextDialog.getByRole("textbox", { name: "次の一手" }).fill("章を1ページ読む");
   await nextDialog.getByRole("button", { name: "保存" }).click();
-  await page.getByRole("button", { name: "やりたいことを追加", exact: true }).click();
+  await page.getByRole("button", { name: "＋ やりたいこと" }).click();
   const wish = page.getByRole("dialog", { name: "やりたいことを追加" });
   await wish.getByRole("textbox", { name: "やりたいこと" }).fill("読書メモを整理する");
   await wish.getByRole("button", { name: "追加", exact: true }).click();
 
   // pick for today: Do Now follows the Today 3 NextStep
-  await expect(doNow(page).locator("h2")).toHaveText("参考書を10ページ進める");
+  await expect(doNowTitle(page)).toHaveText("参考書を10ページ進める");
   await page.getByRole("button", { name: "今日やるものを選ぶ" }).click();
   await page
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
@@ -173,34 +191,37 @@ test("core journey runs without console errors, failed assets or network traffic
     .getByRole("dialog", { name: "今日やるものを選ぶ" })
     .getByRole("button", { name: "決定" })
     .click();
-  await expect(doNow(page).locator("h2")).toHaveText("章を1ページ読む");
+  await expect(doNowTitle(page)).toHaveText("章を1ページ読む");
   await expect(doNow(page)).toContainText("今日の3件に入っている一手です");
 
   // timer -> completion -> next candidate
   await doNow(page).locator("[data-demo-do-now-short]").click();
-  await expect(
-    page.getByRole("article", { name: "章を1ページ読む", exact: true }).getByText("実行中"),
-  ).toBeVisible();
+  await expect(card(page, "章を1ページ読む")).toHaveAttribute(
+    "data-running",
+    "true",
+  );
   await page.getByRole("button", { name: /満了まで進める/ }).click();
   const done = page.getByRole("dialog", { name: "予定時間になりました" });
   await done
     .getByRole("textbox", { name: "次の次の一手(任意)" })
     .fill("次の章を開く");
   await done.getByRole("button", { name: "保存して終わる" }).click();
-  await expect(
-    page.getByRole("status", { name: "章を1ページ読む：完了" }),
-  ).toBeVisible();
-  await expect(doNow(page).locator("h2")).toHaveText("参考書を10ページ進める");
+  await expect(card(page, "章を1ページ読む")).toHaveAttribute(
+    "data-complete",
+    "true",
+  );
+  await expect(doNowTitle(page)).toHaveText("参考書を10ページ進める");
 
   // reload keeps everything
   await page.reload();
+  await expect(card(page, "章を1ページ読む")).toHaveAttribute(
+    "data-complete",
+    "true",
+  );
   await expect(
-    page.getByRole("status", { name: "章を1ページ読む：完了" }),
-  ).toBeVisible();
-  await expect(
-    page.locator(".next-section").getByText("次の章を開く", { exact: true }),
-  ).toBeVisible();
-  await expect(page.locator(".activity-list li")).toHaveCount(2);
+    page.locator(".dl-next-row", { hasText: "読書" }),
+  ).toContainText("次の章を開く");
+  await expect(page.locator(".dl-activity-list li")).toHaveCount(2);
 
   expect(problems).toEqual([]);
 });

@@ -7,22 +7,34 @@ test("fresh visitors see consistent, general sample content", async ({ page }) =
   await page.evaluate(() => localStorage.clear());
   await page.reload();
 
-  await expect(page.locator(".lp-hero-card-project")).toHaveText("読書");
-  await expect(page.locator(".lp-hero-card-title")).toHaveText(
-    "数分だけ読む",
+  // The hero states what the product does. The old hero mock card is gone.
+  await expect(page.locator("#top .lp-h1")).toContainText(
+    "今日やることを3件に絞り",
   );
-  await expect(page.locator(".lp-hero-card-dot")).toHaveCSS(
+  await expect(page.locator("#top .lp-h1")).toContainText("すぐ始める");
+  await expect(page.locator("#top .lp-lead")).toContainText("Windows");
+  await expect(page.locator("#top .lp-lead")).toContainText("今やる一手");
+
+  // The demo starts on the general reading sample.
+  await expect(page.locator(".dl-chip")).toHaveText("読書");
+  await expect(page.locator(".dl-donow-title")).toHaveText("数分だけ読む");
+  await expect(page.locator(".dl-status-dot")).toHaveCSS(
     "background-color",
-    "rgb(232, 173, 85)",
+    "rgb(231, 185, 77)",
   );
-  await expect(page.locator(".do-now-card h2")).toHaveText("数分だけ読む");
-  await expect(page.locator(".do-now-card")).toHaveAttribute(
-    "data-project-color",
-    "amber",
+  await expect(page.locator(".dl-donow-resume-text")).toHaveText(
+    "3章のp.84から",
   );
   await expect(page.getByText("Today Picker", { exact: false })).toHaveCount(0);
 
-  const projects = await page.locator(".next-section .source-row").allTextContents();
+  // Sample strings stay general: no email address and no absolute local path.
+  const sampleText = await page.locator(".dl-app").innerText();
+  expect(sampleText).not.toMatch(/[\w.+-]+@[\w-]+\.[\w.]+/);
+  expect(sampleText).not.toMatch(/(?:[A-Za-z]:\\|\\\\Users\\)/);
+
+  const projects = await page
+    .locator(".dl-next .dl-next-row")
+    .allTextContents();
   expect(projects).toHaveLength(3);
   expect(projects.join(" ")).toContain("学習");
   expect(projects.join(" ")).toContain("運動");
@@ -74,8 +86,8 @@ test("existing saved projects and text survive a new seed", async ({ page }) => 
   const saved = await page.evaluate((key) => localStorage.getItem(key), storageKey);
 
   await page.reload();
-  await expect(page.locator(".do-now-card h2")).toHaveText("机の上だけ片付ける");
-  await expect(page.locator(".next-section .source-row")).toHaveCount(1);
-  await expect(page.locator(".wishlist-row")).toContainText("引き出しを整理する");
+  await expect(page.locator(".dl-donow-title")).toHaveText("机の上だけ片付ける");
+  await expect(page.locator(".dl-next .dl-next-row")).toHaveCount(1);
+  await expect(page.locator(".dl-wishlist-row")).toContainText("引き出しを整理する");
   expect(await page.evaluate((key) => localStorage.getItem(key), storageKey)).toBe(saved);
 });

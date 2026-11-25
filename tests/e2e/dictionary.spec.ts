@@ -4,7 +4,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await page.locator("#demo").scrollIntoViewIfNeeded();
+  await page.locator("#screen").scrollIntoViewIfNeeded();
 });
 
 test("dictionary supports focus, search, native-only toast, Escape and focus return", async ({ page }) => {
@@ -26,19 +26,19 @@ test("dictionary supports focus, search, native-only toast, Escape and focus ret
 });
 
 test("dictionary can be opened and closed with keyboard only", async ({ page }) => {
-  await page.getByRole("button", { name: /辞書$/ }).focus();
-  await expect(page.getByRole("button", { name: /辞書$/ })).toBeFocused();
+  await page.getByRole("button", { name: /辞書を開く/ }).focus();
+  await expect(page.getByRole("button", { name: /辞書を開く/ })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("searchbox", { name: "辞書を検索" })).toBeFocused();
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("button", { name: /辞書$/ })).toBeFocused();
+  await expect(page.getByRole("button", { name: /辞書を開く/ })).toBeFocused();
 });
 
 test("reduced motion preference disables visible transitions", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
   await expect.poll(() => page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
-  const duration = await page.locator(".chevron").first().evaluate((element) =>
+  const duration = await page.locator(".dl-quick-head svg").first().evaluate((element) =>
     Number.parseFloat(getComputedStyle(element).transitionDuration),
   );
   expect(duration).toBeLessThan(0.1);

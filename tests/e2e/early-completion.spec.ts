@@ -1,17 +1,21 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+const readingCard = (page: Page) =>
+  page.getByRole("article", { name: "本を読む", exact: true });
+
+const readingStart = (page: Page) =>
+  readingCard(page).getByRole("button", { name: "25分", exact: true });
+
+const demoTimer = (page: Page) =>
+  page.getByRole("region", { name: "デモタイマー" });
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await page
-    .getByRole("button", { name: "本を読むを25分で開始", exact: true })
-    .click();
+  await readingStart(page).click();
   await page.getByRole("button", { name: /5分経過まで進める/ }).click();
-  await page
-    .getByRole("complementary", { name: "デモタイマー" })
-    .getByRole("button", { name: "終了", exact: true })
-    .click();
+  await demoTimer(page).getByRole("button", { name: "終了", exact: true }).click();
 });
 
 test("safe initial focus, escape and frozen clock", async ({ page }) => {
@@ -24,9 +28,7 @@ test("safe initial focus, escape and frozen clock", async ({ page }) => {
   await expect(page.getByRole("timer")).toHaveText("20:00");
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
-  await expect(
-    page.getByRole("button", { name: "本を読むを25分で開始" }),
-  ).toBeVisible();
+  await expect(readingStart(page)).toBeVisible();
 });
 
 test("failed save keeps confirmation, retry persists completion", async ({
@@ -51,11 +53,7 @@ test("failed save keeps confirmation, retry persists completion", async ({
     .getByRole("button", { name: "今日の分は完了", exact: true })
     .click();
   await expect(dialog).toHaveCount(0);
-  await expect(
-    page.getByRole("button", { name: "本を読むを25分で開始" }),
-  ).toHaveCount(0);
+  await expect(readingStart(page)).toHaveCount(0);
   await page.reload();
-  await expect(
-    page.getByRole("button", { name: "本を読むを25分で開始" }),
-  ).toHaveCount(0);
+  await expect(readingStart(page)).toHaveCount(0);
 });

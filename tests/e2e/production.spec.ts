@@ -48,33 +48,37 @@ test("production bundle works under shipped CSP without runtime network or conso
     });
   });
   await page.goto("/");
+  await page.locator("#screen").scrollIntoViewIfNeeded();
+
+  const timer = page.getByRole("region", { name: "デモタイマー" });
+
+  // A refused wishlist entry keeps its dialog open and leaves no phantom row.
   await page
-    .getByRole("button", { name: "やりたいことを追加", exact: true })
+    .getByRole("button", { name: "＋ やりたいこと", exact: true })
     .click();
-  await page
-    .getByRole("dialog")
-    .getByRole("textbox")
-    .fill("<svg onload=alert(1)>");
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "追加", exact: true })
-    .click();
-  await page.locator(".wishlist-section .section-toggle").click();
+  const addDialog = page.getByRole("dialog", { name: "やりたいことを追加" });
+  await addDialog.getByRole("textbox").fill("<svg onload=alert(1)>");
+  await addDialog.getByRole("button", { name: "追加", exact: true }).click();
+  await expect(addDialog).toHaveCount(0);
   await expect(
-    page
-      .locator(".wishlist-row")
-      .getByText("<svg onload=alert(1)>", { exact: true }),
+    page.locator(".dl-wishlist-row").getByText("<svg onload=alert(1)>", { exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "本を読むを25分で開始" }).click();
+
+  await page.locator(".dl-wishlist .dl-section-disclosure").click();
+  await expect(page.locator(".dl-wishlist-row")).toHaveCount(0);
+  await page.locator(".dl-wishlist .dl-section-disclosure").click();
+  await expect(
+    page.locator(".dl-wishlist-row").getByText("<svg onload=alert(1)>", { exact: true }),
+  ).toBeVisible();
+
+  const reading = page.getByRole("article", { name: "本を読む", exact: true });
+  await reading.getByRole("button", { name: "25分", exact: true }).click();
   await page.getByRole("button", { name: /5分経過まで進める/ }).click();
-  await page
-    .getByRole("complementary", { name: "デモタイマー" })
-    .getByRole("button", { name: "終了", exact: true })
-    .click();
+  await timer.getByRole("button", { name: "終了", exact: true }).click();
   await page
     .getByRole("button", { name: "未完了のまま終了", exact: true })
     .click();
-  await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
+  await reading.getByRole("button", { name: "5分", exact: true }).click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();
   await page.getByRole("button", { name: "終わる", exact: true }).click();
   await page.getByRole("button", { name: /辞書を開く/ }).click();

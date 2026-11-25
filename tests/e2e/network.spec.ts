@@ -15,14 +15,17 @@ test("interactive demo performs no fetch, XHR, WebSocket, or external request", 
   });
 
   await page.goto("/");
-  await page.locator("#demo").scrollIntoViewIfNeeded();
+  await page.locator("#screen").scrollIntoViewIfNeeded();
   await page.getByRole("button", { name: /辞書を開く/ }).click();
   await page.getByRole("searchbox", { name: "辞書を検索" }).fill("読書");
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "本を読むを5分で開始" }).click();
   await page
-    .locator(".demo-timer")
-    .getByRole("button", { name: /終了/ })
+    .getByRole("article", { name: "本を読む", exact: true })
+    .getByRole("button", { name: "5分", exact: true })
+    .click();
+  await page
+    .getByRole("region", { name: "デモタイマー" })
+    .getByRole("button", { name: "終了", exact: true })
     .click();
 
   expect(runtimeRequests).toEqual([]);
