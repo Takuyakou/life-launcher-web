@@ -371,3 +371,119 @@ test("W21-08: the header Demo link still lands on the heading", async ({ page })
     })
     .toBe(true);
 });
+
+// ---------- W21-09: 番号の説明を押すと、デモの中の対応する場所を見せる ----------
+
+const zoneVisible = (page: Page, id: string) =>
+  page.evaluate((zone) => {
+    const node = document.querySelector<HTMLElement>(`[data-zone="${zone}"]`)!;
+    const main = document.querySelector<HTMLElement>(".dl-main")!;
+    const rect = node.getBoundingClientRect();
+    const inside = main.contains(node) && getComputedStyle(main).overflowY === "auto";
+    const view = inside ? main.getBoundingClientRect() : { top: 0, bottom: innerHeight };
+    const top = Math.max(0, view.top);
+    const bottom = Math.min(innerHeight, view.bottom);
+    // 番号の札は、場所の左上から 11px はみ出す。札まで含めて見えていること。
+    const badge = rect.top - 11;
+    const fits = badge >= top - 1 && rect.bottom <= bottom + 1;
+    const tall = rect.height > bottom - top && badge >= top - 1 && badge < bottom;
+    return fits || tall;
+  }, id);
+
+const litZones = (page: Page) =>
+  page.evaluate(() => ({
+    frames: [...document.querySelectorAll('.lp-zone[data-active="true"] .lp-zone-num')].map(
+      (node) => node.textContent,
+    ),
+    items: [...document.querySelectorAll('.lp-zone-item[data-active="true"] .lp-num')].map(
+      (node) => node.textContent,
+    ),
+  }));
+
+for (const [width, height] of [
+  [1440, 900],
+  [1366, 768],
+  [390, 844],
+] as const) {
+  test(`W21-09: each numbered explanation takes you to its place in the demo and lights it at ${width}x${height}`, async ({
+    page,
+  }) => {
+    await open(page, width, height);
+    const url = page.url();
+    // 説明は button で、見た目は変えない。押せる範囲は項目の全体。
+    const items = page.locator(".lp-zone-item");
+    await expect(items).toHaveCount(6);
+    await expect(items.locator("button")).toHaveCount(6);
+    await expect(items.first().locator("button")).toHaveCSS("cursor", "pointer");
+    for (const id of ["1", "2", "3", "4", "5", "6"]) {
+      const button = page.locator(`[data-zone-go="${id}"]`);
+      await button.scrollIntoViewIfNeeded();
+      await button.click();
+      // 乗せている間も光るので、マウスは説明から外しておく。
+      await page.mouse.move(2, 2);
+      await expect.poll(() => zoneVisible(page, id), { timeout: 5000 }).toBe(true);
+      // 光る: デモの場所の枠と番号、説明の項目。
+      await expect.poll(() => litZones(page)).toEqual({ frames: [id], items: [id] });
+      // フォーカスは押した説明のボタンに残る。URL も変わらない。
+      expect(
+        await page.evaluate(() => document.activeElement?.getAttribute("data-zone-go")),
+      ).toBe(id);
+      expect(page.url()).toBe(url);
+      // 約1.6秒で元に戻る。
+      await expect.poll(() => litZones(page), { timeout: 4000 }).toEqual({ frames: [], items: [] });
+    }
+  });
+}
+
+test("W21-09: pressing another explanation right away moves the light at once", async ({ page }) => {
+  await open(page, 1440, 900);
+  await page.locator('[data-zone-go="2"]').click();
+  await expect.poll(() => litZones(page)).toEqual({ frames: ["2"], items: ["2"] });
+  await page.locator('[data-zone-go="4"]').click();
+  expect(await litZones(page)).toEqual({ frames: ["4"], items: ["4"] });
+  await expect.poll(() => zoneVisible(page, "4"), { timeout: 5000 }).toBe(true);
+});
+
+test("W21-09: the explanations work from the keyboard", async ({ page }) => {
+  await open(page, 1440, 900);
+  for (const [id, key] of [
+    ["3", "Enter"],
+    ["5", "Space"],
+  ] as const) {
+    const button = page.locator(`[data-zone-go="${id}"]`);
+    await button.focus();
+    await page.keyboard.press(key);
+    await expect.poll(() => zoneVisible(page, id), { timeout: 5000 }).toBe(true);
+    await expect.poll(() => litZones(page)).toEqual({ frames: [id], items: [id] });
+    await expect(button).toBeFocused();
+  }
+  // Tab で説明の間を移れる(番号の札と説明のボタンの両方に止まる)。
+  await page.locator('[data-zone-go="1"]').focus();
+  await page.keyboard.press("Tab");
+  await expect(page.locator('[data-zone-go="2"]')).toBeFocused();
+});
+
+test("W21-09: with reduced motion the page and the column jump at once and the light does not fade", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await open(page, 1366, 768);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.locator('[data-zone-go="5"]').scrollIntoViewIfNeeded();
+  await page.locator('[data-zone-go="5"]').click();
+  // なめらかに動かさないので、すぐ着く。
+  await page.waitForTimeout(150);
+  expect(await zoneVisible(page, "5")).toBe(true);
+  const transition = await page
+    .locator(".lp-zone")
+    .first()
+    .evaluate((node) => getComputedStyle(node).transitionDuration);
+  // 動きを減らす設定では、光りはふわっとせず(ほぼ 0 秒で)出て消える。
+  expect(Math.max(...transition.split(",").map((value) => parseFloat(value)))).toBeLessThanOrEqual(0.001);
+});
+
+test("W21-09: the screen-reader text names where each explanation goes", async ({ page }) => {
+  await open(page, 1440, 900);
+  await expect(page.getByRole("button", { name: /デモの今日の3件へ移動/ })).toHaveCount(1);
+  await expect(page.getByRole("button", { name: /デモのタイマーへ移動/ })).toHaveCount(1);
+});

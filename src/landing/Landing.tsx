@@ -414,6 +414,48 @@ export function DemoScreenSection({ children }: { children: ReactNode }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [rects, setRects] = useState<ZoneRect[]>([]);
   const [active, setActive] = useState<string | null>(null);
+  // 説明を押したときに、対応する場所を約1.6秒だけ光らせる。
+  const [flash, setFlash] = useState<string | null>(null);
+  const flashTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(flashTimer.current), []);
+
+  /**
+   * 番号の説明を押したときの移動。ページをデモの窓全体が入る位置へ動かし、
+   * 本文の列の場所なら、本文の列の中もその場所(上の番号の札を含む)が見える所まで動かす。
+   * 1列に折りたたむ幅では中のスクロールが無いので、場所が画面の縦の真ん中に来るまでページを動かす。
+   * フォーカスは動かさない(押した説明のボタンに残る)。
+   */
+  const goToZone = (id: string) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const behavior: ScrollBehavior = prefersReducedMotion() ? "instant" : "smooth";
+    const node = stage.querySelector<HTMLElement>(`[data-zone="${id}"]`);
+    const main = stage.querySelector<HTMLElement>(".dl-main");
+    const scrollsInside = main !== null && getComputedStyle(main).overflowY === "auto";
+    if (!scrollsInside) {
+      if (node) {
+        const rect = node.getBoundingClientRect();
+        const top = rect.top + window.scrollY + rect.height / 2 - window.innerHeight / 2;
+        window.scrollTo({ top: Math.max(0, top), behavior });
+      }
+    } else {
+      scrollToDemoWindow();
+      if (node && main && main.contains(node)) {
+        const view = main.getBoundingClientRect();
+        const rect = node.getBoundingClientRect();
+        // 番号の札は、場所の左上から 11px はみ出し、光る枠は 3px 外に出る。
+        const above = rect.top - 14 - view.top;
+        const below = rect.bottom + 4 - view.bottom;
+        const delta = above < 0 ? above : below > 0 ? Math.min(below, above) : 0;
+        if (delta !== 0) main.scrollTo({ top: main.scrollTop + delta, behavior });
+      }
+    }
+    window.clearTimeout(flashTimer.current);
+    setFlash(id);
+    flashTimer.current = window.setTimeout(() => setFlash(null), 1600);
+  };
+  const lit = (id: string) => active === id || flash === id;
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -499,7 +541,7 @@ export function DemoScreenSection({ children }: { children: ReactNode }) {
             {children}
             {rects.map((rect) => {
               const zone = ZONES.find((item) => item.id === rect.id)!;
-              const isActive = active === rect.id;
+              const isActive = lit(rect.id);
               const origin = rect.clip ?? { left: 0, top: 0, width: 0, height: 0 };
               const zoneNode = (
                 <div
@@ -549,18 +591,26 @@ export function DemoScreenSection({ children }: { children: ReactNode }) {
             {ZONES.map((zone) => (
               <li
                 className="lp-zone-item"
-                data-active={active === zone.id ? "true" : undefined}
+                data-active={lit(zone.id) ? "true" : undefined}
                 key={zone.id}
                 onMouseEnter={() => setActive(zone.id)}
                 onMouseLeave={() => setActive(null)}
               >
-                <span aria-hidden="true" className="lp-num">
-                  {zone.id}
-                </span>
-                <span className="lp-zone-copy">
-                  <span className="lp-zone-title">{zone.title}</span>
-                  <span className="lp-zone-text">{zone.text}</span>
-                </span>
+                <button
+                  className="lp-zone-item-btn"
+                  data-zone-go={zone.id}
+                  onClick={() => goToZone(zone.id)}
+                  type="button"
+                >
+                  <span aria-hidden="true" className="lp-num">
+                    {zone.id}
+                  </span>
+                  <span className="lp-zone-copy">
+                    <span className="lp-zone-title">{zone.title}</span>
+                    <span className="lp-zone-text">{zone.text}</span>
+                  </span>
+                  <span className="lp-sr-only">デモの{zone.title}へ移動</span>
+                </button>
               </li>
             ))}
           </ol>
