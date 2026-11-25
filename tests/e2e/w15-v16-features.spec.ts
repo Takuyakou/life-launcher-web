@@ -102,6 +102,11 @@ test("満了 3: a Wishlist item with a Project records with 終わる only", asy
 test("満了 4: an unassigned Wishlist item records with 終わる only", async ({
   page,
 }) => {
+  // W21-08: 初期データの未分類のやりたいこと(近所をゆっくり歩く)は外れたので、ここで足す。
+  await page.getByRole("button", { name: "＋ やりたいこと", exact: true }).click();
+  const addWish = page.getByRole("dialog", { name: "やりたいことを追加" });
+  await addWish.getByRole("textbox").fill("近所をゆっくり歩く");
+  await addWish.getByRole("button", { name: "追加", exact: true }).click();
   const picker = await openPicker(page);
   await picker
     .getByRole("button", { name: "近所をゆっくり歩くを今日の3件に追加" })

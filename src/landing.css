@@ -1114,6 +1114,13 @@
   width: 100%;
 }
 
+/* 本文の列の中の場所の番号は、本文の列の見えている範囲の外では切れて隠れる。 */
+.lp-zone-clip {
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+}
+
 .lp-zone {
   border-radius: 10px;
   pointer-events: none;
@@ -1162,9 +1169,10 @@
   border-radius: 8px;
   display: flex;
   gap: 12px;
-  /* 番号は文字の列にそろえ、乗せた時の背景は列の外へはみ出させる。 */
+  /* 番号は文字の列にそろえ、乗せた時の背景は列の外へはみ出させる。
+     押せる範囲は項目の全体(中の button が余白も含めて埋める)。 */
   margin-inline: -14px;
-  padding: 12px 14px;
+  padding: 0;
   transition:
     background-color 0.15s ease,
     border-color 0.15s ease;
@@ -1174,6 +1182,26 @@
 .lp-zone-item[data-active="true"] {
   background: #211f1a;
   border-color: #e7b94d;
+}
+
+.lp-zone-item-btn {
+  align-items: flex-start;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: 12px;
+  padding: 11px 13px;
+  text-align: left;
+  width: 100%;
+}
+
+.lp-zone-item-btn:focus-visible {
+  outline: 2px solid #ffce5b;
+  outline-offset: -2px;
 }
 
 .lp-zone-copy {

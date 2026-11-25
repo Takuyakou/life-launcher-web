@@ -39,7 +39,7 @@ test("supports 0/3 through 3/3 in a draft that only 決定 saves", async ({
   await expect(progress).toHaveAttribute("aria-valuenow", "2");
 
   await picker
-    .getByRole("button", { name: "近所をゆっくり歩くを今日の3件に追加" })
+    .getByRole("button", { name: "気になっていた本を読むを今日の3件に追加" })
     .click();
   await expect(progress).toHaveAttribute("aria-valuenow", "3");
   await expect(picker).toBeVisible();

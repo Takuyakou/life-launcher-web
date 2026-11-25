@@ -18,6 +18,14 @@ import type { ParsedDemoImport } from "./importDemo";
 
 const fixedNow = new Date("2026-08-14T09:00:00.000Z");
 const seed = () => createDemoSeed(fixedNow);
+// W21-08: 初期データのやりたいことは2件になった。プロジェクトなしの1件は、ここで足す。
+const seedWithLoose = () => {
+  const base = seed();
+  return {
+    ...base,
+    wishlist: [...base.wishlist, { id: "wish-walk", label: "近所をゆっくり歩く" }],
+  };
+};
 
 const parsed = (value: unknown): ParsedDemoImport => {
   const result = parseDemoImport(JSON.stringify(value));
@@ -42,7 +50,7 @@ describe("import prompt", () => {
   });
 
   it("describes the current projects and wishes for the repeat prompt", () => {
-    const text = buildImportCurrentState(seed());
+    const text = buildImportCurrentState(seedWithLoose());
     expect(text).toContain("学習(色: violet)");
     expect(text).toContain("目標: 参考書を1冊終える");
     expect(text).toContain("次の一手: 参考書を10ページ進める");
@@ -264,7 +272,7 @@ describe("parseDemoImport", () => {
 
 describe("buildDemoImportPlan", () => {
   it("splits new, existing and unassigned rows and skips duplicates", () => {
-    const state = seed();
+    const state = seedWithLoose();
     const plan = buildDemoImportPlan(
       state,
       parsed({

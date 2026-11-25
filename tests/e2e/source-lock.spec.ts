@@ -121,6 +121,11 @@ test("Wishlist is grouped by Project with unassigned last and unlocks on remove"
   page,
 }) => {
   await openSection(page, "wishlist");
+  // W21-08: 初期データの未分類のやりたいこと(近所をゆっくり歩く)は外れたので、ここで足す。
+  await page.getByRole("button", { name: "＋ やりたいこと", exact: true }).click();
+  const addWish = page.getByRole("dialog", { name: "やりたいことを追加" });
+  await addWish.getByRole("textbox").fill("近所をゆっくり歩く");
+  await addWish.getByRole("button", { name: "追加", exact: true }).click();
   // W21-05: Windows 版と同じく、やりたいことに出てきた順にまとめる(未分類は最後)。
   const groups = page.locator(".dl-wishlist-group");
   await expect(groups).toHaveCount(3);

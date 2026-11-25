@@ -33,7 +33,7 @@ describe("synthetic demo seed", () => {
 describe("Today Builder", () => {
   it("derives stable candidates from NextStep and Wishlist sources", () => {
     const candidates = createTodayBuilderCandidates(createDemoSeed(fixedNow));
-    expect(candidates).toHaveLength(6);
+    expect(candidates).toHaveLength(5);
     expect(candidates[0]).toMatchObject({
       sourceId: "nextstep:study",
       sourceType: "nextStep",

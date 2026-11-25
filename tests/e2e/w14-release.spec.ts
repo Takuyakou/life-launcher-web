@@ -36,15 +36,6 @@ const settleFonts = async (page: Page) => {
   await page.evaluate(() => document.fonts.ready.then(() => true));
 };
 
-// W21-05: 「やりたいこと」と「今日の実行」は、最初は閉じている。中を確かめる前に開く。
-const openSection = async (
-  page: import("@playwright/test").Page,
-  name: "wishlist" | "activity",
-) => {
-  const toggle = page.locator(`.dl-${name} .dl-section-disclosure`);
-  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
-};
-
 test("v1.3 public data is read unchanged by this version", async ({ page }) => {
   await loadV13(page);
   expect(await saved(page)).toBe(raw);
@@ -77,7 +68,9 @@ test("v1.3 public data is read unchanged by this version", async ({ page }) => {
   await expect(
     page.locator(".dl-wishlist-row").getByText("公開版のやりたいこと"),
   ).toBeVisible();
-  await expect(page.locator(".dl-activity-list li")).toHaveCount(2);
+  // W21-08: 「今日の実行」は画面から消えた。記録(sessions)が保存されたデータに残っている。
+  await expect(page.locator(".dl-activity")).toHaveCount(0);
+  expect(JSON.parse((await saved(page)) ?? "{}").sessions).toHaveLength(2);
 
   await page.reload();
   await expect(page.locator(".dl-today-card")).toHaveCount(3);
@@ -228,8 +221,7 @@ test("core journey runs without console errors, failed assets or network traffic
   await expect(
     page.locator(".dl-next-row", { hasText: "読書" }),
   ).toContainText("次の章を開く");
-  await openSection(page, "activity");
-  await expect(page.locator(".dl-activity-list li")).toHaveCount(2);
+  expect(JSON.parse((await saved(page)) ?? "{}").sessions).toHaveLength(2);
 
   expect(problems).toEqual([]);
 });

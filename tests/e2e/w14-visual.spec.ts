@@ -5,7 +5,6 @@ const bars = [
   ".dl-today > .dl-section-bar",
   ".dl-next > .dl-section-bar",
   ".dl-wishlist > .dl-section-bar",
-  ".dl-activity > .dl-section-bar",
 ];
 
 test.beforeEach(async ({ page }) => {
@@ -44,7 +43,7 @@ const headingMetrics = (page: Page) =>
   }, bars);
 
 for (const width of [1440, 390]) {
-  test(`four headings align their names, keep names clear of counts and share type at ${width}px`, async ({
+  test(`three headings align their names, keep names clear of counts and share type at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });

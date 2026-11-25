@@ -34,7 +34,12 @@ describe("v3 data written by the v1.3 public build", () => {
   const fixture = JSON.parse(raw);
 
   it("loads with every field unchanged and without writing", () => {
-    expect(state).toEqual(fixture);
+    // 今日の3件の開閉(sections.today)は v1.3 の保存データに無いので、読み込んだ状態では
+    // 開いている扱いになる。保存されたデータは書き換えない。
+    expect(state).toEqual({
+      ...fixture,
+      sections: { ...fixture.sections, today: true },
+    });
     expect(storage.writes).toBe(0);
     expect(storage.getItem(STORAGE_KEY)).toBe(raw);
   });

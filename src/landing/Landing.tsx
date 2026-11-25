@@ -3,6 +3,26 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 const RELEASES = "https://github.com/Takuyakou/life-launcher/releases/latest";
 const REPO = "https://github.com/Takuyakou/life-launcher";
 
+const prefersReducedMotion = () =>
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/**
+ * デモの窓全体が画面に入る位置(窓の上端が画面の上から 32px)までページを動かす。
+ * 動きを減らす設定のときは、なめらかにせずすぐに移る。
+ */
+function scrollToDemoWindow() {
+  const stage = document.querySelector<HTMLElement>(".lp-stage");
+  if (!stage) return;
+  const top = Math.max(0, stage.getBoundingClientRect().top + window.scrollY - 32);
+  window.scrollTo({ top, behavior: prefersReducedMotion() ? "instant" : "smooth" });
+}
+
+const tryDemo = (event: { preventDefault: () => void }) => {
+  event.preventDefault();
+  scrollToDemoWindow();
+};
+
 const PlayIcon = ({ size = 18 }: { size?: number }) => (
   <svg
     aria-hidden="true"
@@ -64,7 +84,7 @@ export function SiteHeader() {
           <a href="#flow">使い方</a>
           <a href="#screen">デモ</a>
           <a href="#diff">試せる機能</a>
-          <a className="lp-hdl" href={RELEASES}>
+          <a className="lp-hdl" href={RELEASES} rel="noopener noreferrer" target="_blank">
             Windows版
             <DownloadIcon size={14} />
           </a>
@@ -91,11 +111,11 @@ export function Hero() {
             Life Launcher は Windows のデスクトップアプリです。迷ったときに「今やる一手」を1つ示し、その作業に使うアプリやファイルを開いて、タイマーを始めます。
           </p>
           <div className="lp-ctas">
-            <a className="lp-cta lp-cta--primary" href="#screen">
+            <a className="lp-cta lp-cta--primary" href="#screen" onClick={tryDemo}>
               <PlayIcon />
               ブラウザで試す
             </a>
-            <a className="lp-cta" href={RELEASES}>
+            <a className="lp-cta" href={RELEASES} rel="noopener noreferrer" target="_blank">
               Windows版をダウンロード
               <DownloadIcon />
             </a>
@@ -375,7 +395,15 @@ const ZONES: Zone[] = [
   },
 ];
 
-type ZoneRect = { id: string; left: number; top: number; width: number; height: number };
+type ZoneRect = {
+  id: string;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  /** 本文の列の中の場所は、本文の列の見えている範囲で切る(stage 内の座標)。 */
+  clip?: { left: number; top: number; width: number; height: number };
+};
 
 /**
  * 番号は本物のデモの上に重ねる。位置はデモの中の `[data-zone="n"]` を測って決めるので、
@@ -386,6 +414,48 @@ export function DemoScreenSection({ children }: { children: ReactNode }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [rects, setRects] = useState<ZoneRect[]>([]);
   const [active, setActive] = useState<string | null>(null);
+  // 説明を押したときに、対応する場所を約1.6秒だけ光らせる。
+  const [flash, setFlash] = useState<string | null>(null);
+  const flashTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(flashTimer.current), []);
+
+  /**
+   * 番号の説明を押したときの移動。ページをデモの窓全体が入る位置へ動かし、
+   * 本文の列の場所なら、本文の列の中もその場所(上の番号の札を含む)が見える所まで動かす。
+   * 1列に折りたたむ幅では中のスクロールが無いので、場所が画面の縦の真ん中に来るまでページを動かす。
+   * フォーカスは動かさない(押した説明のボタンに残る)。
+   */
+  const goToZone = (id: string) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const behavior: ScrollBehavior = prefersReducedMotion() ? "instant" : "smooth";
+    const node = stage.querySelector<HTMLElement>(`[data-zone="${id}"]`);
+    const main = stage.querySelector<HTMLElement>(".dl-main");
+    const scrollsInside = main !== null && getComputedStyle(main).overflowY === "auto";
+    if (!scrollsInside) {
+      if (node) {
+        const rect = node.getBoundingClientRect();
+        const top = rect.top + window.scrollY + rect.height / 2 - window.innerHeight / 2;
+        window.scrollTo({ top: Math.max(0, top), behavior });
+      }
+    } else {
+      scrollToDemoWindow();
+      if (node && main && main.contains(node)) {
+        const view = main.getBoundingClientRect();
+        const rect = node.getBoundingClientRect();
+        // 番号の札は、場所の左上から 11px はみ出し、光る枠は 3px 外に出る。
+        const above = rect.top - 14 - view.top;
+        const below = rect.bottom + 4 - view.bottom;
+        const delta = above < 0 ? above : below > 0 ? Math.min(below, above) : 0;
+        if (delta !== 0) main.scrollTo({ top: main.scrollTop + delta, behavior });
+      }
+    }
+    window.clearTimeout(flashTimer.current);
+    setFlash(id);
+    flashTimer.current = window.setTimeout(() => setFlash(null), 1600);
+  };
+  const lit = (id: string) => active === id || flash === id;
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -399,12 +469,22 @@ export function DemoScreenSection({ children }: { children: ReactNode }) {
         );
         if (!node) continue;
         const rect = node.getBoundingClientRect();
+        const scroller = node.closest<HTMLElement>(".dl-main");
+        const view = scroller?.getBoundingClientRect();
         next.push({
           id: zone.id,
           left: rect.left - base.left,
           top: rect.top - base.top,
           width: rect.width,
           height: rect.height,
+          clip: view
+            ? {
+                left: view.left - base.left,
+                top: view.top - base.top,
+                width: view.width,
+                height: view.height,
+              }
+            : undefined,
         });
       }
       setRects((current) =>
@@ -417,7 +497,9 @@ export function DemoScreenSection({ children }: { children: ReactNode }) {
             Math.round(item.left) === Math.round(candidate.left) &&
             Math.round(item.top) === Math.round(candidate.top) &&
             Math.round(item.width) === Math.round(candidate.width) &&
-            Math.round(item.height) === Math.round(candidate.height)
+            Math.round(item.height) === Math.round(candidate.height) &&
+            Math.round(item.clip?.top ?? 0) === Math.round(candidate.clip?.top ?? 0) &&
+            Math.round(item.clip?.height ?? 0) === Math.round(candidate.clip?.height ?? 0)
           );
         })
           ? current
@@ -430,10 +512,13 @@ export function DemoScreenSection({ children }: { children: ReactNode }) {
     for (const node of stage.querySelectorAll("[data-zone]")) observer.observe(node);
     const onScroll = () => measure();
     window.addEventListener("resize", onScroll);
+    // 本文の列が中でスクロールしたときも、番号を一緒に動かす(scroll は伝わらないので capture)。
+    stage.addEventListener("scroll", onScroll, true);
     const interval = window.setInterval(measure, 800);
     return () => {
       observer.disconnect();
       window.removeEventListener("resize", onScroll);
+      stage.removeEventListener("scroll", onScroll, true);
       window.clearInterval(interval);
     };
   }, []);
@@ -456,15 +541,16 @@ export function DemoScreenSection({ children }: { children: ReactNode }) {
             {children}
             {rects.map((rect) => {
               const zone = ZONES.find((item) => item.id === rect.id)!;
-              const isActive = active === rect.id;
-              return (
+              const isActive = lit(rect.id);
+              const origin = rect.clip ?? { left: 0, top: 0, width: 0, height: 0 };
+              const zoneNode = (
                 <div
                   className="lp-zone"
                   data-active={isActive ? "true" : undefined}
-                  key={rect.id}
+                  key={rect.clip ? undefined : rect.id}
                   style={{
-                    left: `${rect.left}px`,
-                    top: `${rect.top}px`,
+                    left: `${rect.left - origin.left}px`,
+                    top: `${rect.top - origin.top}px`,
                     width: `${rect.width}px`,
                     height: `${rect.height}px`,
                   }}
@@ -482,6 +568,22 @@ export function DemoScreenSection({ children }: { children: ReactNode }) {
                   </button>
                 </div>
               );
+              return rect.clip ? (
+                <div
+                  className="lp-zone-clip"
+                  key={rect.id}
+                  style={{
+                    left: `${rect.clip.left}px`,
+                    top: `${rect.clip.top}px`,
+                    width: `${rect.clip.width}px`,
+                    height: `${rect.clip.height}px`,
+                  }}
+                >
+                  {zoneNode}
+                </div>
+              ) : (
+                zoneNode
+              );
             })}
           </div>
 
@@ -489,18 +591,26 @@ export function DemoScreenSection({ children }: { children: ReactNode }) {
             {ZONES.map((zone) => (
               <li
                 className="lp-zone-item"
-                data-active={active === zone.id ? "true" : undefined}
+                data-active={lit(zone.id) ? "true" : undefined}
                 key={zone.id}
                 onMouseEnter={() => setActive(zone.id)}
                 onMouseLeave={() => setActive(null)}
               >
-                <span aria-hidden="true" className="lp-num">
-                  {zone.id}
-                </span>
-                <span className="lp-zone-copy">
-                  <span className="lp-zone-title">{zone.title}</span>
-                  <span className="lp-zone-text">{zone.text}</span>
-                </span>
+                <button
+                  className="lp-zone-item-btn"
+                  data-zone-go={zone.id}
+                  onClick={() => goToZone(zone.id)}
+                  type="button"
+                >
+                  <span aria-hidden="true" className="lp-num">
+                    {zone.id}
+                  </span>
+                  <span className="lp-zone-copy">
+                    <span className="lp-zone-title">{zone.title}</span>
+                    <span className="lp-zone-text">{zone.text}</span>
+                  </span>
+                  <span className="lp-sr-only">デモの{zone.title}へ移動</span>
+                </button>
               </li>
             ))}
           </ol>
@@ -512,7 +622,7 @@ export function DemoScreenSection({ children }: { children: ReactNode }) {
 
 const SCOPE_ROWS: { label: string; demo: boolean | string; windows: boolean | string }[] = [
   { label: "今やる一手・今日の3件・今日の勝利条件", demo: true, windows: true },
-  { label: "タイマー(5分・25分・延長)と実行の記録", demo: true, windows: true },
+  { label: "タイマー(5分・25分・延長)", demo: true, windows: true },
   { label: "まとめて取り込む", demo: true, windows: true },
   { label: "辞書", demo: true, windows: true },
   { label: "アプリ・ファイル・URL を開く", demo: "開く動きだけ", windows: true },
@@ -593,7 +703,7 @@ export function FinalSection() {
             </span>
             <span>今ここで始める。</span>
           </h2>
-          <a className="lp-try" href="#screen">
+          <a className="lp-try" href="#screen" onClick={tryDemo}>
             <PlayIcon size={16} />
             まずはブラウザで試す
           </a>
@@ -601,7 +711,7 @@ export function FinalSection() {
         <div className="lp-get">
           <h3>Windows版を入手</h3>
           <p className="lp-get-meta">Windows 10 / 11 (x64) · WebView2 Runtime</p>
-          <a className="lp-getbtn" href={RELEASES}>
+          <a className="lp-getbtn" href={RELEASES} rel="noopener noreferrer" target="_blank">
             <span>最新版をダウンロード</span>
             <span>（GitHub Releases）</span>
           </a>
@@ -620,8 +730,12 @@ export function SiteFooter() {
       <div className="lp-wrap lp-footer-inner">
         <span>© 2026 Takuyakou</span>
         <div className="lp-footer-links">
-          <a href={REPO}>GitHub</a>
-          <a href={RELEASES}>Windows版</a>
+          <a href={REPO} rel="noopener noreferrer" target="_blank">
+            GitHub
+          </a>
+          <a href={RELEASES} rel="noopener noreferrer" target="_blank">
+            Windows版
+          </a>
         </div>
       </div>
     </footer>

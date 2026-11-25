@@ -206,6 +206,11 @@ const normalizeState = (
     typeof value.sections.nextStep !== "boolean"
   )
     return null;
+  if (
+    value.sections.today !== undefined &&
+    typeof value.sections.today !== "boolean"
+  )
+    return null;
 
   return {
     schemaVersion: 3,
@@ -230,6 +235,9 @@ const normalizeState = (
       ? { timerMinutes: Math.round(value.timerMinutes) }
       : {}),
     sections: {
+      // 無い保存データは、開いている扱い。
+      today:
+        typeof value.sections.today === "boolean" ? value.sections.today : true,
       nextStep:
         typeof value.sections.nextStep === "boolean"
           ? value.sections.nextStep
@@ -243,6 +251,7 @@ const normalizeState = (
 export function isDemoState(value: unknown): value is DemoState {
   const fallback = {
     sections: {
+      today: true,
       nextStep: true,
       wishlist: false,
       activity: true,
