@@ -70,6 +70,8 @@ export type DemoTimerState = {
 };
 
 export type DemoSectionState = {
+  /** 今日の3件の開閉。保存されたデータに無いときは開いている(W21-07)。 */
+  today: boolean;
   nextStep: boolean;
   wishlist: boolean;
   activity: boolean;

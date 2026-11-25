@@ -135,6 +135,7 @@ export function createDemoSeed(now: Date): DemoState {
     timerMinutes: DEFAULT_TIMER_MINUTES,
     // やりたいことと今日の実行は、最初は閉じておく(見出しに件数を出す)。
     sections: {
+      today: true,
       nextStep: true,
       wishlist: false,
       activity: false,

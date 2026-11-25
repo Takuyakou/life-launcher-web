@@ -64,7 +64,7 @@ export function SiteHeader() {
           <a href="#flow">使い方</a>
           <a href="#screen">デモ</a>
           <a href="#diff">試せる機能</a>
-          <a className="lp-hdl" href={RELEASES}>
+          <a className="lp-hdl" href={RELEASES} rel="noopener noreferrer" target="_blank">
             Windows版
             <DownloadIcon size={14} />
           </a>
@@ -95,7 +95,7 @@ export function Hero() {
               <PlayIcon />
               ブラウザで試す
             </a>
-            <a className="lp-cta" href={RELEASES}>
+            <a className="lp-cta" href={RELEASES} rel="noopener noreferrer" target="_blank">
               Windows版をダウンロード
               <DownloadIcon />
             </a>
@@ -601,7 +601,7 @@ export function FinalSection() {
         <div className="lp-get">
           <h3>Windows版を入手</h3>
           <p className="lp-get-meta">Windows 10 / 11 (x64) · WebView2 Runtime</p>
-          <a className="lp-getbtn" href={RELEASES}>
+          <a className="lp-getbtn" href={RELEASES} rel="noopener noreferrer" target="_blank">
             <span>最新版をダウンロード</span>
             <span>（GitHub Releases）</span>
           </a>
@@ -620,8 +620,12 @@ export function SiteFooter() {
       <div className="lp-wrap lp-footer-inner">
         <span>© 2026 Takuyakou</span>
         <div className="lp-footer-links">
-          <a href={REPO}>GitHub</a>
-          <a href={RELEASES}>Windows版</a>
+          <a href={REPO} rel="noopener noreferrer" target="_blank">
+            GitHub
+          </a>
+          <a href={RELEASES} rel="noopener noreferrer" target="_blank">
+            Windows版
+          </a>
         </div>
       </div>
     </footer>

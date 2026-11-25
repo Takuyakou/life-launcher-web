@@ -430,3 +430,79 @@ test("W21-05: the small details follow the reference", async ({ page }) => {
     "20px",
   );
 });
+
+// ---------- W21-07: 今日の3件の見出しは、今日の3件を開け閉めする ----------
+
+const storageKey = "life-launcher-web-demo:v3";
+
+test("W21-07: the Today 3 heading opens and closes Today 3 and leaves the next steps alone", async ({
+  page,
+}) => {
+  await open(page);
+  const toggle = page.locator(".dl-today > .dl-section-bar");
+  const nextToggle = page.locator(".dl-next .dl-section-disclosure");
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator(".dl-today-card")).toHaveCount(2);
+  await expect(page.locator(".dl-today-add")).toBeVisible();
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator(".dl-today-card")).toHaveCount(0);
+  await expect(page.locator(".dl-today-add")).toHaveCount(0);
+  // 見出しの行は残る。
+  await expect(toggle.locator(".dl-section-summary")).toBeVisible();
+  await expect(toggle.locator(".dl-section-description")).toBeVisible();
+  // 次の一手の一覧は開いたまま。
+  await expect(nextToggle).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator(".dl-next-row")).toHaveCount(3);
+  // 印の向き
+  await expect(toggle.locator("svg").first()).toBeVisible();
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator(".dl-today-card")).toHaveCount(2);
+  await expect(page.locator(".dl-today-add")).toBeVisible();
+});
+
+test("W21-07: saved data without a today flag opens Today 3, and the saved flag is kept", async ({
+  page,
+}) => {
+  await open(page);
+  // 最初の変更で保存されるので、開け閉めして保存データを作る。
+  await page.locator(".dl-wishlist .dl-section-disclosure").click();
+  const raw = await page.evaluate((key) => localStorage.getItem(key), storageKey);
+  expect(raw).not.toBeNull();
+  const state = JSON.parse(raw!);
+  delete state.sections.today;
+  await page.evaluate(([key, value]) => localStorage.setItem(key, value), [
+    storageKey,
+    JSON.stringify(state),
+  ]);
+  await page.reload();
+  await expect(page.locator(".dl-today > .dl-section-bar")).toHaveAttribute(
+    "aria-expanded",
+    "true",
+  );
+  await expect(page.locator(".dl-today-card")).toHaveCount(2);
+
+  // 保存された today: false は、そのまま使う。
+  state.sections.today = false;
+  await page.evaluate(([key, value]) => localStorage.setItem(key, value), [
+    storageKey,
+    JSON.stringify(state),
+  ]);
+  await page.reload();
+  await expect(page.locator(".dl-today > .dl-section-bar")).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
+  await expect(page.locator(".dl-today-card")).toHaveCount(0);
+
+  // リセットすると、開いた状態に戻る。
+  await page.getByRole("button", { name: "リセット", exact: true }).click();
+  await page.getByRole("button", { name: "リセットする" }).click();
+  await expect(page.locator(".dl-today > .dl-section-bar")).toHaveAttribute(
+    "aria-expanded",
+    "true",
+  );
+});

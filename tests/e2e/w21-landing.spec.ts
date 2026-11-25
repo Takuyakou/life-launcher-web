@@ -284,3 +284,37 @@ test("the same left edge holds at 390", async ({ page }) => {
     await page.evaluate(() => document.documentElement.scrollWidth - innerWidth),
   ).toBe(0);
 });
+
+// ---------- W21-07: 外へ出るリンクは新しいタブで開く ----------
+
+test("W21-07: the five outgoing links open in a new tab and in-page links stay put", async ({
+  page,
+}) => {
+  await open(page);
+  const outgoing = [
+    page.locator("header .lp-hdl"),
+    page.locator("#top .lp-cta:not(.lp-cta--primary)"),
+    page.locator(".lp-getbtn"),
+    page.locator(".lp-footer").getByRole("link", { name: "GitHub" }),
+    page.locator(".lp-footer").getByRole("link", { name: "Windows版" }),
+  ];
+  const hrefs = [RELEASES, RELEASES, RELEASES, REPO, RELEASES];
+  for (const [index, link] of outgoing.entries()) {
+    await expect(link).toHaveAttribute("href", hrefs[index]);
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  }
+  // ページの中の移動は、同じタブのまま。
+  const inPage = await page
+    .locator('a[href^="#"]')
+    .evaluateAll((nodes) =>
+      nodes.map((node) => [node.getAttribute("target"), node.getAttribute("rel")]),
+    );
+  expect(inPage.length).toBeGreaterThan(4);
+  for (const [target, rel] of inPage) {
+    expect(target).toBeNull();
+    expect(rel).toBeNull();
+  }
+  // 外へ出るリンクは、この5つだけ。
+  await expect(page.locator('a[href^="http"]')).toHaveCount(5);
+});

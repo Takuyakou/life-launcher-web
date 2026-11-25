@@ -744,14 +744,14 @@ export function DemoWindow({
 
           <section className="dl-today" data-zone="4">
             <button
-              aria-expanded={state.sections.nextStep === undefined ? true : undefined}
+              aria-expanded={state.sections.today}
               className="dl-section-bar"
-              onClick={() => dispatch({ type: "TOGGLE_SECTION", section: "nextStep" })}
+              onClick={() => dispatch({ type: "TOGGLE_SECTION", section: "today" })}
               type="button"
             >
               <span className="dl-section-disclosure">
                 <UiIcon
-                  name={state.sections.nextStep === false ? "chevronRight" : "chevronDown"}
+                  name={state.sections.today ? "chevronDown" : "chevronRight"}
                   size={16}
                 />
                 <h2>今日の3件</h2>
@@ -775,6 +775,7 @@ export function DemoWindow({
               </span>
             </button>
 
+            {state.sections.today ? (
             <div className="dl-today-grid">
               {state.todayItems.map((item) => {
                 const project = state.projects.find(
@@ -911,6 +912,7 @@ export function DemoWindow({
                 </button>
               ) : null}
             </div>
+            ) : null}
           </section>
 
           <div data-zone="5">
