@@ -1,7 +1,12 @@
 :root {
   color-scheme: dark;
-  font-family: "Segoe UI", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  font-family: "Inter Variable", "Noto Sans JP Variable", "Yu Gothic UI", "Meiryo",
+    system-ui, sans-serif;
   font-synthesis: none;
+  --font-ui: "Inter Variable", "Noto Sans JP Variable", "Yu Gothic UI", "Meiryo",
+    system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --font-display: "Bricolage Grotesque", "Inter Variable", sans-serif;
   --bg: #161512;
   --bg-deep: #11110f;
   --surface: #211f1a;

@@ -1,118 +1,70 @@
-import type { ReactNode } from "react";
-import { UiIcon } from "../components/UiIcon";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
-const RELEASES_URL = "https://github.com/Takuyakou/life-launcher/releases/latest";
-const REPO_URL = "https://github.com/Takuyakou/life-launcher";
+const RELEASES = "https://github.com/Takuyakou/life-launcher/releases/latest";
+const REPO = "https://github.com/Takuyakou/life-launcher";
 
-function DownloadIcon({ size }: { size: number }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className="ui-icon"
-      fill="none"
-      height={size}
-      viewBox="0 0 24 24"
-      width={size}
-    >
-      <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9">
-        <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />
-      </g>
-    </svg>
-  );
-}
+const PlayIcon = ({ size = 18 }: { size?: number }) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    height={size}
+    stroke="currentColor"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    width={size}
+  >
+    <path d="M7 5l12 7-12 7z" />
+  </svg>
+);
 
-function CheckMark() {
-  return (
-    <span className="lp-check" aria-hidden="true">
-      <UiIcon name="check" size={14} />
-    </span>
-  );
-}
+const DownloadIcon = ({ size = 16 }: { size?: number }) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    height={size}
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="1.9"
+    viewBox="0 0 24 24"
+    width={size}
+  >
+    <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />
+  </svg>
+);
 
-function Eyebrow({ children }: { children: ReactNode }) {
-  return <p className="lp-eyebrow">{children}</p>;
-}
-
-function DownloadButton() {
-  return (
-    <a
-      className="button lp-cta lp-cta-secondary"
-      href={RELEASES_URL}
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      Windows版をダウンロード
-      <DownloadIcon size={16} />
-    </a>
-  );
-}
-
-/* W18: 最後の段の Windows 版の札。版の数字は書かない(公開のたびに直さなくてよいように)。
-   書いてあることは Windows 版 README の「ダウンロード」と同じ(3 形式・SHA256SUMS.txt・WebView2)。 */
-function WindowsCard() {
-  return (
-    <div className="lp-get">
-      <h3 className="lp-get-title">Windows版を入手</h3>
-      <p className="lp-get-meta">Windows 10 / 11 (x64) · WebView2 Runtime</p>
-      <a
-        className="button button-gold start-button lp-get-button"
-        href={RELEASES_URL}
-        rel="noopener noreferrer"
-        target="_blank"
-      >
-        <span>最新版をダウンロード</span>
-        <span>（GitHub Releases）</span>
-      </a>
-      <p className="lp-get-note">インストーラー / 単体実行 EXE / ポータブル ZIP の 3 形式・SHA256SUMS 添付</p>
-    </div>
-  );
-}
-
-const TECH_STACK = ["Tauri 2", "Rust", "React", "TypeScript"];
-
-function TryButton({ className = "" }: { className?: string }) {
-  return (
-    <a className={`button button-gold lp-cta ${className}`.trim()} href="#demo">
-      <UiIcon name="play" size={18} />
-      ブラウザで試す
-    </a>
-  );
-}
+const CheckIcon = ({ size = 18 }: { size?: number }) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    height={size}
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2.6"
+    viewBox="0 0 24 24"
+    width={size}
+  >
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  </svg>
+);
 
 export function SiteHeader() {
   return (
     <header className="lp-header">
-      <div className="lp-container lp-header-inner">
-        <a className="lp-brand" href="#top" aria-label="Life Launcher トップへ">
-          <span className="lp-brand-mark" aria-hidden="true">
+      <div className="lp-wrap lp-header-inner">
+        <a aria-label="Life Launcher トップへ" className="lp-brand" href="#top">
+          <span aria-hidden="true" className="lp-mark">
             L
           </span>
-          <span>Life Launcher</span>
+          <span className="lp-brand-name">Life Launcher</span>
         </a>
-        <nav className="lp-nav" aria-label="メインナビゲーション">
-          <a className="lp-nav-link" href="#why">
-            できること
-          </a>
-          <a className="lp-nav-link" href="#demo">
-            Web Demo
-          </a>
-          <a className="lp-nav-link" href="#privacy">
-            安全性
-          </a>
-          <a
-            className="lp-nav-link"
-            href={REPO_URL}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            GitHub
-          </a>
-          <a
-            className="button lp-header-download"
-            href={RELEASES_URL}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+        <nav aria-label="メインナビゲーション" className="lp-nav">
+          <a href="#flow">使い方</a>
+          <a href="#screen">デモ</a>
+          <a href="#diff">試せる機能</a>
+          <a className="lp-hdl" href={RELEASES}>
             Windows版
             <DownloadIcon size={14} />
           </a>
@@ -122,357 +74,541 @@ export function SiteHeader() {
   );
 }
 
-const HERO_CANDIDATES: Array<{ label: string; tone: string }> = [
-  { label: "参考書を10ページ進める", tone: "violet" },
-  { label: "ストレッチをする", tone: "green" },
-  { label: "近所をゆっくり歩く", tone: "none" },
-  { label: "英単語を20個復習する", tone: "violet" },
-  { label: "気になっていた本を読む", tone: "amber" },
-];
-
-export function Hero({
-  onStartShort,
-  onStartNormal,
-}: {
-  onStartShort: () => void;
-  onStartNormal: () => void;
-}) {
+export function Hero() {
   return (
-    <section className="lp-hero" id="top">
-      <div className="lp-container lp-hero-grid">
+    <section id="top">
+      <div className="lp-wrap lp-hero">
         <div className="lp-hero-copy">
-          <div className="lp-hero-titles">
-            <Eyebrow>WINDOWS DESKTOP APP</Eyebrow>
-            <h1 className="lp-hero-title">Life Launcher</h1>
-            <p className="lp-hero-lead">
-              <span className="lp-hero-lead-quiet">「何をしよう？」を</span>
-              <span className="lp-hero-lead-line">
-                <span className="lp-hero-lead-accent">「今これをやる」</span>に変える。
-              </span>
-            </p>
-          </div>
-          <p className="lp-hero-description">
-            迷っているときに「今やる一手」を1つ示し、必要なものを開いて、開始まで連れていく個人向け実行支援アプリです。
+          <p className="lp-mono lp-eyebrow">これは何か</p>
+          <h1 className="lp-h1">
+            <span>今日やることを3件に絞り、</span>
+            <span>1件を選んで、</span>
+            <span>
+              <span className="lp-hl">すぐ始める</span>ためのアプリです。
+            </span>
+          </h1>
+          <p className="lp-lead">
+            Life Launcher は Windows のデスクトップアプリです。迷ったときに「今やる一手」を1つ示し、その作業に使うアプリやファイルを開いて、タイマーを始めます。
           </p>
-          <div className="lp-actions">
-            <TryButton className="lp-hero-primary" />
-            <DownloadButton />
+          <div className="lp-ctas">
+            <a className="lp-cta lp-cta--primary" href="#screen">
+              <PlayIcon />
+              ブラウザで試す
+            </a>
+            <a className="lp-cta" href={RELEASES}>
+              Windows版をダウンロード
+              <DownloadIcon />
+            </a>
           </div>
         </div>
 
-        <div className="lp-hero-visual">
-          <ul className="lp-hero-candidates" aria-hidden="true">
-            {HERO_CANDIDATES.map((candidate) => (
-              <li className="lp-hero-chip" data-tone={candidate.tone} key={candidate.label}>
-                <span className="lp-hero-chip-dot" />
-                {candidate.label}
-              </li>
-            ))}
-          </ul>
-          <p className="lp-hero-connector">
-            <span className="lp-hero-connector-line" aria-hidden="true" />
-            この中から、1件だけ。
-          </p>
-          <div className="lp-hero-card" aria-label="今やる一手のプレビュー" role="group">
-            <div className="lp-hero-card-head">
-              <span className="lp-hero-card-kicker">
-                今やる一手
-                <span className="lp-hero-card-project project-amber">
-                  <span className="lp-hero-card-dot" aria-hidden="true" />
+        <figure className="lp-plate lp-f1">
+          <div className="lp-fig-grid">
+            <div className="lp-fig-col">
+              <div className="lp-fig-head">
+                <span aria-hidden="true" className="lp-num">
+                  1
+                </span>
+                <span className="lp-fig-title">次の一手</span>
+                <span className="lp-fig-note">プロジェクトごとに1つ</span>
+              </div>
+              <div className="lp-k lp-fig-card">
+                <span className="lp-fig-meta">
+                  <span className="lp-dot lp-dot--violet" />
+                  学習
+                </span>
+                <span className="lp-fig-text">参考書を10ページ進める</span>
+              </div>
+              <div className="lp-k lp-fig-card lp-a1">
+                <span className="lp-fig-meta">
+                  <span className="lp-dot lp-dot--amber" />
                   読書
                 </span>
-              </span>
-              <span className="lp-hero-card-reason">今日の3件に入っている一手</span>
+                <span className="lp-fig-text">数分だけ読む</span>
+              </div>
+              <div className="lp-k lp-fig-card">
+                <span className="lp-fig-meta">
+                  <span className="lp-dot lp-dot--green" />
+                  運動
+                </span>
+                <span className="lp-fig-text">ストレッチをする</span>
+              </div>
             </div>
-            <strong className="lp-hero-card-title">数分だけ読む</strong>
-            <p className="lp-hero-card-resume">
-              <span className="lp-hero-card-resume-label">次はここから</span>
-              <span>3章のp.84から</span>
-            </p>
-            <div className="lp-hero-card-actions">
-              <button
-                className="button button-good start-button lp-hero-start"
-                onClick={onStartShort}
-                type="button"
-              >
-                <UiIcon name="play" size={17} />
-                5分で始める
-              </button>
-              <button
-                className="button button-normal start-button lp-hero-start-normal"
-                onClick={onStartNormal}
-                type="button"
-              >
-                <UiIcon name="play" size={17} />
-                通常25分
-              </button>
+
+            <div className="lp-fig-col">
+              <div className="lp-fig-head">
+                <span aria-hidden="true" className="lp-num">
+                  2
+                </span>
+                <span className="lp-fig-title">今日の3件</span>
+                <span className="lp-fig-note">最大3件</span>
+              </div>
+              <div className="lp-k lp-fig-done">
+                <CheckIcon size={14} />
+                <span>ストレッチをする</span>
+              </div>
+              <div className="lp-fig-stack">
+                <div className="lp-e lp-fig-slot">空き</div>
+                <div className="lp-a2">
+                  <div className="lp-k lp-fig-card">
+                    <span className="lp-fig-meta">
+                      <span className="lp-dot lp-dot--amber" />
+                      読書
+                    </span>
+                    <span className="lp-fig-text">数分だけ読む</span>
+                  </div>
+                </div>
+              </div>
+              <div className="lp-e lp-fig-slot">空けておいてもかまいません</div>
+            </div>
+
+            <div className="lp-fig-col">
+              <div className="lp-fig-head">
+                <span aria-hidden="true" className="lp-num">
+                  3
+                </span>
+                <span className="lp-fig-title">始める</span>
+                <span className="lp-fig-note">5分 または 25分</span>
+              </div>
+              <div className="lp-fig-stack">
+                <div className="lp-e lp-fig-timer-slot">待機中</div>
+                <div className="lp-a3 lp-k lp-fig-running">
+                  <div className="lp-fig-running-head">
+                    <span className="lp-fig-running-title">
+                      <span className="lp-fig-meta">
+                        <span className="lp-dot lp-dot--amber" />
+                        読書
+                      </span>
+                      <span className="lp-fig-strong">数分だけ読む</span>
+                    </span>
+                    <span className="lp-go lp-a4">
+                      <PlayIcon size={12} />
+                      5分で始める
+                    </span>
+                  </div>
+                  <div className="lp-fig-chips">
+                    <span className="lp-k lp-fig-chip lp-a5">読書メモが開く</span>
+                    <span className="lp-k lp-fig-chip lp-a6">参考ページが開く</span>
+                  </div>
+                  <div className="lp-fig-bar-row">
+                    <span className="lp-fig-bar">
+                      <span className="lp-a7" />
+                    </span>
+                    <span className="lp-mono lp-fig-minutes">5分</span>
+                  </div>
+                  <div className="lp-a8 lp-fig-finish">
+                    <CheckIcon size={14} />
+                    <span>終了。次はここから: 3章のp.84から</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </figure>
       </div>
     </section>
   );
 }
 
-export function WhySection() {
+export function FlowSection() {
   return (
-    <section className="lp-section lp-why" id="why">
-      <div className="lp-container">
-        <Eyebrow>WHY LIFE LAUNCHER?</Eyebrow>
-        <h2 className="lp-h2 lp-why-title">管理するためではなく、始めるために。</h2>
-        <div className="lp-why-grid">
-          <article className="lp-why-item">
-            <div className="lp-why-art" aria-hidden="true">
-              <div className="lp-why-row is-done">
-                <CheckMark />
-                ストレッチをする
-              </div>
-              <div className="lp-why-row is-current">
-                <span className="lp-why-dot" />
-                数分だけ読む
-              </div>
-              <div className="lp-why-row is-empty">
-                <span className="lp-why-slot">3</span>
-                空けておいてもかまいません
-              </div>
-            </div>
-            <h3 className="lp-why-heading">
-              <span className="lp-num">1</span>今日を絞る
-            </h3>
-            <p className="lp-body">
-              登録した次の一手とやりたいことから、今日取り組む3件までを選びます。
-            </p>
-          </article>
-          <article className="lp-why-item">
-            <div className="lp-why-art" aria-hidden="true">
-              <div className="lp-why-pick">
-                <span className="lp-why-pick-kicker">今やる一手</span>
-                <span className="lp-why-pick-title">数分だけ読む</span>
-              </div>
-              <div className="lp-why-faded">参考書を10ページ進める</div>
-              <div className="lp-why-faded">ストレッチをする</div>
-            </div>
-            <h3 className="lp-why-heading">
-              <span className="lp-num">2</span>一手を小さくする
-            </h3>
-            <p className="lp-body">「次の一手」があるプロジェクトから、今やることを1件だけ示します。</p>
-          </article>
-          <article className="lp-why-item">
-            <div className="lp-why-art lp-why-art-launch" aria-hidden="true">
-              <div className="lp-why-launch-list">
-                <span>
-                  <CheckMark />
-                  読書メモを開く
-                </span>
-                <span>
-                  <CheckMark />
-                  参考ページを開く
-                </span>
-                <span>
-                  <CheckMark />
-                  タイマーを開始
-                </span>
-              </div>
-              <span className="lp-why-clock">05:00</span>
-            </div>
-            <h3 className="lp-why-heading">
-              <span className="lp-num">3</span>開始までつなぐ
-            </h3>
-            <p className="lp-body">Windows版では登録したアプリや手順書を開き、タイマーを始めます。</p>
-          </article>
+    <section className="lp-band" id="flow">
+      <div className="lp-wrap lp-section">
+        <div className="lp-section-head">
+          <p className="lp-mono lp-eyebrow">使い方</p>
+          <h2 className="lp-h2">
+            <span>やることは4つだけ。</span>
+          </h2>
         </div>
-      </div>
-    </section>
-  );
-}
-
-const DEMO_STEPS: Array<{ title: string; note: string }> = [
-  { title: "今日やるものを選ぶ", note: "3件まで。その場で足せます" },
-  { title: "5分で始める", note: "タイマーが動きます" },
-  { title: "終えて、次を書き残す", note: "延長するか、終わるか" },
-  { title: "まとめて取り込む", note: "サンプルの答えで試せます" },
-];
-
-export function DemoSection({
-  children,
-  sectionRef,
-}: {
-  children: ReactNode;
-  sectionRef: React.Ref<HTMLElement>;
-}) {
-  return (
-    <section className="lp-demo" id="demo" ref={sectionRef}>
-      <div className="lp-container">
-        <div className="lp-demo-intro">
-          <div className="lp-demo-titles">
-            <Eyebrow>INTERACTIVE DEMO</Eyebrow>
-            <h2 className="lp-h2">開始までの流れを試す。</h2>
-          </div>
-          <p className="lp-demo-lead">サンプルデータだけで安全に試せます。</p>
-        </div>
-        <ol className="lp-demo-steps" aria-label="デモの進め方">
-          {DEMO_STEPS.map((step, index) => (
-            <li className={index === 0 ? "lp-demo-step is-first" : "lp-demo-step"} key={step.title}>
-              <span className="lp-demo-step-num" aria-hidden="true">
-                {index + 1}
-              </span>
-              <span className="lp-demo-step-text">
-                <span className="lp-demo-step-title">{step.title}</span>
-                <span className="lp-demo-step-note">{step.note}</span>
-              </span>
-            </li>
-          ))}
-        </ol>
-        <p className="lp-demo-mobile-note">PCで開くとデモをより操作しやすく確認できます。</p>
-        <div className="lp-demo-window">{children}</div>
-        <p className="lp-demo-privacy">
-          デモの入力内容はサーバーへ送信しません。このブラウザ内にだけ保存されます。
-        </p>
-      </div>
-    </section>
-  );
-}
-
-type Feature = { title: string; body: string; tag: "demo" | "staged" | "windows" };
-
-const THINK_FEATURES: Feature[] = [
-  {
-    title: "今やる一手",
-    body: "「次の一手」を設定したプロジェクトから1件を表示し、理由も確認できます。",
-    tag: "demo",
-  },
-  {
-    title: "今日やるものを選ぶ / 今日の3件",
-    body: "「次の一手」と「やりたいこと」から最大3件を選び、タイマーから実行します。プロジェクトで絞り、その場で1件足せます。",
-    tag: "demo",
-  },
-  {
-    title: "まとめて取り込む",
-    body: "ChatGPT や Claude の答えを貼り、取り込むものを選んで、プロジェクト・次の一手・やりたいことをまとめて足します。",
-    tag: "demo",
-  },
-];
-
-const ACT_FEATURES: Feature[] = [
-  {
-    title: "タイマー / 今日の実行",
-    body: "始めた内容をタイマーで実行し、終了時に記録します。予定時間が来たら、分数を決めて続けられます。",
-    tag: "demo",
-  },
-  {
-    title: "Quick Launcher / 辞書",
-    body: "アプリ・ファイル・フォルダ・URLを登録し、開始と同時にまとめて開けます。Ctrl+K から、ラベル・分類・キーワードで呼び出せます。",
-    tag: "staged",
-  },
-  {
-    title: "手順書",
-    body: "ローカルのMarkdown・テキスト・HTMLを、作業開始時に別ウィンドウで参照できます。",
-    tag: "windows",
-  },
-];
-
-const TAG_LABEL: Record<Feature["tag"], string> = {
-  demo: "Web Demo で試せる",
-  staged: "Web Demo は演出",
-  windows: "Windows版",
-};
-
-function FeatureColumn({
-  label,
-  tone,
-  features,
-}: {
-  label: string;
-  tone: "think" | "act";
-  features: Feature[];
-}) {
-  return (
-    <div className="lp-feature-col" data-tone={tone}>
-      <p className="lp-feature-col-label">
-        <span className="lp-feature-col-dot" aria-hidden="true" />
-        {label}
-      </p>
-      {features.map((feature) => (
-        <div className="lp-feature" key={feature.title}>
-          <div className="lp-feature-head">
-            <h3 className="lp-feature-title">{feature.title}</h3>
-            <span className="lp-feature-tag" data-tag={feature.tag}>
-              {TAG_LABEL[feature.tag]}
+        <ol className="lp-steps">
+          <li className="lp-step">
+            <span className="lp-mono lp-step-num">1</span>
+            <div aria-hidden="true" className="lp-k lp-vig">
+              <div className="lp-k lp-vig-card">
+                <span className="lp-vig-meta">
+                  <span className="lp-dot lp-dot--violet" />
+                  学習
+                </span>
+                <span className="lp-vig-text">参考書を10ページ進める</span>
+              </div>
+              <div className="lp-k lp-vig-card">
+                <span className="lp-vig-meta">
+                  <span className="lp-dot lp-dot--amber" />
+                  読書
+                </span>
+                <span className="lp-vig-text">数分だけ読む</span>
+              </div>
+              <div className="lp-fig-stack">
+                <div className="lp-e lp-hu lp-vig-add">＋ 次の一手</div>
+                <div className="lp-hv">
+                  <div className="lp-k lp-vig-card">
+                    <span className="lp-vig-meta">
+                      <span className="lp-dot lp-dot--green" />
+                      運動
+                    </span>
+                    <span className="lp-vig-text">ストレッチをする</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span className="lp-step-title">次の一手を書いておく</span>
+            <span className="lp-step-text">
+              プロジェクトごとに1つ、「次にやること」を書いておきます。思いついたことは「やりたいこと」に置けます。
             </span>
-          </div>
-          <p className="lp-body">{feature.body}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
+          </li>
 
-export function FeaturesSection() {
-  return (
-    <section className="lp-section lp-features">
-      <div className="lp-container">
-        <Eyebrow>FEATURES</Eyebrow>
-        <h2 className="lp-h2 lp-features-title">
-          <span className="lp-features-think">考える場所</span>と、
-          <br />
-          <span className="lp-features-act">動く場所</span>をつなぐ。
-        </h2>
-        <div className="lp-feature-grid">
-          <FeatureColumn label="考える場所" tone="think" features={THINK_FEATURES} />
-          <FeatureColumn label="動く場所" tone="act" features={ACT_FEATURES} />
-        </div>
+          <li className="lp-step">
+            <span className="lp-mono lp-step-num">2</span>
+            <div aria-hidden="true" className="lp-k lp-vig">
+              <span className="lp-vig-label">
+                今日の3件
+                <span className="lp-vig-count">
+                  <span className="lp-hu">2 / 3</span>
+                  <span className="lp-hv lp-hv--flat">3 / 3</span>
+                </span>
+              </span>
+              <div className="lp-vig-grid">
+                <div className="lp-k lp-vig-tile lp-vig-tile--amber">
+                  <span className="lp-vig-tile-label">読書</span>
+                  <span className="lp-vig-tile-text">数分読む</span>
+                </div>
+                <div className="lp-k lp-vig-tile lp-vig-tile--green">
+                  <span className="lp-vig-tile-label">運動</span>
+                  <span className="lp-vig-tile-text">散歩</span>
+                </div>
+                <div className="lp-fig-stack">
+                  <div className="lp-e lp-hu lp-vig-empty">空き</div>
+                  <div className="lp-k lp-hv lp-vig-tile lp-vig-tile--violet">
+                    <span className="lp-vig-tile-label">学習</span>
+                    <span className="lp-vig-tile-text">参考書</span>
+                  </div>
+                </div>
+              </div>
+              <span className="lp-vig-note">4件目は入りません</span>
+            </div>
+            <span className="lp-step-title">今日やる3件を選ぶ</span>
+            <span className="lp-step-text">
+              候補から今日やるものを最大3件選びます。4件目は入りません。
+            </span>
+          </li>
+
+          <li className="lp-step">
+            <span className="lp-mono lp-step-num">3</span>
+            <div aria-hidden="true" className="lp-k lp-vig">
+              <span className="lp-go lp-p1 lp-vig-go">
+                <PlayIcon size={12} />
+                5分で始める
+              </span>
+              <div className="lp-vig-chips">
+                <span className="lp-k lp-q1">読書メモが開く</span>
+                <span className="lp-k lp-q2">参考ページが開く</span>
+              </div>
+              <span className="lp-vig-clock">
+                <span className="lp-vig-bar">
+                  <span className="lp-bar" />
+                </span>
+                <span className="lp-mono lp-vig-time">04:06</span>
+              </span>
+            </div>
+            <span className="lp-step-title">5分で始める</span>
+            <span className="lp-step-text">
+              ボタンを押すと、その作業に使うアプリ・ファイル・URL が開き、タイマーが動きます。
+            </span>
+          </li>
+
+          <li className="lp-step">
+            <span className="lp-mono lp-step-num">4</span>
+            <div aria-hidden="true" className="lp-k lp-vig">
+              <span className="lp-vig-text lp-vig-text--strong">予定時間になりました</span>
+              <span className="lp-vig-label">次はここから</span>
+              <span className="lp-k lp-vig-quote">
+                <span className="lp-ty">3章のp.84から</span>
+              </span>
+              <span className="lp-vig-choices">
+                <span className="lp-vig-choice">続ける</span>
+                <span className="lp-p2 lp-vig-choice lp-vig-choice--danger">終わる</span>
+              </span>
+            </div>
+            <span className="lp-step-title">終えて、次を書き残す</span>
+            <span className="lp-step-text">
+              予定時間が来たら、延ばすか終えるかを選びます。終えるときに「次はここから」を残せます。
+            </span>
+          </li>
+        </ol>
       </div>
     </section>
   );
 }
 
-export function PrivacySection() {
+type Zone = { id: string; title: string; text: string };
+
+const ZONES: Zone[] = [
+  {
+    id: "1",
+    title: "辞書・ショートカット",
+    text: "よく使うアプリ・フォルダ・URL を置きます。デモでは開く動きだけを画面で見せます。",
+  },
+  {
+    id: "2",
+    title: "今日の勝利条件",
+    text: "今日の目標を1行で書き、できたら印を付けます。",
+  },
+  {
+    id: "3",
+    title: "今やる一手",
+    text: "迷ったときに見る場所です。次の一手の中から、1件だけ出します。",
+  },
+  {
+    id: "4",
+    title: "今日の3件",
+    text: "今日やると決めたものです。最大3件でここからタイマーを始めます。",
+  },
+  {
+    id: "5",
+    title: "次の一手・やりたいこと",
+    text: "候補を置く場所です。次の一手はプロジェクトごとに1つです。",
+  },
+  {
+    id: "6",
+    title: "タイマー",
+    text: "5分か25分で始めます。予定時間が来たら、延ばすか終えるかを選びます。",
+  },
+];
+
+type ZoneRect = { id: string; left: number; top: number; width: number; height: number };
+
+/**
+ * 番号は本物のデモの上に重ねる。位置はデモの中の `[data-zone="n"]` を測って決めるので、
+ * デモの高さや開閉が変わってもずれない。帯そのものは操作を邪魔しないよう
+ * pointer-events を切ってあり、触れるのは番号の丸だけ。
+ */
+export function DemoScreenSection({ children }: { children: ReactNode }) {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [rects, setRects] = useState<ZoneRect[]>([]);
+  const [active, setActive] = useState<string | null>(null);
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const measure = () => {
+      const base = stage.getBoundingClientRect();
+      const next: ZoneRect[] = [];
+      for (const zone of ZONES) {
+        const node = stage.querySelector<HTMLElement>(
+          `[data-zone="${zone.id}"]`,
+        );
+        if (!node) continue;
+        const rect = node.getBoundingClientRect();
+        next.push({
+          id: zone.id,
+          left: rect.left - base.left,
+          top: rect.top - base.top,
+          width: rect.width,
+          height: rect.height,
+        });
+      }
+      setRects((current) =>
+        current.length === next.length &&
+        current.every((item, index) => {
+          const candidate = next[index];
+          return (
+            candidate &&
+            item.id === candidate.id &&
+            Math.round(item.left) === Math.round(candidate.left) &&
+            Math.round(item.top) === Math.round(candidate.top) &&
+            Math.round(item.width) === Math.round(candidate.width) &&
+            Math.round(item.height) === Math.round(candidate.height)
+          );
+        })
+          ? current
+          : next,
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(stage);
+    for (const node of stage.querySelectorAll("[data-zone]")) observer.observe(node);
+    const onScroll = () => measure();
+    window.addEventListener("resize", onScroll);
+    const interval = window.setInterval(measure, 800);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", onScroll);
+      window.clearInterval(interval);
+    };
+  }, []);
+
   return (
-    <section className="lp-section lp-privacy" id="privacy">
-      <div className="lp-container lp-privacy-grid">
-        <div className="lp-privacy-head">
-          <Eyebrow>PRIVACY / SECURITY</Eyebrow>
-          <h2 className="lp-privacy-title">Local-first.</h2>
-          <ul className="lp-tech-chips" aria-label="使っている技術">
-            {TECH_STACK.map((name) => (
-              <li className="lp-tech-chip" key={name}>
-                {name}
+    <section id="screen">
+      <div className="lp-wrap lp-section">
+        <div className="lp-section-head">
+          <p className="lp-mono lp-eyebrow">デモ</p>
+          <h2 className="lp-h2">
+            <span>開始までの流れを試す。</span>
+          </h2>
+          <p className="lp-lead lp-lead--tight lp-demo-lead">
+            サンプルデータだけで安全に試せます。
+          </p>
+        </div>
+
+        <figure className="lp-fig2">
+          <div className="lp-stage" ref={stageRef}>
+            {children}
+            {rects.map((rect) => {
+              const zone = ZONES.find((item) => item.id === rect.id)!;
+              const isActive = active === rect.id;
+              return (
+                <div
+                  className="lp-zone"
+                  data-active={isActive ? "true" : undefined}
+                  key={rect.id}
+                  style={{
+                    left: `${rect.left}px`,
+                    top: `${rect.top}px`,
+                    width: `${rect.width}px`,
+                    height: `${rect.height}px`,
+                  }}
+                >
+                  <button
+                    aria-label={`${zone.title}の説明を見る`}
+                    className="lp-zone-num"
+                    onBlur={() => setActive(null)}
+                    onFocus={() => setActive(rect.id)}
+                    onMouseEnter={() => setActive(rect.id)}
+                    onMouseLeave={() => setActive(null)}
+                    type="button"
+                  >
+                    {rect.id}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          <ol className="lp-zone-list">
+            {ZONES.map((zone) => (
+              <li
+                className="lp-zone-item"
+                data-active={active === zone.id ? "true" : undefined}
+                key={zone.id}
+                onMouseEnter={() => setActive(zone.id)}
+                onMouseLeave={() => setActive(null)}
+              >
+                <span aria-hidden="true" className="lp-num">
+                  {zone.id}
+                </span>
+                <span className="lp-zone-copy">
+                  <span className="lp-zone-title">{zone.title}</span>
+                  <span className="lp-zone-text">{zone.text}</span>
+                </span>
               </li>
             ))}
-          </ul>
-        </div>
-        <ul className="lp-privacy-list">
-          <li>Windows版のユーザーデータは端末内に保存します。</li>
-          <li>
-            Web Demoは外部API・アカウント・追跡用analyticsを使わず、入力はこのブラウザの中だけに保存します。
-          </li>
-          <li>公開前にコードだけでなく、Git履歴・画像・fixtureも監査しました。</li>
-          <li>Windows版ではfavicon取得のSSRF対策と、Tauriのウィンドウ別最小権限化を行っています。</li>
-        </ul>
+          </ol>
+        </figure>
       </div>
     </section>
   );
 }
 
-export function FinalCta() {
+const SCOPE_ROWS: { label: string; demo: boolean | string; windows: boolean | string }[] = [
+  { label: "今やる一手・今日の3件・今日の勝利条件", demo: true, windows: true },
+  { label: "タイマー(5分・25分・延長)と実行の記録", demo: true, windows: true },
+  { label: "まとめて取り込む", demo: true, windows: true },
+  { label: "辞書", demo: true, windows: true },
+  { label: "アプリ・ファイル・URL を開く", demo: "開く動きだけ", windows: true },
+  { label: "手順書ビューアー", demo: false, windows: true },
+  { label: "記録・今週を決める", demo: false, windows: true },
+  { label: "データの保存先", demo: "このブラウザの中", windows: "この PC の中" },
+];
+
+const Cell = ({ value }: { value: boolean | string }) => {
+  if (value === true)
+    return (
+      <span className="lp-cell-yes">
+        <span className="lp-sr-only">できる</span>
+        <CheckIcon />
+      </span>
+    );
+  if (value === false)
+    return (
+      <span aria-label="できない" className="lp-cell-no" role="img">
+        —
+      </span>
+    );
+  return <span>{value}</span>;
+};
+
+export function ScopeSection() {
   return (
-    <section className="lp-section lp-final">
-      <div className="lp-container lp-final-inner">
-        <span className="lp-final-ghost" aria-hidden="true">
+    <section className="lp-band" id="diff">
+      <div className="lp-wrap lp-section">
+        <div className="lp-section-head">
+          <p className="lp-mono lp-eyebrow">試せる機能</p>
+          <h2 className="lp-h2">
+            <span>試した流れを取り入れる。</span>
+          </h2>
+        </div>
+        <div className="lp-table-scroll">
+          <table className="lp-table">
+            <thead>
+              <tr>
+                <th scope="col">できること</th>
+                <th scope="col">デモ</th>
+                <th scope="col">Windows版</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SCOPE_ROWS.map((row) => (
+                <tr key={row.label}>
+                  <th scope="row">{row.label}</th>
+                  <td>
+                    <Cell value={row.demo} />
+                  </td>
+                  <td>
+                    <Cell value={row.windows} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="lp-note">デモはWindows版をすべて移したものではありません。</p>
+      </div>
+    </section>
+  );
+}
+
+export function FinalSection() {
+  return (
+    <section id="get">
+      <div className="lp-wrap lp-final">
+        <span aria-hidden="true" className="lp-ghost">
           05:00
         </span>
         <div className="lp-final-copy">
-          <Eyebrow>READY?</Eyebrow>
-          <h2 className="lp-h2 lp-final-title">
-            <span>次の一手を、</span>
+          <p className="lp-mono lp-eyebrow">READY?</p>
+          <h2 className="lp-fin">
+            <span>
+              <span className="lp-hl">次の一手</span>を、
+            </span>
             <span>今ここで始める。</span>
           </h2>
-          <a className="lp-final-try" href="#demo">
-            <UiIcon name="play" size={16} />
+          <a className="lp-try" href="#screen">
+            <PlayIcon size={16} />
             まずはブラウザで試す
           </a>
         </div>
-        <WindowsCard />
+        <div className="lp-get">
+          <h3>Windows版を入手</h3>
+          <p className="lp-get-meta">Windows 10 / 11 (x64) · WebView2 Runtime</p>
+          <a className="lp-getbtn" href={RELEASES}>
+            <span>最新版をダウンロード</span>
+            <span>（GitHub Releases）</span>
+          </a>
+          <p className="lp-get-note">
+            インストーラー / 単体実行 EXE / ポータブル ZIP の 3 形式・SHA256SUMS 添付
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -481,16 +617,11 @@ export function FinalCta() {
 export function SiteFooter() {
   return (
     <footer className="lp-footer">
-      <div className="lp-container lp-footer-inner">
+      <div className="lp-wrap lp-footer-inner">
         <span>© 2026 Takuyakou</span>
         <div className="lp-footer-links">
-          <a href={REPO_URL} rel="noopener noreferrer" target="_blank">
-            GitHub
-          </a>
-          <a href={RELEASES_URL} rel="noopener noreferrer" target="_blank">
-            Windows版
-          </a>
-          <span>利用条件は GitHub リポジトリにあります。</span>
+          <a href={REPO}>GitHub</a>
+          <a href={RELEASES}>Windows版</a>
         </div>
       </div>
     </footer>
