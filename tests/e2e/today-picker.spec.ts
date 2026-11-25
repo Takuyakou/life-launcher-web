@@ -26,7 +26,7 @@ test("supports 0/3 through 3/3 in a draft that only 決定 saves", async ({
   const progress = picker.getByRole("progressbar");
   await expect(progress).toHaveAttribute("aria-valuenow", "2");
 
-  for (const label of ["ストレッチをする", "本を読む"]) {
+  for (const label of ["ストレッチをする", "数分だけ読む"]) {
     await picker.getByRole("button", { name: `${label}を今日から外す` }).click();
   }
   await expect(progress).toHaveAttribute("aria-valuenow", "0");
@@ -74,7 +74,7 @@ test("does not close on backdrop and closes on Escape or Cancel", async ({
 test("same text from different sources stays distinct and survives reload", async ({
   page,
 }) => {
-  const reading = page.getByRole("article", { name: "本を読む", exact: true });
+  const reading = page.getByRole("article", { name: "数分だけ読む", exact: true });
   await reading.getByRole("button", { name: "操作メニュー" }).click();
   await page.getByRole("menuitem", { name: "今日の3件から外す" }).click();
   await page.evaluate(() => {

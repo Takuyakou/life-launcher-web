@@ -35,7 +35,7 @@ for (const [width, columns] of [
       ),
     ).toBe(columns);
 
-    const card = page.getByRole("article", { name: "本を読む", exact: true });
+    const card = page.getByRole("article", { name: "数分だけ読む", exact: true });
     await card.locator(".dl-today-text").evaluate((node) => {
       node.textContent = "後回しにしていたことを整理して次に進むための小さな準備".repeat(
         4,

@@ -69,10 +69,8 @@ test("edit dialogs: save green on the left, cancel red on the right, half each",
   page,
 }) => {
   await open(page);
-  await page
-    .locator("#screen .dl-next-row", { hasText: "運動" })
-    .getByRole("button", { name: "編集" })
-    .click();
+  await page.locator("#screen .dl-next-row", { hasText: "運動" }).locator(".dl-row-menu").click();
+  await page.getByRole("menuitem", { name: "次の一手を編集" }).click();
   const dialog = page.getByRole("dialog", { name: "次の一手を編集" });
   await expectEvenRow(dialog.locator(".dialog-actions"), ["保存", "キャンセル"]);
   await expect(dialog.getByRole("button", { name: "保存" })).toHaveCSS("background-color", GREEN);
@@ -88,7 +86,7 @@ test("the completion dialog: continue is grey, save is green on the left, finish
   await open(page);
   const today = page
     .locator("#screen")
-    .getByRole("article", { name: "本を読む", exact: true });
+    .getByRole("article", { name: "数分だけ読む", exact: true });
   await today.getByRole("button", { name: "5分", exact: true }).click();
   await expect(timerPanel(page)).toContainText("実行中");
   await page.mouse.move(5, 5);

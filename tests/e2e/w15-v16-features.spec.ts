@@ -42,7 +42,7 @@ test.beforeEach(async ({ page }) => {
 test("満了 1: a NextStep outside Today 3 saves 次はここから after extending", async ({
   page,
 }) => {
-  await removeFromToday(page, "本を読む");
+  await removeFromToday(page, "数分だけ読む");
   await removeFromToday(page, "ストレッチをする");
   await page.locator("[data-demo-do-now-short]").click();
   await finishAndExtend(page);
@@ -61,14 +61,14 @@ test("満了 1: a NextStep outside Today 3 saves 次はここから after extend
 });
 
 test("満了 2: a Today 3 NextStep can save 次の次の一手", async ({ page }) => {
-  await startCard(page, "本を読む");
+  await startCard(page, "数分だけ読む");
   await finishDemo(page);
   const dialog = completion(page);
   const input = dialog.getByRole("textbox", { name: "次の次の一手(任意)" });
   await expect(input).toHaveValue("数分だけ読む");
   await input.fill("2章を読み切る");
   await dialog.getByRole("button", { name: "保存して終わる" }).click();
-  await expect(card(page, "本を読む")).toHaveAttribute("data-complete", "true");
+  await expect(card(page, "数分だけ読む")).toHaveAttribute("data-complete", "true");
   await expect(
     page.locator(".dl-next-row", { hasText: "読書" }),
   ).toContainText("2章を読み切る");
@@ -215,7 +215,7 @@ test("Today Picker keeps the draft when a save fails, and a discard asks first",
   await expect(picker).toHaveCount(0);
   await expect(page.locator(".dl-today-card")).toHaveCount(3);
 
-  await removeFromToday(page, "本を読む");
+  await removeFromToday(page, "数分だけ読む");
   const reopened = await openPicker(page);
   await reopened
     .getByRole("button", { name: "参考書を10ページ進めるを今日から外す" })
@@ -238,7 +238,7 @@ test("import: copy warning, sample preview, commit and 5 second undo", async ({
   });
   await page.reload();
   await page.locator("#screen").scrollIntoViewIfNeeded();
-  await startCard(page, "本を読む");
+  await startCard(page, "数分だけ読む");
 
   const dialog = await openImport(page);
   await expect(dialog).toContainText(
@@ -315,7 +315,7 @@ test("import: a failed undo keeps the snapshot for a retry", async ({ page }) =>
 test("dialogs trap Tab, close on Escape and keep the IME Enter guard", async ({
   page,
 }) => {
-  await startCard(page, "本を読む");
+  await startCard(page, "数分だけ読む");
   await finishDemo(page);
   const dialog = completion(page);
   await expect(dialog).toBeVisible();
@@ -332,7 +332,7 @@ test("dialogs trap Tab, close on Escape and keep the IME Enter guard", async ({
   await dialog.getByRole("button", { name: "終わる", exact: true }).click();
 
   const picker = await openPicker(page);
-  await picker.getByRole("button", { name: "本を読むを今日から外す" }).click();
+  await picker.getByRole("button", { name: "数分だけ読むを今日から外す" }).click();
   await page.keyboard.press("Escape");
   const discard = page.getByRole("dialog", { name: "選んだ内容を破棄しますか？" });
   await expect(discard).toBeVisible();

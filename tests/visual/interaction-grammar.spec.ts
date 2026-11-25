@@ -33,7 +33,7 @@ test("captures hover, focus, pressed, disabled and Danger states", async ({
   await page.mouse.up();
 
   const reading = page.getByRole("article", {
-    name: "本を読む",
+    name: "数分だけ読む",
     exact: true,
   });
   await reading

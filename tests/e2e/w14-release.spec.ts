@@ -36,6 +36,15 @@ const settleFonts = async (page: Page) => {
   await page.evaluate(() => document.fonts.ready.then(() => true));
 };
 
+// W21-05: 「やりたいこと」と「今日の実行」は、最初は閉じている。中を確かめる前に開く。
+const openSection = async (
+  page: import("@playwright/test").Page,
+  name: "wishlist" | "activity",
+) => {
+  const toggle = page.locator(`.dl-${name} .dl-section-disclosure`);
+  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+};
+
 test("v1.3 public data is read unchanged by this version", async ({ page }) => {
   await loadV13(page);
   expect(await saved(page)).toBe(raw);
@@ -166,12 +175,10 @@ test("core journey runs without console errors, failed assets or network traffic
   await page.locator("#screen").scrollIntoViewIfNeeded();
 
   // register: edit a NextStep and add a Wishlist item
-  for (const label of ["本を読む", "ストレッチをする"])
+  for (const label of ["数分だけ読む", "ストレッチをする"])
     await removeFromToday(page, label);
-  await page
-    .locator(".dl-next-row", { hasText: "読書" })
-    .getByRole("button", { name: "編集" })
-    .click();
+  await page.locator(".dl-next-row", { hasText: "読書" }).locator(".dl-row-menu").click();
+  await page.getByRole("menuitem", { name: "次の一手を編集" }).click();
   const nextDialog = page.getByRole("dialog", { name: "次の一手を編集" });
   await nextDialog.getByRole("textbox", { name: "次の一手" }).fill("章を1ページ読む");
   await nextDialog.getByRole("button", { name: "保存" }).click();
@@ -221,6 +228,7 @@ test("core journey runs without console errors, failed assets or network traffic
   await expect(
     page.locator(".dl-next-row", { hasText: "読書" }),
   ).toContainText("次の章を開く");
+  await openSection(page, "activity");
   await expect(page.locator(".dl-activity-list li")).toHaveCount(2);
 
   expect(problems).toEqual([]);

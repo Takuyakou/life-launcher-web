@@ -14,6 +14,15 @@ test.beforeEach(async ({ page }) => {
   await page.locator("#screen").scrollIntoViewIfNeeded();
 });
 
+// W21-05: 「やりたいこと」と「今日の実行」は、最初は閉じている。中を確かめる前に開く。
+const openSection = async (
+  page: import("@playwright/test").Page,
+  name: "wishlist" | "activity",
+) => {
+  const toggle = page.locator(`.dl-${name} .dl-section-disclosure`);
+  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+};
+
 test("victory edit is plain text and the checkbox works", async ({ page }) => {
   const victoryText = page.locator(".dl-victory .dl-victory-text");
   await victoryText.click();
@@ -130,11 +139,11 @@ test("removing in Today Picker removes its snapshot but keeps its source", async
 test("timer start shows the running state and stop appends Today Activity once", async ({
   page,
 }) => {
-  const card = page.getByRole("article", { name: "本を読む", exact: true });
+  const card = page.getByRole("article", { name: "数分だけ読む", exact: true });
   await card.getByRole("button", { name: "5分", exact: true }).click();
   const timer = page.locator(".dl-timer");
   await expect(timer.locator(".dl-pill--state")).toHaveText("実行中");
-  await expect(timer.locator(".dl-timer-title")).toHaveText("本を読む");
+  await expect(timer.locator(".dl-timer-title")).toHaveText("数分だけ読む");
   await timer.getByRole("button", { name: "一時停止" }).click();
   await expect(timer.locator(".dl-pill--state")).toHaveText("一時停止");
   await timer.getByRole("button", { name: "再開" }).click();
@@ -144,15 +153,16 @@ test("timer start shows the running state and stop appends Today Activity once",
   await expect(
     page.getByText("今日の実行にサンプル記録を追加しました"),
   ).toBeVisible();
+  await openSection(page, "activity");
   await expect(
-    page.locator(".dl-activity-row").filter({ hasText: "本を読む" }),
+    page.locator(".dl-activity-row").filter({ hasText: "数分だけ読む" }),
   ).toHaveCount(1);
 });
 
 test("demo completion saves 次はここから for a Do Now start", async ({
   page,
 }) => {
-  const card = page.getByRole("article", { name: "本を読む", exact: true });
+  const card = page.getByRole("article", { name: "数分だけ読む", exact: true });
   await openRowMenu(card.locator(".dl-row-menu"));
   await page.locator(".dl-menu-item", { hasText: "今日の3件から外す" }).click();
   await expect(card).toHaveCount(0);
@@ -188,12 +198,9 @@ test("demo completion can be skipped without updating the project", async ({
 test("sections open and reset restores every v2 seed field", async ({
   page,
 }) => {
+  // W21-05: やりたいことは、最初は閉じている。
   const wishlistToggle = page.locator(".dl-wishlist .dl-section-disclosure");
-  await expect(wishlistToggle).toHaveAttribute("aria-expanded", "true");
-  await expect(
-    page.getByText("気になっていた本を読む", { exact: true }),
-  ).toHaveCount(1);
-  await wishlistToggle.click();
+  await expect(wishlistToggle).toHaveAttribute("aria-expanded", "false");
   await expect(
     page.getByText("気になっていた本を読む", { exact: true }),
   ).toHaveCount(0);
@@ -201,6 +208,10 @@ test("sections open and reset restores every v2 seed field", async ({
   await expect(
     page.getByText("気になっていた本を読む", { exact: true }),
   ).toHaveCount(1);
+  await wishlistToggle.click();
+  await expect(
+    page.getByText("気になっていた本を読む", { exact: true }),
+  ).toHaveCount(0);
   await page
     .getByRole("button", { name: "今日やるものを選ぶ", exact: true })
     .click();

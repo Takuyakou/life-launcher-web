@@ -9,11 +9,20 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 });
 
+// W21-05: 「やりたいこと」と「今日の実行」は、最初は閉じている。中を確かめる前に開く。
+const openSection = async (
+  page: import("@playwright/test").Page,
+  name: "wishlist" | "activity",
+) => {
+  const toggle = page.locator(`.dl-${name} .dl-section-disclosure`);
+  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+};
+
 test("natural expiry waits for confirmation and completes the item on 終わる", async ({
   page,
 }) => {
   await page.clock.install();
-  const card = todayCard(page, "本を読む");
+  const card = todayCard(page, "数分だけ読む");
   await card.getByRole("button", { name: "5分", exact: true }).click();
   await page.clock.runFor(300000);
   await expect(
@@ -69,7 +78,7 @@ test("Today3 finishes only after confirmation and reset restores seed", async ({
     .getByRole("button", { name: "参考書を10ページ進めるを今日の3件に追加" })
     .click();
   await picker.getByRole("button", { name: "決定" }).click();
-  for (const label of ["本を読む", "参考書を10ページ進める"]) {
+  for (const label of ["数分だけ読む", "参考書を10ページ進める"]) {
     const card = todayCard(page, label);
     await card.getByRole("button", { name: "5分", exact: true }).click();
     await page.getByRole("button", { name: /満了まで進める/ }).click();
@@ -81,6 +90,7 @@ test("Today3 finishes only after confirmation and reset restores seed", async ({
   await expect(page.locator(".dl-today .dl-section-summary")).toHaveText(
     "3 / 3 完了",
   );
+  await openSection(page, "activity");
   await expect(page.locator(".dl-activity-row")).toHaveCount(3);
   await page.getByRole("button", { name: "リセット", exact: true }).click();
   await page.getByRole("button", { name: "リセットする" }).click();
@@ -90,7 +100,7 @@ test("Today3 finishes only after confirmation and reset restores seed", async ({
 test("paused replacement removes the old active state without completing it", async ({
   page,
 }) => {
-  const reading = todayCard(page, "本を読む");
+  const reading = todayCard(page, "数分だけ読む");
   await reading.getByRole("button", { name: "5分", exact: true }).click();
   await reading
     .locator(".dl-today-timer")
@@ -139,9 +149,8 @@ test("Today Picker shows both source groups without duplicate selected sources",
 test("Wishlist modal is keyboard operable, text-only, and its add action does not toggle the section", async ({
   page,
 }) => {
+  // W21-05: やりたいことは、最初は閉じている。
   const toggle = page.locator(".dl-wishlist .dl-section-disclosure");
-  await expect(toggle).toHaveAttribute("aria-expanded", "true");
-  await toggle.click();
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
   const add = page.getByRole("button", {
     name: "＋ やりたいこと",
@@ -181,7 +190,7 @@ test("save failure keeps the candidate and modal draft instead of optimistic los
       throw new DOMException("Quota exceeded", "QuotaExceededError");
     };
   });
-  const card = todayCard(page, "本を読む");
+  const card = todayCard(page, "数分だけ読む");
   await card.getByRole("button", { name: "5分", exact: true }).click();
   // The start is refused, not shown as running until a save succeeds.
   await expect(page.locator(".dl-timer .dl-pill--state")).toHaveText("待機中");
@@ -211,7 +220,8 @@ test("save failure keeps the candidate and modal draft instead of optimistic los
 
   // A dialog that reports the failure keeps its draft and the stored value.
   const study = page.locator(".dl-next-row", { hasText: "学習" });
-  await study.getByRole("button", { name: "編集", exact: true }).click();
+  await study.locator(".dl-row-menu").click();
+  await page.getByRole("menuitem", { name: "次の一手を編集" }).click();
   const editDialog = page.getByRole("dialog", { name: "次の一手を編集" });
   const input = editDialog.getByRole("textbox", { name: "次の一手" });
   await input.fill("保持する下書き");
@@ -249,7 +259,7 @@ test("disclosure right edge toggles and dictionary arrows stay in the dialog", a
 test("running Today item cannot be removed and persistence is not written on timer ticks", async ({
   page,
 }) => {
-  await todayCard(page, "本を読む")
+  await todayCard(page, "数分だけ読む")
     .getByRole("button", { name: "5分", exact: true })
     .click();
   await page
@@ -258,7 +268,7 @@ test("running Today item cannot be removed and persistence is not written on tim
   await expect(
     page
       .getByRole("dialog", { name: "今日やるものを選ぶ" })
-      .locator(".today-picker-slot", { hasText: "本を読む" })
+      .locator(".today-picker-slot", { hasText: "数分だけ読む" })
       .getByRole("button", { name: "今日から外す" }),
   ).toBeDisabled();
   await page.evaluate(() => {

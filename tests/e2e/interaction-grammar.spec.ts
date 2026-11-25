@@ -27,7 +27,7 @@ test("semantic variants stay distinct and primary starts lift on hover", async (
   const variants = {
     gold: page.getByRole("button", { name: "今日やるものを選ぶ" }),
     neutral: page
-      .getByRole("article", { name: "本を読む", exact: true })
+      .getByRole("article", { name: "数分だけ読む", exact: true })
       .getByRole("button", { name: "操作メニュー" }),
     positive: page.locator(".dl-donow-card .dl-start--short"),
     timer: page.locator(".dl-donow-card .dl-start--normal"),
@@ -87,7 +87,7 @@ test("focus, pressed, disabled and Danger states follow the common grammar", asy
   await page.mouse.up();
 
   // A running item cannot be removed from 今日の3件, so the menu entry is out.
-  const reading = page.getByRole("article", { name: "本を読む", exact: true });
+  const reading = page.getByRole("article", { name: "数分だけ読む", exact: true });
   await reading.getByRole("button", { name: "5分", exact: true }).click();
   await reading.getByRole("button", { name: "操作メニュー" }).click();
   const disabled = page.getByRole("menuitem", { name: "今日の3件から外す" });
@@ -115,7 +115,7 @@ test("focus, pressed, disabled and Danger states follow the common grammar", asy
 test("Today card hover keeps Project identity and reduced motion removes transforms", async ({
   page,
 }) => {
-  const card = page.getByRole("article", { name: "本を読む", exact: true });
+  const card = page.getByRole("article", { name: "数分だけ読む", exact: true });
   await card.hover();
   const identity = await card.evaluate((node) => {
     const dot = node.querySelector<HTMLElement>(".dl-identity-dot");

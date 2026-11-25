@@ -16,7 +16,7 @@ for (const width of [1366, 1440, 1920, 390]) {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
     await page
-      .getByRole("article", { name: "本を読む", exact: true })
+      .getByRole("article", { name: "数分だけ読む", exact: true })
       .getByRole("button", { name: "25分", exact: true })
       .click();
     await page.getByRole("button", { name: /5分経過まで進める/ }).click();

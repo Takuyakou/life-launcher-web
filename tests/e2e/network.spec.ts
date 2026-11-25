@@ -20,7 +20,7 @@ test("interactive demo performs no fetch, XHR, WebSocket, or external request", 
   await page.getByRole("searchbox", { name: "辞書を検索" }).fill("読書");
   await page.keyboard.press("Escape");
   await page
-    .getByRole("article", { name: "本を読む", exact: true })
+    .getByRole("article", { name: "数分だけ読む", exact: true })
     .getByRole("button", { name: "5分", exact: true })
     .click();
   await page

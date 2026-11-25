@@ -115,7 +115,7 @@ for (const viewport of viewports) {
     await page.keyboard.press("Escape");
 
     await page
-      .getByRole("article", { name: "本を読む", exact: true })
+      .getByRole("article", { name: "数分だけ読む", exact: true })
       .getByRole("button", { name: "5分", exact: true })
       .click();
     await page.getByRole("button", { name: /満了まで進める/ }).click();
@@ -139,7 +139,7 @@ for (const viewport of viewports) {
     await completion.getByRole("button", { name: "終わる", exact: true }).click();
 
     await expect(
-      page.getByRole("article", { name: "本を読む", exact: true }),
+      page.getByRole("article", { name: "数分だけ読む", exact: true }),
     ).toHaveCount(1);
     expect(
       await page.evaluate(

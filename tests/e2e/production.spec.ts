@@ -1,6 +1,15 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
+// W21-05: 「やりたいこと」と「今日の実行」は、最初は閉じている。中を確かめる前に開く。
+const openSection = async (
+  page: import("@playwright/test").Page,
+  name: "wishlist" | "activity",
+) => {
+  const toggle = page.locator(`.dl-${name} .dl-section-disclosure`);
+  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+};
+
 test("production bundle works under shipped CSP without runtime network or console errors", async ({
   page,
   baseURL,
@@ -60,6 +69,7 @@ test("production bundle works under shipped CSP without runtime network or conso
   await addDialog.getByRole("textbox").fill("<svg onload=alert(1)>");
   await addDialog.getByRole("button", { name: "追加", exact: true }).click();
   await expect(addDialog).toHaveCount(0);
+  await openSection(page, "wishlist");
   await expect(
     page.locator(".dl-wishlist-row").getByText("<svg onload=alert(1)>", { exact: true }),
   ).toBeVisible();
@@ -71,7 +81,7 @@ test("production bundle works under shipped CSP without runtime network or conso
     page.locator(".dl-wishlist-row").getByText("<svg onload=alert(1)>", { exact: true }),
   ).toBeVisible();
 
-  const reading = page.getByRole("article", { name: "本を読む", exact: true });
+  const reading = page.getByRole("article", { name: "数分だけ読む", exact: true });
   await reading.getByRole("button", { name: "25分", exact: true }).click();
   await page.getByRole("button", { name: /5分経過まで進める/ }).click();
   await timer.getByRole("button", { name: "終了", exact: true }).click();

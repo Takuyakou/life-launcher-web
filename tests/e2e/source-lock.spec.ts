@@ -14,6 +14,31 @@ test.beforeEach(async ({ page }) => {
   await page.locator("#screen").scrollIntoViewIfNeeded();
 });
 
+// W21-05: 「やりたいこと」と「今日の実行」は、最初は閉じている。中を確かめる前に開く。
+const openSection = async (
+  page: import("@playwright/test").Page,
+  name: "wishlist" | "activity",
+) => {
+  const toggle = page.locator(`.dl-${name} .dl-section-disclosure`);
+  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+};
+
+const expectMenuEdit = async (
+  page: import("@playwright/test").Page,
+  row: Locator,
+  enabled: boolean,
+) => {
+  await openRowMenu(row.locator(".dl-row-menu"));
+  const item = page.getByRole("menuitem", { name: /次の一手を編集/ });
+  if (enabled) await expect(item).toBeEnabled();
+  else {
+    await expect(item).toBeDisabled();
+    await expect(item).toContainText("未完了の今日の3件に入っているため");
+  }
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toHaveCount(0);
+};
+
 test("NextStep presents normal, locked, completed and empty states", async ({
   page,
 }) => {
@@ -25,32 +50,35 @@ test("NextStep presents normal, locked, completed and empty states", async ({
     "aria-label",
     "今日の3件で使用中のためロック中",
   );
+  // W21-05: 行の「編集」ボタンは無い。編集は … のメニューから行い、ロック中は押せない。
+  await expect(next.getByRole("button", { name: "編集", exact: true })).toHaveCount(0);
+  await expectMenuEdit(page, reading, false);
   await expect(
-    reading.getByRole("button", { name: "編集", exact: true }),
+    reading.getByRole("button", { name: "＋ 今日へ", exact: true }),
   ).toHaveCount(0);
   await expect(reading.locator(".dl-today-chip")).toHaveText("✓ 今日の3件");
 
   await expect(exercise.locator(".dl-lock")).toHaveCount(0);
+  await expectMenuEdit(page, exercise, true);
   await expect(
-    exercise.getByRole("button", { name: "編集", exact: true }),
-  ).toBeEnabled();
+    exercise.getByRole("button", { name: "＋ 今日へ", exact: true }),
+  ).toBeDisabled();
   await expect(exercise.locator(".dl-today-chip")).toHaveText("✓ 今日の3件");
 
   const readingCard = page.getByRole("article", {
-    name: "本を読む",
+    name: "数分だけ読む",
     exact: true,
   });
   await openRowMenu(readingCard.locator(".dl-row-menu"));
   await page.locator(".dl-menu-item", { hasText: "今日の3件から外す" }).click();
   await expect(reading.locator(".dl-lock")).toHaveCount(0);
-  await expect(
-    reading.getByRole("button", { name: "編集", exact: true }),
-  ).toBeEnabled();
+  await expectMenuEdit(page, reading, true);
   await expect(
     reading.getByRole("button", { name: "＋ 今日へ", exact: true }),
-  ).toBeVisible();
+  ).toBeEnabled();
 
-  await reading.getByRole("button", { name: "編集", exact: true }).click();
+  await reading.locator(".dl-row-menu").click();
+  await page.getByRole("menuitem", { name: "次の一手を編集" }).click();
   const dialog = page.getByRole("dialog", { name: "次の一手を編集" });
   await dialog.getByRole("textbox", { name: "次の一手" }).fill("次の章を開く");
   await dialog.getByRole("button", { name: "保存" }).click();
@@ -92,10 +120,12 @@ test("NextStep presents normal, locked, completed and empty states", async ({
 test("Wishlist is grouped by Project with unassigned last and unlocks on remove", async ({
   page,
 }) => {
+  await openSection(page, "wishlist");
+  // W21-05: Windows 版と同じく、やりたいことに出てきた順にまとめる(未分類は最後)。
   const groups = page.locator(".dl-wishlist-group");
   await expect(groups).toHaveCount(3);
-  await expect(groups.nth(0).locator(".dl-wishlist-head")).toHaveText("学習1件");
-  await expect(groups.nth(1).locator(".dl-wishlist-head")).toHaveText("読書1件");
+  await expect(groups.nth(0).locator(".dl-wishlist-head")).toHaveText("読書1件");
+  await expect(groups.nth(1).locator(".dl-wishlist-head")).toHaveText("学習1件");
   await expect(groups.nth(2).locator(".dl-wishlist-head")).toHaveText(
     "未分類1件",
   );
@@ -127,10 +157,9 @@ test("Wishlist is grouped by Project with unassigned last and unlocks on remove"
 test("same-text Wishlist rows lock only the matching stable source ID", async ({
   page,
 }) => {
-  // The demo writes storage on the first change: collapse and reopen the
-  // Wishlist so the seed state exists before it is rewritten below.
+  // The demo writes storage on the first change: open the Wishlist (closed at
+  // first since W21-05) so the seed state exists before it is rewritten below.
   const wishlistToggle = page.locator(".dl-wishlist .dl-section-disclosure");
-  await wishlistToggle.click();
   await wishlistToggle.click();
   await expect(wishlistToggle).toHaveAttribute("aria-expanded", "true");
   await page.evaluate(() => {
@@ -196,7 +225,7 @@ test("Do Now completion of a locked NextStep completes its Today item before the
     .fill("次の章を開く");
   await dialog.getByRole("button", { name: "保存して終わる" }).click();
   const readingCard = page.getByRole("article", {
-    name: "本を読む",
+    name: "数分だけ読む",
     exact: true,
   });
   await expect(readingCard.locator(".dl-today-status")).toHaveText("✓");

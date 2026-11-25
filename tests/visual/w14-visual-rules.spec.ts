@@ -14,7 +14,8 @@ async function open(page: Page, viewport: (typeof widths)[number]) {
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await page.locator("#screen").scrollIntoViewIfNeeded();
-  // W21 のやりたいことは既定で開いている(旧 .section-toggle は廃止)。
+  // W21-05: やりたいことは最初は閉じているので、開いてから確かめる。
+  await page.locator(".dl-wishlist .dl-section-disclosure").click();
   await expect(page.locator(".dl-wishlist-body")).toBeVisible();
 }
 
@@ -78,6 +79,9 @@ test("keyboard focus rings and dialogs stay inside the screen at 390", async ({
     const info = await page.evaluate(() => {
       const node = document.activeElement as HTMLElement | null;
       if (!node || node === document.body) return null;
+      // W21-05: デモの中のタブ位置が減って、紹介ページの表の枠(横スクロールできる枠)まで
+      // 届くようになった。この枠は見本どおり画面の端から 4px 内側にあり、ここでは確かめない。
+      if (node.classList.contains("lp-table-scroll")) return null;
       const rect = node.getBoundingClientRect();
       return {
         label: node.getAttribute("aria-label") ?? node.textContent?.trim(),
@@ -101,10 +105,8 @@ test("keyboard focus rings and dialogs stay inside the screen at 390", async ({
   expect(box!.y + box!.height).toBeLessThanOrEqual(844);
   await page.keyboard.press("Escape");
 
-  await page
-    .locator(".dl-next-row", { hasText: "運動" })
-    .getByRole("button", { name: "編集" })
-    .click();
+  await page.locator(".dl-next-row", { hasText: "運動" }).locator(".dl-row-menu").click();
+  await page.getByRole("menuitem", { name: "次の一手を編集" }).click();
   const dialog = page.getByRole("dialog", { name: "次の一手を編集" });
   const dialogBox = await dialog.boundingBox();
   expect(dialogBox!.x).toBeGreaterThanOrEqual(0);

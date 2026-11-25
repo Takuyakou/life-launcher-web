@@ -75,7 +75,7 @@ for (const viewport of [
       });
     }
 
-    const reading = page.getByRole("article", { name: "本を読む", exact: true });
+    const reading = page.getByRole("article", { name: "数分だけ読む", exact: true });
     await reading.getByRole("button", { name: "5分", exact: true }).click();
     await capture("timer", ".dl-today");
     await page.getByRole("button", { name: /満了まで進める/ }).click();

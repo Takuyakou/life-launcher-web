@@ -13,10 +13,19 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 });
 
+// W21-05: 「やりたいこと」と「今日の実行」は、最初は閉じている。中を確かめる前に開く。
+const openSection = async (
+  page: import("@playwright/test").Page,
+  name: "wishlist" | "activity",
+) => {
+  const toggle = page.locator(`.dl-${name} .dl-section-disclosure`);
+  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+};
+
 test("remove persists without confirmation or loss of sources and sessions", async ({
   page,
 }) => {
-  const card = page.getByRole("article", { name: "本を読む", exact: true });
+  const card = page.getByRole("article", { name: "数分だけ読む", exact: true });
   await openRowMenu(card.locator(".dl-row-menu"));
   await page.locator(".dl-menu-item", { hasText: "今日の3件から外す" }).click();
   await expect(card).toHaveCount(0);
@@ -25,6 +34,7 @@ test("remove persists without confirmation or loss of sources and sessions", asy
     page.getByText("今日の3件から外しました", { exact: true }),
   ).toBeVisible();
   // The removal neither confirms nor drops the recorded sessions.
+  await openSection(page, "activity");
   await expect(page.locator(".dl-activity-row")).toHaveCount(1);
   await page
     .getByRole("button", { name: "今日やるものを選ぶ", exact: true })
@@ -44,7 +54,7 @@ test("remove persists without confirmation or loss of sources and sessions", asy
 test("active and paused target is disabled, another card remains removable", async ({
   page,
 }) => {
-  const card = page.getByRole("article", { name: "本を読む", exact: true });
+  const card = page.getByRole("article", { name: "数分だけ読む", exact: true });
   const stretch = page.getByRole("article", {
     name: "ストレッチをする",
     exact: true,
@@ -90,7 +100,7 @@ test("failed storage retains Today3 unchanged and does not report success", asyn
       throw new Error("storage unavailable");
     };
   });
-  const card = page.getByRole("article", { name: "本を読む", exact: true });
+  const card = page.getByRole("article", { name: "数分だけ読む", exact: true });
   await openRowMenu(card.locator(".dl-row-menu"));
   await page.locator(".dl-menu-item", { hasText: "今日の3件から外す" }).click();
   await expect(page.locator("article.dl-today-card")).toHaveCount(2);

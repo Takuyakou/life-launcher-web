@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await page.locator("#screen").scrollIntoViewIfNeeded();
-  // やりたいことは既定で開いているので、開閉は触らない。
+  // W21-05: やりたいことと今日の実行は、最初は閉じている。
   await page.evaluate(() => document.fonts.ready);
 });
 
@@ -22,7 +22,10 @@ const headingMetrics = (page: Page) =>
     return list.map((selector) => {
       const root = document.querySelector(selector)!;
       const name = root.querySelector<HTMLElement>("h2")!;
-      const count = root.querySelector<HTMLElement>(".dl-section-count")!;
+      // 今日の3件は、件数の代わりに「1 / 2 完了」を見せる(件数は読み上げ用に残る)。
+      const count =
+        root.querySelector<HTMLElement>(".dl-section-count:not([data-quiet])") ??
+        root.querySelector<HTMLElement>(".dl-section-summary")!;
       const desc = root.querySelector<HTMLElement>(".dl-section-description")!;
       const title = getComputedStyle(name);
       const description = getComputedStyle(desc);
@@ -81,7 +84,7 @@ test("section bars stay chrome-free while the today cards carry the separators",
   for (const bar of bars)
     await expect(page.locator(bar).first()).toHaveCSS("border-top-width", "0px");
 
-  const reading = page.getByRole("article", { name: "本を読む", exact: true });
+  const reading = page.getByRole("article", { name: "数分だけ読む", exact: true });
   await expect(reading).toHaveCSS("border-top-width", "2px");
   await expect(reading).toHaveCSS("border-top-style", "solid");
   // 上辺はプロジェクト色(読書 = amber)。
@@ -136,10 +139,8 @@ test("button colours follow roles: add is neutral, picker entrance and picker ad
   );
   await page.keyboard.press("Escape");
 
-  await page
-    .locator(".dl-next-row", { hasText: "運動" })
-    .getByRole("button", { name: "編集" })
-    .click();
+  await page.locator(".dl-next-row", { hasText: "運動" }).locator(".dl-row-menu").click();
+  await page.getByRole("menuitem", { name: "次の一手を編集" }).click();
   const dialog = page.getByRole("dialog", { name: "次の一手を編集" });
   const save = dialog.getByRole("button", { name: "保存" });
   const cancel = dialog.getByRole("button", { name: "キャンセル" });
@@ -204,7 +205,7 @@ test("completion dialog: save and finish is green, finish is red (also when it i
   await only.getByRole("button", { name: "終わる", exact: true }).click();
 
   await page
-    .getByRole("article", { name: "本を読む", exact: true })
+    .getByRole("article", { name: "数分だけ読む", exact: true })
     .getByRole("button", { name: "5分", exact: true })
     .click();
   await page.getByRole("button", { name: /満了まで進める/ }).click();

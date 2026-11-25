@@ -7,6 +7,15 @@ const openRowMenu = async (trigger: Locator) => {
   await trigger.click();
 };
 
+// W21-05: 「やりたいこと」と「今日の実行」は、最初は閉じている。中を確かめる前に開く。
+const openSection = async (
+  page: import("@playwright/test").Page,
+  name: "wishlist" | "activity",
+) => {
+  const toggle = page.locator(`.dl-${name} .dl-section-disclosure`);
+  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+};
+
 test("core journey keeps Project, NextStep and Wishlist sources after Today execution", async ({
   page,
 }) => {
@@ -18,7 +27,7 @@ test("core journey keeps Project, NextStep and Wishlist sources after Today exec
   const next = page.locator(".dl-next");
   const reading = next.locator(".dl-next-row", { hasText: "読書" });
   await expect(reading.locator(".dl-identity--project")).toHaveText("読書");
-  for (const label of ["本を読む", "ストレッチをする"]) {
+  for (const label of ["数分だけ読む", "ストレッチをする"]) {
     const card = page.getByRole("article", { name: label, exact: true });
     await openRowMenu(card.locator(".dl-row-menu"));
     await page
@@ -28,7 +37,8 @@ test("core journey keeps Project, NextStep and Wishlist sources after Today exec
   }
   await expect(page.locator("article.dl-today-card")).toHaveCount(0);
 
-  await reading.getByRole("button", { name: "編集", exact: true }).click();
+  await reading.locator(".dl-row-menu").click();
+  await page.getByRole("menuitem", { name: "次の一手を編集" }).click();
   const nextDialog = page.getByRole("dialog", { name: "次の一手を編集" });
   await nextDialog
     .getByRole("textbox", { name: "次の一手" })
@@ -75,9 +85,9 @@ test("core journey keeps Project, NextStep and Wishlist sources after Today exec
 
   await expect(today.locator(".dl-today-status")).toHaveText("✓");
   await expect(reading.getByText("次の章を開く", { exact: true })).toBeVisible();
-  await expect(
-    reading.getByRole("button", { name: "編集", exact: true }),
-  ).toBeEnabled();
+  // W21-05: 完了した後は、鍵が外れて「＋ 今日へ」が出る(編集は … のメニュー)。
+  await expect(reading.locator(".dl-lock")).toHaveCount(0);
+  await openSection(page, "wishlist");
   await expect(
     page
       .locator(".dl-wishlist-row")

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const readingCard = (page: Page) =>
-  page.getByRole("article", { name: "本を読む", exact: true });
+  page.getByRole("article", { name: "数分だけ読む", exact: true });
 
 const readingStart = (page: Page) =>
   readingCard(page).getByRole("button", { name: "25分", exact: true });

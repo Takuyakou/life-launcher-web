@@ -44,7 +44,7 @@ test("Do Now puts the unfinished Today 3 NextStep first and reacts to Today 3 ch
   await expect(doNow(page)).not.toContainText("Web Demoでは");
   await expect(doNow(page)).not.toContainText("迷ったときに");
 
-  await removeFromToday(page, "本を読む");
+  await removeFromToday(page, "数分だけ読む");
   await removeFromToday(page, "ストレッチをする");
   await expect(doNowTitle(page)).toHaveText("参考書を10ページ進める");
   await expect(doNow(page)).toContainText("学習に次の一手が設定されているため");
@@ -71,7 +71,7 @@ test("Do Now puts the unfinished Today 3 NextStep first and reacts to Today 3 ch
 test("Do Now and the Today 3 card share one timer in both directions", async ({
   page,
 }) => {
-  const reading = card(page, "本を読む");
+  const reading = card(page, "数分だけ読む");
   await doNow(page).locator("[data-demo-do-now-short]").click();
   await expect(reading).toHaveAttribute("data-running", "true");
   await expect(doNow(page).getByText("実行中")).toBeVisible();
@@ -83,7 +83,7 @@ test("Do Now and the Today 3 card share one timer in both directions", async ({
   await expect(reading.getByRole("button", { name: "一時停止", exact: true })).toBeVisible();
 
   await finishAndConfirm(page);
-  await expect(card(page, "本を読む")).toHaveAttribute("data-complete", "true");
+  await expect(card(page, "数分だけ読む")).toHaveAttribute("data-complete", "true");
   await expect(doNowTitle(page)).toHaveText("参考書を10ページ進める");
 
   await page.reload();
@@ -123,7 +123,7 @@ test("Today 3 heading reports the count and the completed total", async ({
   const bar = page.locator(".dl-today > .dl-section-bar");
   await expect(bar.locator(".dl-section-count")).toHaveText("2件");
   await expect(bar.locator(".dl-section-summary")).toHaveText("1 / 2 完了");
-  await removeFromToday(page, "本を読む");
+  await removeFromToday(page, "数分だけ読む");
   await removeFromToday(page, "ストレッチをする");
   await expect(bar.locator(".dl-section-count")).toHaveText("0件");
   await expect(bar.locator(".dl-section-summary")).toHaveText("0 / 0 完了");
@@ -140,10 +140,8 @@ test("NextStep button and dialog use 編集", async ({ page }) => {
   );
   await expect(reading.getByRole("button", { name: "編集" })).toHaveCount(0);
   await expect(next.getByRole("button", { name: "変更" })).toHaveCount(0);
-  await next
-    .locator(".dl-next-row", { hasText: "運動" })
-    .getByRole("button", { name: "編集" })
-    .click();
+  await next.locator(".dl-next-row", { hasText: "運動" }).locator(".dl-row-menu").click();
+  await page.getByRole("menuitem", { name: "次の一手を編集" }).click();
   await expect(
     page.getByRole("dialog", { name: "次の一手を編集" }),
   ).toBeVisible();

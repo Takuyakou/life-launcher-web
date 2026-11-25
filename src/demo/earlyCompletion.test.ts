@@ -11,7 +11,7 @@ function running(shortMinutes = 3, direct = true) {
   return demoReducer(seed, {
     type: "START_TIMER",
     todayItemId: direct ? "today-reading" : undefined,
-    label: "本を読む",
+    label: "数分だけ読む",
     projectId: "reading",
     projectName: "読書",
     durationSeconds: 1500,

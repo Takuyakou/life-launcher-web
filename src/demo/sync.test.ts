@@ -12,7 +12,7 @@ const now = new Date("2026-09-09T00:00:00Z");
 const start = (state: DemoState, todayItemId?: string) =>
   demoReducer(state, {
     type: "START_TIMER",
-    label: "本を読む",
+    label: "数分だけ読む",
     projectId: "reading",
     projectName: "読書",
     durationSeconds: 300,
@@ -46,7 +46,7 @@ describe("WEB11 timer identity and batches", () => {
       nextStep: "次の章",
     });
     expect(state.todayItems[1]).toMatchObject({
-      label: "本を読む",
+      label: "数分だけ読む",
       completed: true,
       shortMinutes: 5,
       normalMinutes: 25,
