@@ -13,14 +13,16 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 });
 
-// W21-05: 「やりたいこと」と「今日の実行」は、最初は閉じている。中を確かめる前に開く。
-const openSection = async (
-  page: import("@playwright/test").Page,
-  name: "wishlist" | "activity",
-) => {
-  const toggle = page.locator(`.dl-${name} .dl-section-disclosure`);
-  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
-};
+// W21-08: 「今日の実行」は画面から消えた。記録は保存されたデータ(sessions)に残る。
+const savedSessions = (page: import("@playwright/test").Page) =>
+  page.evaluate(
+    (key) =>
+      (JSON.parse(localStorage.getItem(key) ?? "{}").sessions ?? []) as {
+        label: string;
+        minutes: number;
+      }[],
+    "life-launcher-web-demo:v3",
+  );
 
 test("remove persists without confirmation or loss of sources and sessions", async ({
   page,
@@ -34,8 +36,7 @@ test("remove persists without confirmation or loss of sources and sessions", asy
     page.getByText("今日の3件から外しました", { exact: true }),
   ).toBeVisible();
   // The removal neither confirms nor drops the recorded sessions.
-  await openSection(page, "activity");
-  await expect(page.locator(".dl-activity-row")).toHaveCount(1);
+  expect(await savedSessions(page)).toHaveLength(1);
   await page
     .getByRole("button", { name: "今日やるものを選ぶ", exact: true })
     .click();

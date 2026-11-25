@@ -9,14 +9,16 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 });
 
-// W21-05: 「やりたいこと」と「今日の実行」は、最初は閉じている。中を確かめる前に開く。
-const openSection = async (
-  page: import("@playwright/test").Page,
-  name: "wishlist" | "activity",
-) => {
-  const toggle = page.locator(`.dl-${name} .dl-section-disclosure`);
-  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
-};
+// W21-08: 「今日の実行」は画面から消えた。記録は保存されたデータ(sessions)に残る。
+const savedSessions = (page: import("@playwright/test").Page) =>
+  page.evaluate(
+    (key) =>
+      (JSON.parse(localStorage.getItem(key) ?? "{}").sessions ?? []) as {
+        label: string;
+        minutes: number;
+      }[],
+    "life-launcher-web-demo:v3",
+  );
 
 test("natural expiry waits for confirmation and completes the item on 終わる", async ({
   page,
@@ -90,8 +92,7 @@ test("Today3 finishes only after confirmation and reset restores seed", async ({
   await expect(page.locator(".dl-today .dl-section-summary")).toHaveText(
     "3 / 3 完了",
   );
-  await openSection(page, "activity");
-  await expect(page.locator(".dl-activity-row")).toHaveCount(3);
+  await expect.poll(async () => (await savedSessions(page)).length).toBe(3);
   await page.getByRole("button", { name: "リセット", exact: true }).click();
   await page.getByRole("button", { name: "リセットする" }).click();
   await expect(page.locator("article.dl-today-card")).toHaveCount(2);
@@ -137,12 +138,12 @@ test("Today Picker shows both source groups without duplicate selected sources",
     .getByRole("button", { name: "今日やるものを選ぶ", exact: true })
     .click();
   const picker = page.getByRole("dialog", { name: "今日やるものを選ぶ" });
-  await expect(picker.locator(".today-picker-source-row")).toHaveCount(6);
+  await expect(picker.locator(".today-picker-source-row")).toHaveCount(5);
   await expect(
     picker.getByRole("button", { name: "ストレッチをするを今日の3件に追加" }),
   ).toHaveCount(0);
   await expect(
-    picker.getByText("近所をゆっくり歩く", { exact: true }),
+    picker.getByText("気になっていた本を読む", { exact: true }),
   ).toHaveCount(1);
 });
 

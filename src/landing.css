@@ -1114,6 +1114,13 @@
   width: 100%;
 }
 
+/* 本文の列の中の場所の番号は、本文の列の見えている範囲の外では切れて隠れる。 */
+.lp-zone-clip {
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+}
+
 .lp-zone {
   border-radius: 10px;
   pointer-events: none;

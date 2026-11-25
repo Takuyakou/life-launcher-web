@@ -14,14 +14,16 @@ test.beforeEach(async ({ page }) => {
   await page.locator("#screen").scrollIntoViewIfNeeded();
 });
 
-// W21-05: 「やりたいこと」と「今日の実行」は、最初は閉じている。中を確かめる前に開く。
-const openSection = async (
-  page: import("@playwright/test").Page,
-  name: "wishlist" | "activity",
-) => {
-  const toggle = page.locator(`.dl-${name} .dl-section-disclosure`);
-  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
-};
+// W21-08: 「今日の実行」は画面から消えた。記録は保存されたデータ(sessions)に残る。
+const savedSessions = (page: import("@playwright/test").Page) =>
+  page.evaluate(
+    (key) =>
+      (JSON.parse(localStorage.getItem(key) ?? "{}").sessions ?? []) as {
+        label: string;
+        minutes: number;
+      }[],
+    "life-launcher-web-demo:v3",
+  );
 
 test("victory edit is plain text and the checkbox works", async ({ page }) => {
   const victoryText = page.locator(".dl-victory .dl-victory-text");
@@ -94,7 +96,7 @@ test("Today Picker enforces the three-item limit and closes on 決定", async ({
     "3",
   );
   await expect(
-    picker.getByRole("button", { name: "近所をゆっくり歩くを今日の3件に追加" }),
+    picker.getByRole("button", { name: "気になっていた本を読むを今日の3件に追加" }),
   ).toBeDisabled();
   await picker.getByRole("button", { name: "決定" }).click();
   await expect(picker).toHaveCount(0);
@@ -153,10 +155,10 @@ test("timer start shows the running state and stop appends Today Activity once",
   await expect(
     page.getByText("今日の実行にサンプル記録を追加しました"),
   ).toBeVisible();
-  await openSection(page, "activity");
-  await expect(
-    page.locator(".dl-activity-row").filter({ hasText: "数分だけ読む" }),
-  ).toHaveCount(1);
+  await expect(page.locator(".dl-activity")).toHaveCount(0);
+  await expect
+    .poll(async () => (await savedSessions(page)).filter((s) => s.label === "数分だけ読む").length)
+    .toBe(1);
 });
 
 test("demo completion saves 次はここから for a Do Now start", async ({

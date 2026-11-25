@@ -267,11 +267,21 @@ export function DemoWindow({
       if (node?.closest(".dl-menu")) return;
       closeMenu(false);
     };
+    // 本文の列が中でスクロールしたら、メニューは閉じる(menu は画面に固定なので、ずれて残さない)。
+    // 開いたときの位置から動いたときだけ閉じる(開く直前のスクロールの通知では閉じない)。
+    const openedAt = document.querySelector<HTMLElement>(".dl-main")?.scrollTop ?? 0;
+    const onScroll = (event: Event) => {
+      const node = event.target as HTMLElement | null;
+      if (node?.classList?.contains("dl-main") && node.scrollTop !== openedAt)
+        closeMenu(false);
+    };
     window.addEventListener("keydown", onKey);
     window.addEventListener("pointerdown", onDown, true);
+    window.addEventListener("scroll", onScroll, true);
     return () => {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("pointerdown", onDown, true);
+      window.removeEventListener("scroll", onScroll, true);
     };
   }, [closeMenu, menu]);
 
@@ -636,6 +646,8 @@ export function DemoWindow({
                     <span className="dl-donow-reason">{doNow.reason}</span>
                   </div>
                   <strong className="dl-donow-title">{doNow.text}</strong>
+                  {doNowProject.resumeNote || doNowProject.nextStep ? (
+                  <div className="dl-donow-line">
                   {doNowProject.resumeNote ? (
                     <p className="dl-donow-resume">
                       <span className="dl-donow-resume-label">次はここから</span>
@@ -643,6 +655,9 @@ export function DemoWindow({
                         {doNowProject.resumeNote}
                       </span>
                     </p>
+                  ) : null}
+                  {doNowProject.resumeNote && doNowProject.nextStep ? (
+                    <span aria-hidden="true" className="dl-donow-divider" />
                   ) : null}
                   {doNowProject.nextStep ? (
                     <div className="dl-donow-meta">
@@ -661,6 +676,8 @@ export function DemoWindow({
                           </button>
                         ))}
                     </div>
+                  ) : null}
+                  </div>
                   ) : null}
                 </div>
                 <div className="dl-donow-footer">
@@ -1131,59 +1148,6 @@ export function DemoWindow({
               ) : null}
             </section>
           </div>
-
-          <section className="dl-activity">
-            <div className="dl-section-bar dl-section-bar--plain">
-              <button
-                aria-expanded={state.sections.activity}
-                className="dl-section-disclosure"
-                onClick={() => dispatch({ type: "TOGGLE_SECTION", section: "activity" })}
-                type="button"
-              >
-                <UiIcon
-                  name={state.sections.activity ? "chevronDown" : "chevronRight"}
-                  size={16}
-                />
-                <h2>今日の実行</h2>
-              </button>
-              <span className="dl-section-count">{state.sessions.length}件</span>
-              <span className="dl-section-description">タイマーで実行した内容</span>
-              <span
-                className="dl-pill dl-pill--good dl-auto-badge"
-                title="タイマーで実行した内容を自動で記録します"
-              >
-                自動
-              </span>
-            </div>
-            {state.sections.activity ? (
-              <div className="dl-activity-body">
-                {state.sessions.length === 0 ? (
-                  <p className="dl-quiet">今日はまだ実行記録がありません。</p>
-                ) : (
-                  <ul className="dl-activity-list">
-                    {[...state.sessions].reverse().map((session) => (
-                      <li className="dl-activity-row" key={session.id}>
-                        <span className="dl-activity-identity">
-                          <span className="dl-identity">
-                            <span aria-hidden="true" className="dl-identity-dot" />
-                            {session.projectName}
-                          </span>
-                          <span className="dl-activity-label">{session.label}</span>
-                        </span>
-                        <span className="dl-activity-time">
-                          {new Date(session.endedAt).toLocaleTimeString("ja-JP", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                        <strong>{session.minutes}分</strong>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ) : null}
-          </section>
         </main>
       </div>
 

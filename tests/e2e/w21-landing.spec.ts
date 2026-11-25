@@ -318,3 +318,56 @@ test("W21-07: the five outgoing links open in a new tab and in-page links stay p
   // 外へ出るリンクは、この5つだけ。
   await expect(page.locator('a[href^="http"]')).toHaveCount(5);
 });
+
+// ---------- W21-08: 表の行とデモへの移動 ----------
+
+test("W21-08: the table row names only the timer, and the record row stays with Windows", async ({
+  page,
+}) => {
+  await open(page);
+  const rows = page.locator(".lp-table tbody tr");
+  await expect(rows.nth(1).locator("th, td").first()).toHaveText("タイマー(5分・25分・延長)");
+  await expect(page.locator(".lp-table")).not.toContainText("実行の記録");
+  const record = rows.filter({ hasText: "記録・今週を決める" });
+  await expect(record).toHaveCount(1);
+  await expect(record.locator(".lp-cell-yes")).toHaveCount(1);
+  await expect(rows).toHaveCount(8);
+});
+
+for (const [width, height] of [
+  [1440, 900],
+  [1920, 1080],
+  [1366, 768],
+] as const) {
+  test(`W21-08: the try buttons bring the whole demo window onto the screen at ${width}x${height}`, async ({
+    page,
+  }) => {
+    await open(page, width, height);
+    for (const selector of ["#top .lp-cta--primary", ".lp-try"]) {
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.locator(selector).scrollIntoViewIfNeeded();
+      await page.locator(selector).click();
+      const stage = page.locator(".lp-stage");
+      await expect
+        .poll(async () => Math.round((await stage.boundingBox())!.y))
+        .toBe(32);
+      const fits = await stage.evaluate((node) => {
+        const rect = node.getBoundingClientRect();
+        return rect.top >= 0 && rect.bottom <= innerHeight;
+      });
+      expect(fits).toBe(true);
+    }
+  });
+}
+
+test("W21-08: the header Demo link still lands on the heading", async ({ page }) => {
+  await open(page);
+  await page.getByRole("navigation", { name: "メインナビゲーション" }).getByRole("link", { name: "デモ" }).click();
+  const heading = page.getByRole("heading", { name: "開始までの流れを試す。" });
+  await expect
+    .poll(async () => {
+      const box = await heading.boundingBox();
+      return box ? box.y > 0 && box.y < 200 : false;
+    })
+    .toBe(true);
+});

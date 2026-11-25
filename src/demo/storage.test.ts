@@ -48,6 +48,8 @@ describe("demo storage v3", () => {
     const seed = createDemoSeed(fixedNow);
     const running = {
       ...seed,
+      // W21-08: 初期データのやりたいことは2件。プロジェクトなしの1件は、ここで足す。
+      wishlist: [...seed.wishlist, { id: "wish-walk", label: "近所をゆっくり歩く" }],
       candidateExcludedSourceIds: ["wishlist:wish-book"],
       timer: {
         ...seed.timer,

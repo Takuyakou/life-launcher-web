@@ -119,7 +119,6 @@ export function createDemoSeed(now: Date): DemoState {
     wishlist: [
       { id: "wish-book", label: "気になっていた本を読む", projectId: "reading" },
       { id: "wish-drawer", label: "英単語を20個復習する", projectId: "study" },
-      { id: "wish-walk", label: "近所をゆっくり歩く" },
     ],
     sessions: [
       {
@@ -133,7 +132,8 @@ export function createDemoSeed(now: Date): DemoState {
     ],
     timer: createIdleTimer(),
     timerMinutes: DEFAULT_TIMER_MINUTES,
-    // やりたいことと今日の実行は、最初は閉じておく(見出しに件数を出す)。
+    // やりたいことは最初は閉じておく(見出しに件数を出す)。今日の実行は画面に出さない
+    // (activity は保存形式のために残してある)。
     sections: {
       today: true,
       nextStep: true,
