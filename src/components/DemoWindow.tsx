@@ -77,6 +77,67 @@ const formatClock = (seconds: number) => {
 const projectColor = (project?: DemoProject) =>
   project ? `var(--project-${project.color})` : "var(--accent)";
 
+// Windows 版 v1.6.4 の projectIdentity.ts と同じ。アイコンの無いボタンは、
+// 名前の頭文字を、id から決まる色の小さな札に入れて見せる。
+const AUTO_COLORS = [
+  "amber",
+  "blue",
+  "green",
+  "violet",
+  "rose",
+  "cyan",
+  "orange",
+  "slate",
+] as const;
+
+const autoColor = (id: string) => {
+  let hash = 0;
+  for (const character of id) {
+    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  }
+  return `var(--project-${AUTO_COLORS[hash % AUTO_COLORS.length]})`;
+};
+
+const letterGlyph = (label: string) => {
+  const first = Array.from(label.trim() || "?")[0] ?? "?";
+  return /[a-z]/.test(first) ? first.toUpperCase() : first;
+};
+
+type WishlistGroup = {
+  key: string;
+  name: string;
+  color: string;
+  project?: DemoProject;
+  items: DemoWishlistItem[];
+};
+
+// Windows 版 v1.6.4 の groupWishlistForDisplay と同じ並び。
+// やりたいことに出てきた順にプロジェクトをまとめ、未分類は最後に置く。
+const groupWishlist = (state: DemoState): WishlistGroup[] => {
+  const groups = new Map<string, WishlistGroup>();
+  for (const item of state.wishlist) {
+    const project = state.projects.find((entry) => entry.id === item.projectId);
+    const key = project?.id ?? "unassigned";
+    const group = groups.get(key) ?? {
+      key,
+      name: project?.name ?? "未分類",
+      color: project ? projectColor(project) : "var(--muted)",
+      project,
+      items: [],
+    };
+    group.items.push(item);
+    groups.set(key, group);
+  }
+  const all = [...groups.values()];
+  return [
+    ...all.filter((group) => group.key !== "unassigned"),
+    ...all.filter((group) => group.key === "unassigned"),
+  ];
+};
+
+const SOURCE_LOCK_REASON =
+  "未完了の「今日の3件」に入っているため、完了または外すまで元の登録は変更できません";
+
 export function DemoWindow({
   state,
   dispatch,
@@ -287,9 +348,10 @@ export function DemoWindow({
 
   const tomorrow = new Date();
   const dateText = `${tomorrow.getMonth() + 1}月${tomorrow.getDate()}日`;
-  const weekday = `(${WEEKDAYS[tomorrow.getDay()]})`;
+  const weekday = `${WEEKDAYS[tomorrow.getDay()]}曜日`;
 
   const victories = state.victory;
+  const wishlistGroups = groupWishlist(state);
   const menuProject =
     menu?.kind === "today"
       ? state.todayItems.find((item) => item.id === menu.id)
@@ -344,6 +406,9 @@ export function DemoWindow({
       {
         label: "次の一手を編集",
         disabled: locked || (timerActive && timer.projectId === menuNextStep.id),
+        // ロック中は、押せない理由を項目の下に出す。
+        note: locked ? "未完了の今日の3件に入っているため" : undefined,
+        title: locked ? SOURCE_LOCK_REASON : undefined,
         run: () =>
           setNextStepEdit({
             projectId: menuNextStep.id,
@@ -384,7 +449,13 @@ export function DemoWindow({
     ];
   })();
 
-  const menuItems =
+  const menuItems: {
+    label: string;
+    disabled: boolean;
+    note?: string;
+    title?: string;
+    run: () => void;
+  }[] =
     menu?.kind === "today"
       ? todayMenuItems
       : menu?.kind === "nextStep"
@@ -458,8 +529,12 @@ export function DemoWindow({
                         onClick={() => onNativeOnly(tile.label)}
                         type="button"
                       >
-                        <span className="dl-quick-icon">
-                          <UiIcon name="book" size={14} />
+                        <span
+                          aria-hidden="true"
+                          className="dl-letter-icon"
+                          style={{ ["--project-color" as string]: autoColor(tile.id) }}
+                        >
+                          {letterGlyph(tile.label)}
                         </span>
                         <span>{tile.label}</span>
                       </button>
@@ -637,7 +712,7 @@ export function DemoWindow({
                         type="button"
                       >
                         <UiIcon name="clock" size={14} />
-                        計測
+                        <span>計測</span>
                       </button>
                       <div className="dl-donow-secondary">
                         {candidates.length > 1 ? (
@@ -681,8 +756,18 @@ export function DemoWindow({
                 />
                 <h2>今日の3件</h2>
               </span>
-              <span className="dl-section-count">{state.todayItems.length}件</span>
-              <span className="dl-section-summary">
+              {/* Windows 版と同じく、見えるのは片方だけ。空のときは「0件」、
+                  1件以上のときは「1 / 2 完了」。もう片方は読み上げ用に残す。 */}
+              <span
+                className="dl-section-count"
+                data-quiet={state.todayItems.length > 0 ? "true" : undefined}
+              >
+                {state.todayItems.length}件
+              </span>
+              <span
+                className="dl-section-summary"
+                data-quiet={state.todayItems.length === 0 ? "true" : undefined}
+              >
                 {completedToday} / {state.todayItems.length} 完了
               </span>
               <span className="dl-section-description">
@@ -731,11 +816,17 @@ export function DemoWindow({
                       >
                         {item.label}
                       </button>
-                      {isCurrent ? (
-                        <span className="dl-pill dl-pill--project">今やる一手</span>
-                      ) : null}
                     </div>
                     <div className="dl-today-top-actions">
+                      {isCurrent ? (
+                        <span
+                          aria-label="今やる一手"
+                          className="dl-pill dl-pill--project"
+                          role="status"
+                        >
+                          今やる一手
+                        </span>
+                      ) : null}
                       <button
                         aria-label="操作メニュー"
                         className="dl-row-menu"
@@ -880,7 +971,14 @@ export function DemoWindow({
                         <div className="dl-next-action">
                           <div className="dl-next-text">
                             {project.nextStep ? (
-                              <p>{project.nextStep}</p>
+                              <p title={project.nextStep}>
+                                {project.resumeNote ? (
+                                  <span className="dl-next-resume">
+                                    {project.resumeNote} ▸{" "}
+                                  </span>
+                                ) : null}
+                                {project.nextStep}
+                              </p>
                             ) : (
                               <button
                                 className="dl-next-placeholder"
@@ -890,51 +988,45 @@ export function DemoWindow({
                                 次の一手を設定
                               </button>
                             )}
-                            <div className="dl-next-meta">
-                              {locked ? (
-                                <span
-                                  aria-label="今日の3件で使用中のためロック中"
-                                  className="dl-lock"
-                                  tabIndex={0}
-                                  title="未完了の「今日の3件」に入っているため、完了または外すまで元の登録は変更できません"
-                                >
-                                  <UiIcon name="lock" size={16} />
-                                </span>
-                              ) : null}
-                              {inToday ? (
-                                <span className="dl-today-chip">✓ 今日の3件</span>
-                              ) : null}
-                              <div className="dl-next-buttons">
-                                {!locked ? (
-                                  <>
-                                    <button
-                                      className="dl-small dl-small--gold"
-                                      onClick={() => openProject(project.id)}
-                                      type="button"
-                                    >
-                                      編集
-                                    </button>
-                                    {project.nextStep && !inToday ? (
-                                      <button
-                                        className="dl-small"
-                                        disabled={state.todayItems.length >= 3}
-                                        onClick={() =>
-                                          candidateFor({
-                                            sourceId: nextStepSourceId(project.id),
-                                            sourceType: "nextStep",
-                                            label: project.nextStep ?? "",
-                                            projectId: project.id,
-                                          })
-                                        }
-                                        type="button"
-                                      >
-                                        ＋ 今日へ
-                                      </button>
-                                    ) : null}
-                                  </>
-                                ) : null}
-                              </div>
-                            </div>
+                          </div>
+                          <div className="dl-next-meta">
+                            {locked ? (
+                              <span
+                                aria-label="今日の3件で使用中のためロック中"
+                                className="dl-lock"
+                                tabIndex={0}
+                                title={SOURCE_LOCK_REASON}
+                              >
+                                <UiIcon name="lock" size={16} />
+                              </span>
+                            ) : null}
+                            {inToday ? (
+                              <span className="dl-today-chip">✓ 今日の3件</span>
+                            ) : null}
+                            {project.nextStep && !locked ? (
+                              <button
+                                className="dl-small dl-next-today-add"
+                                disabled={inToday || state.todayItems.length >= 3}
+                                onClick={() =>
+                                  candidateFor({
+                                    sourceId: nextStepSourceId(project.id),
+                                    sourceType: "nextStep",
+                                    label: project.nextStep ?? "",
+                                    projectId: project.id,
+                                  })
+                                }
+                                title={
+                                  inToday
+                                    ? "今日の3件にあります"
+                                    : state.todayItems.length >= 3
+                                      ? "今日の3件は3件埋まっています"
+                                      : "今日の3件に追加"
+                                }
+                                type="button"
+                              >
+                                ＋ 今日へ
+                              </button>
+                            ) : null}
                           </div>
                           <button
                             aria-label="操作メニュー"
@@ -968,9 +1060,29 @@ export function DemoWindow({
                   <h2>やりたいこと</h2>
                 </button>
                 <span className="dl-section-count">{state.wishlist.length}件</span>
-                <span className="dl-section-description">
-                  他にやりたいこと。今日やるものは「今日の3件」から選べます。
-                </span>
+                {state.sections.wishlist ? (
+                  <span className="dl-section-description">
+                    他にやりたいこと。今日やるものは「今日の3件」から選べます。
+                  </span>
+                ) : (
+                  <span
+                    className="dl-section-description dl-group-summary"
+                    title={wishlistGroups
+                      .map((group) => `${group.name} ${group.items.length}件`)
+                      .join("、")}
+                  >
+                    {wishlistGroups.map((group) => (
+                      <span className="dl-group-summary-item" key={group.key}>
+                        <span
+                          aria-hidden="true"
+                          className="dl-group-summary-dot"
+                          style={{ background: group.color }}
+                        />
+                        {group.name} {group.items.length}件
+                      </span>
+                    ))}
+                  </span>
+                )}
                 <div className="dl-section-actions">
                   <button
                     className="dl-small"
@@ -984,59 +1096,35 @@ export function DemoWindow({
 
               {state.sections.wishlist ? (
                 <div className="dl-wishlist-body">
-                  {state.projects.map((project) => {
-                    const items = state.wishlist.filter(
-                      (item) => item.projectId === project.id,
-                    );
-                    if (items.length === 0) return null;
-                    return (
-                      <div className="dl-wishlist-group" key={project.id}>
-                        <div className="dl-wishlist-head">
+                  {wishlistGroups.map((group) => (
+                    <div className="dl-wishlist-group" key={group.key}>
+                      <div className="dl-wishlist-head">
+                        {group.project ? (
                           <span className="dl-identity">
                             <span
                               aria-hidden="true"
                               className="dl-identity-dot"
-                              style={{ background: projectColor(project) }}
+                              style={{ background: group.color }}
                             />
-                            {project.name}
+                            {group.name}
                           </span>
-                          <span className="dl-wishlist-count">{items.length}件</span>
-                        </div>
-                        <ul className="dl-wishlist-list">
-                          {items.map((item) => (
-                            <WishlistRow
-                              item={item}
-                              key={item.id}
-                              onMenu={openMenu}
-                              projectColor={projectColor(project)}
-                            />
-                          ))}
-                        </ul>
-                      </div>
-                    );
-                  })}
-                  {state.wishlist.some((item) => !item.projectId) ? (
-                    <div className="dl-wishlist-group">
-                      <div className="dl-wishlist-head">
-                        <strong>未分類</strong>
-                        <span className="dl-wishlist-count">
-                          {state.wishlist.filter((item) => !item.projectId).length}件
-                        </span>
+                        ) : (
+                          <strong>{group.name}</strong>
+                        )}
+                        <span className="dl-wishlist-count">{group.items.length}件</span>
                       </div>
                       <ul className="dl-wishlist-list">
-                        {state.wishlist
-                          .filter((item) => !item.projectId)
-                          .map((item) => (
-                            <WishlistRow
-                              item={item}
-                              key={item.id}
-                              onMenu={openMenu}
-                              projectColor="var(--muted)"
-                            />
-                          ))}
+                        {group.items.map((item) => (
+                          <WishlistRow
+                            item={item}
+                            key={item.id}
+                            onMenu={openMenu}
+                            projectColor={group.color}
+                          />
+                        ))}
                       </ul>
                     </div>
-                  ) : null}
+                  ))}
                 </div>
               ) : null}
             </section>
@@ -1058,6 +1146,12 @@ export function DemoWindow({
               </button>
               <span className="dl-section-count">{state.sessions.length}件</span>
               <span className="dl-section-description">タイマーで実行した内容</span>
+              <span
+                className="dl-pill dl-pill--good dl-auto-badge"
+                title="タイマーで実行した内容を自動で記録します"
+              >
+                自動
+              </span>
             </div>
             {state.sections.activity ? (
               <div className="dl-activity-body">
@@ -1106,9 +1200,11 @@ export function DemoWindow({
               key={item.label}
               onClick={() => runMenu(item.run)}
               role="menuitem"
+              title={item.title}
               type="button"
             >
-              {item.label}
+              <span className="dl-menu-label">{item.label}</span>
+              {item.note ? <span className="dl-menu-note">{item.note}</span> : null}
             </button>
           ))}
         </div>

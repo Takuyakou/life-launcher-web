@@ -7,6 +7,10 @@
   --project-green: #6fcf97;
   --project-blue: #75aef7;
   --project-violet: #ad91ee;
+  --project-rose: #f184a7;
+  --project-cyan: #56c9d8;
+  --project-orange: #f2a65a;
+  --project-slate: #a8b2c1;
   background: #161512;
   border: 1px solid #4a4639;
   border-radius: 14px;
@@ -304,14 +308,18 @@
   background: rgba(190, 181, 164, 0.08);
 }
 
-.dl-quick-icon {
-  align-items: center;
+.dl-letter-icon {
   background: #2b2922;
   border-radius: 6px;
-  color: #b8b0a0;
-  display: inline-flex;
+  color: var(--project-color, #a8b2c1);
+  display: grid;
+  flex: 0 0 20px;
+  font-size: 10px;
+  font-weight: 700;
   height: 20px;
-  justify-content: center;
+  line-height: 1;
+  min-width: 20px;
+  place-items: center;
   width: 20px;
 }
 
@@ -396,6 +404,28 @@
   border-color: color-mix(in srgb, var(--project-color) 50%, transparent);
   background: color-mix(in srgb, var(--project-color) 8%, transparent);
   color: var(--project-color);
+}
+
+.dl-pill--good {
+  background: rgba(117, 196, 143, 0.07);
+  border-color: rgba(117, 196, 143, 0.34);
+  color: #6fcf97;
+}
+
+.dl-auto-badge {
+  font-weight: 600;
+  gap: 5px;
+  justify-self: end;
+  opacity: 0.82;
+}
+
+.dl-auto-badge::before {
+  background: currentColor;
+  border-radius: 50%;
+  content: "";
+  flex: 0 0 auto;
+  height: 6px;
+  width: 6px;
 }
 
 .dl-timer-clock {
@@ -958,8 +988,10 @@
   gap: 5px;
   height: 48px;
   justify-content: center;
+  min-width: 82px;
   overflow: hidden;
   padding: 0 16px;
+  white-space: nowrap;
   width: 82px;
 }
 
@@ -972,8 +1004,10 @@
 
 .dl-measure--small {
   height: 36px;
+  min-height: 36px;
+  min-width: 36px;
   padding: 0;
-  width: 34px;
+  width: 36px;
 }
 
 .dl-elapsed {
@@ -1153,11 +1187,12 @@
   margin: 0;
 }
 
+/* 件数は Windows 版 08-main-layout.css の .disclosureHeader .disclosureCount と同じ字。 */
 .dl-section-count {
-  color: #f4f0e8;
-  font-size: 11px;
+  color: #a39c8e;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
-  font-weight: 650;
+  font-weight: 400;
   min-width: 22px;
   white-space: nowrap;
 }
@@ -1169,12 +1204,46 @@
   white-space: nowrap;
 }
 
+/* 見出しで、今は見せない方の数。読み上げには残す。 */
+.dl-section-count[data-quiet],
+.dl-section-summary[data-quiet] {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
 .dl-section-description {
   color: #a39c8e;
   font-size: 12px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.dl-group-summary {
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+.dl-group-summary-item {
+  align-items: center;
+  display: inline-flex;
+  flex: none;
+  gap: 5px;
+}
+
+.dl-group-summary-dot {
+  border-radius: 50%;
+  flex: 0 0 auto;
+  height: 7px;
+  width: 7px;
 }
 
 .dl-section-actions {
@@ -1223,12 +1292,6 @@
   background: #2b2922;
   border-color: #b8b0a0;
   color: #f4f0e8;
-}
-
-.dl-small--gold {
-  background: rgba(231, 185, 77, 0.055);
-  border-color: currentColor;
-  color: #ffce5b;
 }
 
 /* ---------- today ---------- */
@@ -1555,10 +1618,17 @@
 
 .dl-next-text p {
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 400;
   line-height: 1.45;
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+/* 再開メモ(Windows 版 .projectNextStepTrigger と同じ字)。 */
+.dl-next-resume {
+  color: #b8b0a0;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .dl-next-placeholder {
@@ -1585,7 +1655,7 @@
 .dl-next-meta {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
   gap: 6px;
 }
 
@@ -1610,11 +1680,6 @@
   min-height: 20px;
   padding: 1px 7px;
   white-space: nowrap;
-}
-
-.dl-next-buttons {
-  display: flex;
-  gap: 6px;
 }
 
 .dl-row-menu--next,
@@ -1775,11 +1840,19 @@
   border: 0;
   border-radius: 6px;
   color: #f4f0e8;
+  display: grid;
   font-size: 13px;
+  gap: 2px;
   min-height: 34px;
-  padding: 0 9px;
+  padding: 6px 9px;
   text-align: left;
   width: 100%;
+}
+
+.dl-menu-note {
+  color: #b8b0a0;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .dl-menu-item:hover:not(:disabled),
@@ -1980,6 +2053,12 @@
 
   .dl-next-action {
     grid-template-columns: minmax(0, 1fr) 28px;
+  }
+
+  /* Windows 版(06-completion-records.css の 620px 以下)と同じ折り方:
+     名前を1行目いっぱいに置き、印と「＋ 今日へ」は2行目の左、… は2行目の右。 */
+  .dl-next-text {
+    grid-column: 1 / -1;
   }
 
   .dl-ghost-button {
