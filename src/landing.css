@@ -583,10 +583,6 @@
   animation: lp-a8 14s infinite;
 }
 
-.lp-f1:hover * {
-  animation-play-state: paused;
-}
-
 @keyframes lp-a1 {
   0%,
   4% {
