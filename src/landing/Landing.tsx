@@ -696,7 +696,7 @@ export function FinalSection() {
           05:00
         </span>
         <div className="lp-final-copy">
-          <p className="lp-mono lp-eyebrow">READY?</p>
+          <p className="lp-mono lp-eyebrow">始める</p>
           <h2 className="lp-fin">
             <span>
               <span className="lp-hl">次の一手</span>を、
