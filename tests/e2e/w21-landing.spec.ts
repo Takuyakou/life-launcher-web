@@ -68,7 +68,7 @@ test("the page keeps the approved order and wording", async ({ page }) => {
     "デモはWindows版をすべて移したものではありません。",
   );
 
-  await expect(page.locator("#get .lp-eyebrow")).toHaveText("READY?");
+  await expect(page.locator("#get .lp-eyebrow")).toHaveText("始める");
   await expect(page.locator(".lp-fin")).toHaveText("次の一手を、今ここで始める。");
   await expect(page.locator(".lp-ghost")).toHaveText("05:00");
   await expect(page.locator(".lp-try")).toHaveText("まずはブラウザで試す");
